@@ -14,4 +14,6 @@ var webfrontend = builder.AddViteApp("webfrontend", "../frontend")
 
 server.PublishWithContainerFiles(webfrontend, "wwwroot");
 
+builder.AddAzureFunctionsProject<Projects.ServiceBusConsumer>("servicebusconsumer");
+
 builder.Build().Run();
