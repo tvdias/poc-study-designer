@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ServiceBusConsumer": {
+    "ProjectsProcessor": {
       "commandName": "Project",
       "commandLineArgs": "--port 7026",
       "launchBrowser": false
