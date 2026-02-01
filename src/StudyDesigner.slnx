@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="frontend/frontend.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="StudyDesigner.AppHost/StudyDesigner.AppHost.csproj" />
+  <Project Path="StudyDesigner.Server/StudyDesigner.Server.csproj" />
+</Solution>
