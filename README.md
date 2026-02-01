@@ -4,30 +4,33 @@ This is a proof-of-concept for a Study Designer application built with .NET Aspi
 
 ## Architecture Overview
 
-The solution consists of:
+The solution consists of simple "hello world" style applications:
 
 ### Frontend Applications
-- **Study Designer Frontend** (`src/frontend`) - For creating and managing clinical studies
-- **Study Reviewer Frontend** (`src/frontend-reviewer`) - For reviewing and approving clinical studies
+- **Study Designer** (`src/frontend`) - Main designer interface with data table UI
+- **Study Admin** (`src/frontend-admin`) - Admin portal for managing studies
 
-Both frontends are React + TypeScript applications built with Vite.
+Both frontends are React + TypeScript applications built with Vite, featuring a clean table-based UI inspired by Power Platform.
 
 ### Backend Services
-- **StudyDesigner.API** (`src/StudyDesigner.API`) - Main API server providing REST endpoints
+- **StudyDesigner.API** (`src/StudyDesigner.API`) - Simple REST API
   - Built with ASP.NET Core
   - Uses Redis for output caching
   - Provides OpenAPI/Swagger documentation
   - Health check endpoint at `/health`
+  - Simple endpoints: `/api/hello` and `/api/studies`
 
 ### Azure Functions
-- **ServiceBusConsumer** (`src/ServiceBusConsumer`) - Consumes study messages from Service Bus
+- **ServiceBusConsumer** (`src/ServiceBusConsumer`) - Consumes messages from Service Bus
   - Listens to `sampletopic` with `designer-subscription`
+  - Simple hello world message processing
 - **StudyProcessor** (`src/StudyProcessor`) - Processes study data from Service Bus
   - Listens to `sampletopic` with `processor-subscription`
+  - Simple hello world processing
 
 ### Console Applications
 - **MessagePublisher** (`src/MessagePublisher`) - Console app for publishing messages to Service Bus
-  - Interactive CLI for sending test messages and study creation messages
+  - Interactive CLI for sending hello world messages
   - Configurable via `appsettings.json` or environment variables
 
 ### Orchestration
@@ -67,7 +70,7 @@ Both frontends are React + TypeScript applications built with Vite.
    - Redis cache
    - StudyDesigner.API
    - Study Designer Frontend
-   - Study Reviewer Frontend
+   - Study Admin Frontend
    - ServiceBusConsumer Function
    - StudyProcessor Function
 
@@ -108,16 +111,14 @@ cd src/MessagePublisher
 dotnet run
 ```
 
-Follow the interactive prompts to:
-1. Send test messages
-2. Send study creation messages
+Follow the interactive prompts to send hello world messages.
 
 ## Project Structure
 
 ```
 src/
 ├── frontend/                      # Study Designer Frontend (React)
-├── frontend-reviewer/             # Study Reviewer Frontend (React)
+├── frontend-admin/                # Study Admin Frontend (React)
 ├── StudyDesigner.API/            # Main API Server
 ├── StudyDesigner.AppHost/        # Aspire Orchestration Host
 ├── ServiceBusConsumer/           # Azure Function - Message Consumer
@@ -134,8 +135,8 @@ cd src/frontend
 npm install
 npm run dev
 
-# Study Reviewer Frontend
-cd src/frontend-reviewer
+# Study Admin Frontend
+cd src/frontend-admin
 npm install
 npm run dev
 ```
@@ -160,14 +161,15 @@ dotnet run
 
 ### API Endpoints
 Once the API is running, you can test endpoints:
-- Weather Forecast: `GET http://localhost:<port>/api/weatherforecast`
+- Hello World: `GET http://localhost:<port>/api/hello`
+- Studies: `GET http://localhost:<port>/api/studies`
 - Health Check: `GET http://localhost:<port>/health`
 - OpenAPI/Swagger: Available in development mode
 
 ### Message Flow
-1. Run MessagePublisher to send a study creation message
+1. Run MessagePublisher to send a hello world message
 2. ServiceBusConsumer receives and logs the message
-3. StudyProcessor processes the study data
+3. StudyProcessor processes the message
 
 ## Technology Stack
 
@@ -180,7 +182,8 @@ Once the API is running, you can test endpoints:
 
 ## Notes
 
-- This is a proof-of-concept implementation
+- This is a proof-of-concept with simple "hello world" implementations
 - Azure Functions require proper Service Bus configuration to run
 - Redis is automatically managed by Aspire
 - All services support OpenTelemetry for distributed tracing
+- Frontend UIs are inspired by Power Platform with clean table-based layouts

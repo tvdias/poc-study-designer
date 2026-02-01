@@ -14,13 +14,13 @@ var designerFrontend = builder.AddViteApp("designer-frontend", "../frontend")
     .WithReference(api)
     .WaitFor(api);
 
-var reviewerFrontend = builder.AddViteApp("reviewer-frontend", "../frontend-reviewer")
+var adminFrontend = builder.AddViteApp("admin-frontend", "../frontend-admin")
     .WithReference(api)
     .WaitFor(api);
 
 // Publish frontend files to API
 api.PublishWithContainerFiles(designerFrontend, "wwwroot/designer");
-api.PublishWithContainerFiles(reviewerFrontend, "wwwroot/reviewer");
+api.PublishWithContainerFiles(adminFrontend, "wwwroot/admin");
 
 // Azure Functions
 builder.AddAzureFunctionsProject<Projects.ServiceBusConsumer>("servicebusconsumer");

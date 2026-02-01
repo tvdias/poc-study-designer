@@ -6,7 +6,7 @@
     <Build />
     <Deploy />
   </Project>
-  <Project Path="frontend-reviewer/frontend-reviewer.esproj">
+  <Project Path="frontend-admin/frontend-admin.esproj">
     <Build />
     <Deploy />
   </Project>

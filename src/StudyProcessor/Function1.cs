@@ -19,12 +19,12 @@ namespace StudyProcessor
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
-            _logger.LogInformation("Processing study message - ID: {id}", message.MessageId);
+            _logger.LogInformation("=== StudyProcessor: Hello World ===");
+            _logger.LogInformation("Processing message - ID: {id}", message.MessageId);
             _logger.LogInformation("Study data: {body}", message.Body);
-            _logger.LogInformation("Content-Type: {contentType}", message.ContentType);
 
-            // Process the study data here
-            // Add your study processing logic
+            // Simple hello world processing
+            _logger.LogInformation("Study processing complete!");
 
             // Complete the message
             await messageActions.CompleteMessageAsync(message);

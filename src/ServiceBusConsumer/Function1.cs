@@ -19,12 +19,12 @@ namespace ServiceBusConsumer
             ServiceBusReceivedMessage message,
             ServiceBusMessageActions messageActions)
         {
-            _logger.LogInformation("Consuming study message - ID: {id}", message.MessageId);
+            _logger.LogInformation("=== ServiceBusConsumer: Hello World ===");
+            _logger.LogInformation("Message received - ID: {id}", message.MessageId);
             _logger.LogInformation("Message Body: {body}", message.Body);
-            _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
-            // Handle the received study message
-            // Add your consumption logic here
+            // Simple hello world processing
+            _logger.LogInformation("Processing complete!");
 
             // Complete the message
             await messageActions.CompleteMessageAsync(message);

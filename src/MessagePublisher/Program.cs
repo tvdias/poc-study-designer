@@ -19,7 +19,9 @@ namespace MessagePublisher
             
             var topicName = configuration["ServiceBus:TopicName"] ?? "sampletopic";
 
-            Console.WriteLine("Study Designer - Service Bus Message Publisher");
+            Console.WriteLine("==============================================");
+            Console.WriteLine("Study Designer - Message Publisher");
+            Console.WriteLine("Hello World Console App");
             Console.WriteLine("==============================================");
             Console.WriteLine();
 
@@ -29,9 +31,8 @@ namespace MessagePublisher
             while (true)
             {
                 Console.WriteLine("\nOptions:");
-                Console.WriteLine("1. Send a test message");
-                Console.WriteLine("2. Send a study creation message");
-                Console.WriteLine("3. Exit");
+                Console.WriteLine("1. Send a hello world message");
+                Console.WriteLine("2. Exit");
                 Console.Write("\nSelect an option: ");
 
                 var choice = Console.ReadLine();
@@ -39,13 +40,10 @@ namespace MessagePublisher
                 switch (choice)
                 {
                     case "1":
-                        await SendTestMessage(sender);
+                        await SendHelloWorldMessage(sender);
                         break;
                     case "2":
-                        await SendStudyMessage(sender);
-                        break;
-                    case "3":
-                        Console.WriteLine("Exiting...");
+                        Console.WriteLine("Goodbye!");
                         return;
                     default:
                         Console.WriteLine("Invalid option. Please try again.");
@@ -54,50 +52,21 @@ namespace MessagePublisher
             }
         }
 
-        static async Task SendTestMessage(ServiceBusSender sender)
+        static async Task SendHelloWorldMessage(ServiceBusSender sender)
         {
-            Console.Write("Enter message content: ");
-            var content = Console.ReadLine() ?? "Test message";
+            var messageContent = $"Hello World from Study Designer! Sent at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
 
-            var message = new ServiceBusMessage(content)
+            var message = new ServiceBusMessage(messageContent)
             {
                 ContentType = "text/plain",
-                MessageId = Guid.NewGuid().ToString()
-            };
-
-            await sender.SendMessageAsync(message);
-            Console.WriteLine($"✓ Test message sent successfully! Message ID: {message.MessageId}");
-        }
-
-        static async Task SendStudyMessage(ServiceBusSender sender)
-        {
-            Console.Write("Enter study name: ");
-            var studyName = Console.ReadLine() ?? "Sample Study";
-
-            Console.Write("Enter study description: ");
-            var studyDescription = Console.ReadLine() ?? "Sample Description";
-
-            var studyData = System.Text.Json.JsonSerializer.Serialize(new
-            {
-                StudyId = Guid.NewGuid().ToString(),
-                StudyName = studyName,
-                Description = studyDescription,
-                CreatedAt = DateTime.UtcNow,
-                Status = "Draft"
-            });
-
-            var message = new ServiceBusMessage(studyData)
-            {
-                ContentType = "application/json",
                 MessageId = Guid.NewGuid().ToString(),
-                Subject = "StudyCreated"
+                Subject = "HelloWorld"
             };
 
-            message.ApplicationProperties.Add("MessageType", "StudyCreated");
-
             await sender.SendMessageAsync(message);
-            Console.WriteLine($"✓ Study message sent successfully! Message ID: {message.MessageId}");
-            Console.WriteLine($"  Study data: {studyData}");
+            Console.WriteLine($"\n✓ Message sent successfully!");
+            Console.WriteLine($"  Message ID: {message.MessageId}");
+            Console.WriteLine($"  Content: {messageContent}");
         }
     }
 }

@@ -23,31 +23,25 @@ if (app.Environment.IsDevelopment())
 
 app.UseOutputCache();
 
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
+// Simple Hello World API endpoints
 var api = app.MapGroup("/api");
-api.MapGet("weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+
+api.MapGet("hello", () => new { 
+    message = "Hello World from Study Designer API!", 
+    timestamp = DateTime.UtcNow 
+})
+.WithName("GetHello");
+
+api.MapGet("studies", () => new[] {
+    new { Id = 1, Name = "Study 1", Status = "Active" },
+    new { Id = 2, Name = "Study 2", Status = "Draft" },
+    new { Id = 3, Name = "Study 3", Status = "Completed" }
 })
 .CacheOutput(p => p.Expire(TimeSpan.FromSeconds(5)))
-.WithName("GetWeatherForecast");
+.WithName("GetStudies");
 
 app.MapDefaultEndpoints();
 
 app.UseFileServer();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
