@@ -6,7 +6,13 @@
     <Build />
     <Deploy />
   </Project>
+  <Project Path="frontend-reviewer/frontend-reviewer.esproj">
+    <Build />
+    <Deploy />
+  </Project>
   <Project Path="ServiceBusConsumer/ServiceBusConsumer.csproj" />
+  <Project Path="StudyProcessor/StudyProcessor.csproj" />
+  <Project Path="MessagePublisher/MessagePublisher.csproj" />
   <Project Path="StudyDesigner.AppHost/StudyDesigner.AppHost.csproj" />
-  <Project Path="StudyDesigner.Server/StudyDesigner.Server.csproj" />
+  <Project Path="StudyDesigner.API/StudyDesigner.API.csproj" />
 </Solution>

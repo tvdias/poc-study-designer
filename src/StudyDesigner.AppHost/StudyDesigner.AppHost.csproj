@@ -10,7 +10,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ServiceBusConsumer\ServiceBusConsumer.csproj" />
-    <ProjectReference Include="..\StudyDesigner.Server\StudyDesigner.Server.csproj" />
+    <ProjectReference Include="..\StudyProcessor\StudyProcessor.csproj" />
+    <ProjectReference Include="..\StudyDesigner.API\StudyDesigner.API.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -50,8 +50,8 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1 className="app-title">Study Designer</h1>
-        <p className="app-subtitle">Design and manage clinical studies</p>
+        <h1 className="app-title">Study Reviewer</h1>
+        <p className="app-subtitle">Review and approve clinical studies</p>
       </header>
 
       <main className="main-content">
