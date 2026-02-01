@@ -6,6 +6,7 @@
     <Build />
     <Deploy />
   </Project>
+  <Project Path="ServiceBusConsumer/ServiceBusConsumer.csproj" />
   <Project Path="StudyDesigner.AppHost/StudyDesigner.AppHost.csproj" />
   <Project Path="StudyDesigner.Server/StudyDesigner.Server.csproj" />
 </Solution>
