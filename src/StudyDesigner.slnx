@@ -2,11 +2,17 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
-  <Project Path="frontend/frontend.esproj">
+  <Project Path="Designer/Designer.esproj">
     <Build />
     <Deploy />
   </Project>
-  <Project Path="ServiceBusConsumer/ServiceBusConsumer.csproj" />
-  <Project Path="StudyDesigner.AppHost/StudyDesigner.AppHost.csproj" />
-  <Project Path="StudyDesigner.Server/StudyDesigner.Server.csproj" />
+  <Project Path="Admin/Admin.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="ServiceBusPublisher/ServiceBusPublisher.csproj" />
+  <Project Path="AppHost/AppHost.csproj" />
+  <Project Path="Api/Api.csproj" />
+  <Project Path="CluedinProcessor/CluedinProcessor.csproj" />
+  <Project Path="ProjectsProcessor/ProjectsProcessor.csproj" />
 </Solution>
