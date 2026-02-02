@@ -49,7 +49,7 @@ A comprehensive study design platform built with .NET Aspire, featuring a distri
 - **.NET 10.0**
 - **Node.js 18.x** or later (for frontend development)
 - **.NET Aspire 13**
-- **Docker Desktop** or "equivalent" (as Podman)
+- **Docker Desktop** or equivalent (such as Podman)
 - **Azure CLI** and a valid subscription (required by aspire)
 - **Azure Functions Core Tools** (for local function development and testing)
 
