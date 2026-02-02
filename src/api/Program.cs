@@ -1,4 +1,5 @@
 using Api.Data;
+using Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,15 @@ app.UseCors();
 app.UseOutputCache();
 
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
+
+// Map API endpoints
+app.MapTagsEndpoints();
+app.MapClientsEndpoints();
+app.MapMarketsEndpoints();
+app.MapQuestionsEndpoints();
+app.MapModulesEndpoints();
+app.MapProductsEndpoints();
+app.MapConfigurationQuestionsEndpoints();
 
 var api = app.MapGroup("/api");
 api.MapGet("weatherforecast", () =>
