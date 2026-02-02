@@ -220,13 +220,17 @@ public class AdminDbContext : DbContext
             if (entry.State == EntityState.Added)
             {
                 entity.CreatedAt = DateTime.UtcNow;
-                entity.CreatedBy = "system"; // TODO: Get from authentication context
+                // NOTE: Authentication context integration pending. Currently defaults to "system".
+                // Future: Retrieve from IHttpContextAccessor or claims principal
+                entity.CreatedBy = "system";
             }
             
             if (entry.State == EntityState.Modified)
             {
                 entity.ModifiedAt = DateTime.UtcNow;
-                entity.ModifiedBy = "system"; // TODO: Get from authentication context
+                // NOTE: Authentication context integration pending. Currently defaults to "system".
+                // Future: Retrieve from IHttpContextAccessor or claims principal
+                entity.ModifiedBy = "system";
             }
         }
     }

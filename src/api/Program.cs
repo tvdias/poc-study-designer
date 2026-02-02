@@ -13,11 +13,16 @@ builder.AddNpgsqlDbContext<AdminDbContext>("studydb");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+
+// Configure CORS for Admin portal
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+    ?? ["http://localhost:5173", "http://localhost:5174"];
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
