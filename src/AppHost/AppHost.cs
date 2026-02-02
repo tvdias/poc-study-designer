@@ -29,3 +29,5 @@ builder.AddAzureFunctionsProject<Projects.ProjectsProcessor>("func-projects-proc
     .WithReference(serviceBus);
 
 builder.Build().Run();
+
+public partial class Program { }
