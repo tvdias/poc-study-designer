@@ -22,7 +22,8 @@ public static class GetTagsEndpoint
 
         if (!string.IsNullOrWhiteSpace(query))
         {
-            tagsQuery = tagsQuery.Where(t => t.Name.ToLower().Contains(query.ToLower()));
+            var pattern = $"%{query.Trim()}%";
+            tagsQuery = tagsQuery.Where(t => EF.Functions.ILike(t.Name, pattern));
         }
 
         return await tagsQuery
