@@ -1,6 +1,7 @@
 using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 
 namespace Api.Features.Tags;
 
@@ -14,14 +15,16 @@ public static class CreateTagEndpoint
             .WithTags("Tags");
     }
 
-    public static async Task<Results<CreatedAtRoute<CreateTagResponse>, BadRequest<string>, Conflict<string>>> HandleAsync(
+    public static async Task<Results<CreatedAtRoute<CreateTagResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
         CreateTagRequest request,
         ApplicationDbContext db,
+        IValidator<CreateTagRequest> validator,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
         {
-            return TypedResults.BadRequest("Tag name is required.");
+            return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
         var existingTag = await db.Tags

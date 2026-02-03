@@ -2,6 +2,7 @@ using Api.Data;
 using Api.Features.Tags;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.AddRedisClientBuilder("cache")
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

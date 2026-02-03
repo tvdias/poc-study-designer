@@ -1,6 +1,7 @@
 using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 
 namespace Api.Features.Tags;
 
@@ -14,15 +15,17 @@ public static class UpdateTagEndpoint
             .WithTags("Tags");
     }
 
-    public static async Task<Results<Ok<UpdateTagResponse>, NotFound, BadRequest<string>>> HandleAsync(
+    public static async Task<Results<Ok<UpdateTagResponse>, NotFound, ValidationProblem>> HandleAsync(
         Guid id,
         UpdateTagRequest request,
         ApplicationDbContext db,
+        IValidator<UpdateTagRequest> validator,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
         {
-            return TypedResults.BadRequest("Tag name is required.");
+            return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
         var tag = await db.Tags.FindAsync([id], cancellationToken);
