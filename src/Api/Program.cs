@@ -27,7 +27,7 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); ;
+    app.MapOpenApi();
     app.MapScalarApiReference();
 
     using var scope = app.Services.CreateScope();

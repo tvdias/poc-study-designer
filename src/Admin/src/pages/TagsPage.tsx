@@ -189,7 +189,7 @@ export function TagsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" onClick={handleSubmit as any}>Save</button>
+                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
                             <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (

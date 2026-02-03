@@ -28,6 +28,7 @@ public static class CreateTagEndpoint
         }
 
         var existingTag = await db.Tags
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Name == request.Name, cancellationToken);
         
         if (existingTag != null) 
