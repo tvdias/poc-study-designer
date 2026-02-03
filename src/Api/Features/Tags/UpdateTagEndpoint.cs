@@ -10,7 +10,8 @@ public static class UpdateTagEndpoint
     {
         app.MapPut("/tags/{id}", HandleAsync)
             .WithName("UpdateTag")
-            .WithOpenApi();
+            .WithSummary("Update Tag")
+            .WithTags("Tags");
     }
 
     public static async Task<Results<Ok<UpdateTagResponse>, NotFound, BadRequest<string>>> HandleAsync(

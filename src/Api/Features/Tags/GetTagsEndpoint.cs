@@ -9,7 +9,8 @@ public static class GetTagsEndpoint
     {
         app.MapGet("/tags", HandleAsync)
             .WithName("GetTags")
-            .WithOpenApi();
+            .WithSummary("Get Tags")
+            .WithTags("Tags");
     }
 
     public static async Task<List<GetTagsResponse>> HandleAsync(

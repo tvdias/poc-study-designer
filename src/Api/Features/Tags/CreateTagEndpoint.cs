@@ -10,10 +10,11 @@ public static class CreateTagEndpoint
     {
         app.MapPost("/tags", HandleAsync)
             .WithName("CreateTag")
-            .WithOpenApi();
+            .WithSummary("Create Tag")
+            .WithTags("Tags");
     }
 
-    public static async Task<Results<Ok<CreateTagResponse>, BadRequest<string>, Conflict<string>>> HandleAsync(
+    public static async Task<Results<CreatedAtRoute<CreateTagResponse>, BadRequest<string>, Conflict<string>>> HandleAsync(
         CreateTagRequest request,
         ApplicationDbContext db,
         CancellationToken cancellationToken)
@@ -42,6 +43,6 @@ public static class CreateTagEndpoint
         db.Tags.Add(tag);
         await db.SaveChangesAsync(cancellationToken);
 
-        return TypedResults.Ok(new CreateTagResponse(tag.Id, tag.Name));
+        return TypedResults.CreatedAtRoute(new CreateTagResponse(tag.Id, tag.Name), "GetTagById", new { id = tag.Id });
     }
 }

@@ -1,6 +1,7 @@
 using Api.Data;
 using Api.Features.Tags;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,13 +25,12 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi(); ;
+    app.MapScalarApiReference();
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
-    }
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseOutputCache();
@@ -40,6 +40,7 @@ string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "
 var api = app.MapGroup("/api");
 api.MapCreateTagEndpoint();
 api.MapGetTagsEndpoint();
+api.MapGetTagByIdEndpoint();
 api.MapUpdateTagEndpoint();
 api.MapDeleteTagEndpoint();
 api.MapGet("weatherforecast", () =>

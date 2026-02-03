@@ -10,7 +10,8 @@ public static class DeleteTagEndpoint
     {
         app.MapDelete("/tags/{id}", HandleAsync)
             .WithName("DeleteTag")
-            .WithOpenApi();
+            .WithSummary("Delete Tag")
+            .WithTags("Tags");
     }
 
     public static async Task<Results<NoContent, NotFound>> HandleAsync(
