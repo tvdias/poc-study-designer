@@ -226,8 +226,9 @@ export function TagsPage() {
                 {(mode === 'create' || mode === 'edit') && (
                     <form className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
-                            <label>Name</label>
+                            <label htmlFor="tagName">Name</label>
                             <input
+                                id="tagName"
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
