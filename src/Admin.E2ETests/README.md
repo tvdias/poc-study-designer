@@ -61,7 +61,34 @@ That's it! The tests will:
 
 ## How It Works
 
-### Architecture
+### Performance Optimizations
+
+The Admin E2E tests are optimized for fast execution:
+
+**Minimal Services**
+- Only starts: PostgreSQL, API, and Admin app
+- Skips: Redis, Azure Service Bus, Designer app, Azure Functions
+- Result: ~60% fewer services = faster startup
+
+**Parallel Startup**
+- Removed `.WaitFor()` chains that forced sequential startup
+- Removed health checks that blocked until services were fully ready
+- Aspire starts services in parallel automatically
+- Tests wait intelligently for services with retry logic
+
+**Shared Aspire Instance**
+- Single Aspire instance shared across all tests via xUnit collection
+- First test pays startup cost (~10-30 seconds)
+- Subsequent tests run immediately (~1-5 seconds each)
+
+**Expected Timings**
+- First test (cold start): 10-30 seconds
+- Subsequent tests: 1-5 seconds each
+- Total for 2 tests: ~15-35 seconds
+
+If tests take longer than 60 seconds, see troubleshooting section below.
+
+## Architecture
 
 1. **TestAppHost**: Custom Aspire configuration that only starts required services (PostgreSQL, API, Admin)
 2. **AspireAppHostFixture**: Starts the optimized Aspire stack using TestAppHost
@@ -73,7 +100,7 @@ That's it! The tests will:
 
 ```csharp
 [Collection("AdminE2E")]  // All tests in this collection share one Aspire instance
-public class TagsE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
+public class TagsE2ETests : PlaywrightTestBase
 {
     public TagsE2ETests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
     {
@@ -82,8 +109,8 @@ public class TagsE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixtu
     [Fact]
     public async Task ShouldCompleteFullCrudFlowForTag()
     {
-        // Get the Admin app URL from Aspire (automatically assigned)
-        var baseUrl = GetAdminAppUrl();
+        // Get the Admin app URL from Aspire (waits up to 60s for service to be ready)
+        var baseUrl = await GetAdminAppUrlAsync();
         
         // Navigate and test
         await Page.GotoAsync($"{baseUrl}/tags");
@@ -146,7 +173,7 @@ public class MyFeatureE2ETests : PlaywrightTestBase  // ❌ Do NOT add IClassFix
     [Fact]
     public async Task MyTest()
     {
-        var baseUrl = GetAdminAppUrl();
+        var baseUrl = await GetAdminAppUrlAsync();
         await Page.GotoAsync($"{baseUrl}/my-feature");
         // ... test code ...
     }
@@ -198,24 +225,37 @@ pwsh bin/Debug/net10.0/playwright.ps1 install chromium
 ### Tests hang or timeout for 1.5+ minutes
 **Error**: Test appears to hang during initialization and never completes.
 
-**Cause**: Conflicting xUnit fixture patterns. If a test class has both `[Collection("AdminE2E")]` and `IClassFixture<AspireAppHostFixture>`, xUnit tries to initialize the fixture in two incompatible ways, causing deadlocks.
+**Recent Fix**: Tests now include intelligent retry logic that waits up to 60 seconds for services to become available. If tests still hang beyond this:
 
-**Solution**: Remove `IClassFixture<AspireAppHostFixture>` from the class declaration. Only use the collection fixture:
+**Cause**: Could be conflicting xUnit fixture patterns, Docker issues, or service startup problems.
 
-```csharp
-// ❌ WRONG - Causes hanging
-[Collection("AdminE2E")]
-public class MyTests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
+**Solutions**:
 
-// ✅ CORRECT - Works properly
-[Collection("AdminE2E")]
-public class MyTests : PlaywrightTestBase
-{
-    public MyTests(AspireAppHostFixture fixture) : base(fixture) { }
-}
-```
+1. **Check for conflicting fixtures**: If a test class has both `[Collection("AdminE2E")]` and `IClassFixture<AspireAppHostFixture>`, xUnit tries to initialize the fixture in two incompatible ways, causing deadlocks.
 
-The collection definition (`AdminE2ECollection.cs`) already declares the fixture, so individual test classes should NOT use `IClassFixture`.
+   ```csharp
+   // ❌ WRONG - Causes hanging
+   [Collection("AdminE2E")]
+   public class MyTests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
+
+   // ✅ CORRECT - Works properly  
+   [Collection("AdminE2E")]
+   public class MyTests : PlaywrightTestBase
+   {
+       public MyTests(AspireAppHostFixture fixture) : base(fixture) { }
+   }
+   ```
+
+   The collection definition (`AdminE2ECollection.cs`) already declares the fixture, so individual test classes should NOT use `IClassFixture`.
+
+2. **Check Docker**: Ensure Docker is running and has adequate resources (2-3GB RAM)
+
+3. **Check service logs**: Look at Aspire Dashboard or test output for specific error messages
+
+4. **Try manual startup**: Start Aspire manually to see detailed startup logs:
+   ```bash
+   cd src/AppHost && dotnet run
+   ```
 
 ### Tests run slowly
 - Tests share a single Aspire instance via the `AdminE2E` collection
