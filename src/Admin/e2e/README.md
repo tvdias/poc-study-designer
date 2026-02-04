@@ -20,17 +20,13 @@ Before running the E2E tests, ensure you have:
 
 ## Running E2E Tests
 
-### Prerequisites
+### ⚠️ Important: Backend API Required
 
-**Important**: E2E tests require the full application stack to be running, including:
-- PostgreSQL database
-- Redis cache
-- API service
-- Admin frontend
+**E2E tests require a running backend API** to function properly. You have two options:
 
-The recommended way to run the full stack is using .NET Aspire.
+### Option 1: With Aspire (Recommended - Full Stack)
 
-### Using Aspire (Required for E2E Tests)
+This approach runs the complete application stack including PostgreSQL, Redis, and all services.
 
 1. **Install Aspire workload** (if not already installed):
    ```bash
@@ -62,6 +58,35 @@ The recommended way to run the full stack is using .NET Aspire.
    # If the Admin app is at a different URL (e.g., http://localhost:5174)
    PLAYWRIGHT_BASE_URL=http://localhost:5174 npm run test:e2e
    ```
+
+### Option 2: With Standalone Dev Server (Frontend Only)
+
+If you want to run tests without Aspire, you can start just the frontend dev server. However, **you must have the API running separately** for tests to work.
+
+1. **Start the API service** (see API documentation for setup)
+
+2. **Set the API URL** environment variable:
+   ```bash
+   # Example: API running at http://localhost:5000
+   export services__api__http__0=http://localhost:5000
+   ```
+
+3. **Run the E2E tests** (this will auto-start the dev server):
+   ```bash
+   cd src/Admin
+   npm run test:e2e
+   ```
+
+   The tests will automatically:
+   - Start the Vite dev server on http://localhost:5173
+   - Proxy `/api` calls to your backend
+   - Run all tests
+   - Stop the dev server when complete
+
+**Note**: If you get connection errors, ensure:
+- The API service is running and accessible
+- Port 5173 is available (or set a different port in vite.config.ts)
+- The API proxy target is correctly configured
 
 ## Available Test Commands
 
@@ -180,16 +205,61 @@ Example CI configuration:
 
 ## Troubleshooting
 
-### Tests fail with "Connection refused" or "Navigation timeout"
+### Tests fail with "ERR_CONNECTION_REFUSED" or "Connection refused"
+
+**This error means the application is not running.** You have two solutions:
+
+**Solution 1: Use Aspire (Recommended)**
+```bash
+# Terminal 1: Start Aspire
+cd src/AppHost
+dotnet run
+
+# Terminal 2: Run tests (after Aspire shows services are ready)
+cd src/Admin
+npm run test:e2e
+```
+
+**Solution 2: Run API separately**
+```bash
+# Terminal 1: Start the API service
+cd src/Api
+dotnet run
+
+# Terminal 2: Set API URL and run tests
+cd src/Admin
+export services__api__http__0=http://localhost:5000  # Or your API URL
+npm run test:e2e
+```
+
+### Tests fail with "Navigation timeout"
 - **Ensure Aspire is running**: Check that `dotnet run` is active in the AppHost directory
-- **Verify services are healthy**: Open the Aspire dashboard and ensure all services are running
+- **Verify services are healthy**: Open the Aspire dashboard (http://localhost:15888) and ensure all services are green
 - **Check the Admin app URL**: Make sure `PLAYWRIGHT_BASE_URL` matches the URL shown in Aspire
+- **Wait for all services to start**: Give Aspire 30-60 seconds to start all containers before running tests
+
+### Tests fail with API errors (404, 500, etc.)
 - **Verify API connectivity**: The Admin frontend proxies `/api` calls to the backend
+- **Check API is accessible**: Try accessing http://localhost:5000/api/tags (or your API URL) in a browser
+- **Verify database is running**: The API needs PostgreSQL to be running
+- **Check API logs**: Look in Aspire dashboard or API console for error messages
 
 ### Tests fail with database errors
 - Check PostgreSQL container is running in Aspire
 - Verify database migrations have been applied
 - Check Aspire dashboard logs for database connection issues
+
+### Port 5173 is already in use
+If you see "Port 5173 is already in use":
+- Stop any existing Vite dev servers
+- Or change the port in `vite.config.ts`:
+  ```typescript
+  server: {
+    port: 5174,  // Use a different port
+    proxy: { /* ... */ }
+  }
+  ```
+- Then update tests: `PLAYWRIGHT_BASE_URL=http://localhost:5174 npm run test:e2e`
 
 ### Tests timeout
 - Increase timeouts in `playwright.config.ts` if needed

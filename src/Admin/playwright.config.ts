@@ -33,7 +33,10 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  /* Note: For E2E tests, the entire application stack must be running via Aspire.
-     Start the application with 'aspire run' before running tests. */
-  webServer: undefined,
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
 });
