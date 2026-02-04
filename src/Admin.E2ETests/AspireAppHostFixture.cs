@@ -14,8 +14,9 @@ public class AspireAppHostFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        // Use the test-specific AppHost that builds and returns ready application
-        App = TestAppHost.Build(Array.Empty<string>());
+        // Use DistributedApplicationTestingBuilder to properly configure DCP and dashboard paths
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<TestAppHost.Program>();
+        App = await appHost.BuildAsync();
         await App.StartAsync();
     }
 

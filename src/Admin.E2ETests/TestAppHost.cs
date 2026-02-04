@@ -7,8 +7,11 @@ namespace Admin.E2ETests;
 /// Test-specific AppHost configuration that only starts services required for Admin E2E tests.
 /// This is faster than the full AppHost as it skips unnecessary services like Azure Functions,
 /// Service Bus, Designer app, and Redis.
+/// 
+/// This class follows the same pattern as the main AppHost but with minimal services.
+/// It can be used with DistributedApplicationTestingBuilder for proper test infrastructure setup.
 /// </summary>
-public static class TestAppHost
+public class TestAppHost
 {
     /// <summary>
     /// Gets the source directory of this file to properly resolve project paths.
@@ -17,6 +20,9 @@ public static class TestAppHost
     private static string GetSourceDirectory([CallerFilePath] string path = "")
         => Path.GetDirectoryName(path)!;
 
+    /// <summary>
+    /// Entry point for the test AppHost. This is called by DistributedApplicationTestingBuilder.
+    /// </summary>
     public static IDistributedApplicationBuilder CreateBuilder(string[] args)
     {
         var builder = DistributedApplication.CreateBuilder(args);
@@ -46,9 +52,14 @@ public static class TestAppHost
         return builder;
     }
 
-    public static DistributedApplication Build(string[] args)
+    /// <summary>
+    /// Program class required for DistributedApplicationTestingBuilder pattern.
+    /// This allows the testing infrastructure to properly set up DCP and dashboard paths.
+    /// </summary>
+    public class Program
     {
-        return CreateBuilder(args).Build();
+        public static IDistributedApplicationBuilder CreateBuilder(string[] args)
+            => TestAppHost.CreateBuilder(args);
     }
 }
 
