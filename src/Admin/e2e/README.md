@@ -240,7 +240,9 @@ npm run test:e2e
 
 ### Tests fail with API errors (404, 500, etc.)
 - **Verify API connectivity**: The Admin frontend proxies `/api` calls to the backend
-- **Check API is accessible**: Try accessing http://localhost:5000/api/tags (or your API URL) in a browser
+- **Check API is accessible**: Verify the API service is running and accessible
+  - If using Aspire: Check the Aspire dashboard for the API service status
+  - If running API standalone: Try accessing your API directly (e.g., `http://localhost:5000/api/tags`)
 - **Verify database is running**: The API needs PostgreSQL to be running
 - **Check API logs**: Look in Aspire dashboard or API console for error messages
 
