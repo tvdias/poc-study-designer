@@ -62,19 +62,15 @@ There are two ways to run E2E tests:
 Run E2E tests that are fully integrated with Aspire orchestration:
 
 ```bash
-# Build and run tests
-cd src/Admin.E2ETests
-dotnet build
-./bin/Debug/net10.0/Admin.E2ETests
+# From project root
+dotnet test src/Admin.E2ETests/Admin.E2ETests.csproj
 ```
 
 **Benefits:**
 - ✅ Automatically starts all services (API, databases, Redis, Admin)
 - ✅ No manual URL configuration (Aspire dynamically assigns ports)
-- ✅ Integrated with .NET stack
+- ✅ Integrated with .NET test suite
 - ✅ Works reliably even when ports change
-
-**Note**: Due to xUnit v3 requirements, tests must be run using the executable directly, not `dotnet test`.
 
 See [Admin.E2ETests/README.md](../Admin.E2ETests/README.md) for details.
 

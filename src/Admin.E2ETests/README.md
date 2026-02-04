@@ -26,24 +26,17 @@ Unlike the standalone Playwright tests in `src/Admin/e2e/`, these E2E tests:
 
 ### Run Tests
 
-Due to xUnit v3 using the new test platform, tests must be run directly using the test executable:
-
 ```bash
-# Build the project
-cd src/Admin.E2ETests
-dotnet build
+# From the solution root
+dotnet test src/Admin.E2ETests/Admin.E2ETests.csproj
 
-# Run all tests
-./bin/Debug/net10.0/Admin.E2ETests
+# Or from the test project directory
+cd src/Admin.E2ETests
+dotnet test
 
 # List available tests
-./bin/Debug/net10.0/Admin.E2ETests -list tests
-
-# Run with specific options (e.g., diagnostics)
-./bin/Debug/net10.0/Admin.E2ETests -diagnostics
+dotnet test --list-tests
 ```
-
-**Note**: `dotnet test` doesn't work with xUnit v3 due to VSTest compatibility issues. Use the direct executable approach shown above.
 
 That's it! The tests will:
 1. Start the entire Aspire application stack
@@ -91,8 +84,8 @@ public class TagsE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixtu
 | URL configuration | ❌ Manual (ports change) | ✅ Automatic discovery |
 | Dependency management | ❌ Manual | ✅ Aspire handles it |
 | Test isolation | ⚠️ Shared state | ✅ Fresh stack per run |
-| CI/CD integration | ⚠️ Complex | ✅ Integrated with .NET stack |
-| Run command | `npm run test:e2e` | `./bin/Debug/net10.0/Admin.E2ETests` |
+| CI/CD integration | ⚠️ Complex | ✅ Simple `dotnet test` |
+| Run command | `npm run test:e2e` | `dotnet test` |
 
 ## Test Structure
 
@@ -153,23 +146,13 @@ The test uses `CreateHttpClient("app-admin")` to get the URL. Verify the AppHost
 Since xUnit v3 requires running the test executable directly:
 
 ```yaml
-- name: Build E2E Tests
-  run: |
-    cd src/Admin.E2ETests
-    dotnet build
-    
-- name: Install Playwright Browsers
-  run: |
-    cd src/Admin.E2ETests
-    pwsh bin/Debug/net10.0/playwright.ps1 install chromium
-
 - name: Run E2E Tests
-  run: |
-    cd src/Admin.E2ETests
-    ./bin/Debug/net10.0/Admin.E2ETests
+  run: dotnet test src/Admin.E2ETests/Admin.E2ETests.csproj
   env:
     ASPIRE_ALLOW_UNSECURED_TRANSPORT: true
 ```
+
+**Note**: Playwright browsers will be automatically installed when the test project is built for the first time.
 
 ## Comparison with API Integration Tests
 
@@ -178,5 +161,6 @@ This project follows the same pattern as `src/Api.IntegrationTests/`:
 - Uses `BoxedAppHostFixture` / `AspireAppHostFixture` pattern
 - Starts the entire application stack
 - Discovers service URLs automatically
+- Works with `dotnet test` command
 
 The difference is that API integration tests use HttpClient to test the API directly, while these E2E tests use Playwright to test the full UI→API→Database flow.

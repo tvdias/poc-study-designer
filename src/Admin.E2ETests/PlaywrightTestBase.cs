@@ -41,7 +41,7 @@ public class PlaywrightTestBase : IAsyncLifetime
         return baseUrl;
     }
 
-    public async ValueTask InitializeAsync()
+    public async Task InitializeAsync()
     {
         // Note: Playwright browsers should be installed once via: pwsh bin/Debug/net10.0/playwright.ps1 install chromium
         // The Program.Main call is idempotent but slow, so it's better to install browsers separately
@@ -55,7 +55,7 @@ public class PlaywrightTestBase : IAsyncLifetime
         Page = await Context.NewPageAsync();
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task DisposeAsync()
     {
         if (Page != null)
         {
