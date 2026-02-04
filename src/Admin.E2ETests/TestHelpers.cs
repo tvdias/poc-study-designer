@@ -62,14 +62,19 @@ public class TestHelpers
     }
 
     /// <summary>
-    /// Set up handler to confirm the deletion dialog (call this before clicking delete)
+    /// Set up handler to confirm the deletion dialog.
+    /// Call this immediately before triggering the delete action that will show the dialog.
     /// </summary>
     public void ConfirmDelete()
     {
-        _page.Dialog += async (_, dialog) =>
+        // Use a one-time event handler that auto-removes after firing
+        void DialogHandler(object? sender, IDialog dialog)
         {
-            await dialog.AcceptAsync();
-        };
+            dialog.AcceptAsync().GetAwaiter().GetResult();
+            _page.Dialog -= DialogHandler;  // Remove handler after use
+        }
+        
+        _page.Dialog += DialogHandler;
     }
 
     /// <summary>
