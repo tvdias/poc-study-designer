@@ -4,11 +4,24 @@ This project contains end-to-end (E2E) tests for the Admin application that are 
 
 ## Overview
 
-Unlike the standalone Playwright tests in `src/Admin/e2e/`, these E2E tests:
+These E2E tests use an optimized Aspire configuration that only starts the services needed for testing:
+- ✅ **PostgreSQL** - Database for API
+- ✅ **API** - Backend service
+- ✅ **Admin app** - Frontend application being tested
+
+Services NOT started (faster startup):
+- ❌ Redis (not required for Admin app)
+- ❌ Azure Service Bus (not required for Admin app)
+- ❌ Designer app (not being tested)
+- ❌ Azure Functions (not required for Admin app)
+
+### Key Features
+
 - ✅ Run as part of the .NET test suite
-- ✅ Automatically start the entire Aspire application stack (API, databases, Redis, Admin frontend)
-- ✅ Automatically discover service URLs from Aspire (no manual configuration needed)
-- ✅ Ensure all dependencies are running with the correct configuration
+- ✅ **Single Aspire instance shared across all tests** (much faster)
+- ✅ Automatically start only required services
+- ✅ Automatically discover service URLs from Aspire (no manual configuration)
+- ✅ Tests run in collection to ensure proper sequencing
 
 ## Running the Tests
 
@@ -39,24 +52,27 @@ dotnet test --list-tests
 ```
 
 That's it! The tests will:
-1. Start the entire Aspire application stack
-2. Wait for all services to be healthy
-3. Automatically discover the Admin app URL
-4. Run Playwright E2E tests against the running application
-5. Clean up all resources when complete
+1. Start only the required services (PostgreSQL, API, Admin app) - **much faster than full stack**
+2. **Reuse the same Aspire instance for all tests** (even faster)
+3. Wait for all services to be healthy
+4. Automatically discover the Admin app URL
+5. Run Playwright E2E tests against the running application
+6. Clean up all resources when complete
 
 ## How It Works
 
 ### Architecture
 
-1. **AspireAppHostFixture**: Starts the entire Aspire application using `DistributedApplicationTestingBuilder`
-2. **PlaywrightTestBase**: Initializes Playwright and provides helper methods to get service URLs from Aspire
-3. **Test Classes**: Inherit from `PlaywrightTestBase` and use the automatically discovered URLs
+1. **TestAppHost**: Custom Aspire configuration that only starts required services (PostgreSQL, API, Admin)
+2. **AspireAppHostFixture**: Starts the optimized Aspire stack using TestAppHost
+3. **AdminE2ECollection**: xUnit collection that ensures all tests share the same Aspire instance (faster)
+4. **PlaywrightTestBase**: Initializes Playwright and provides helper methods to get service URLs from Aspire
+5. **Test Classes**: Inherit from `PlaywrightTestBase` and use the automatically discovered URLs
 
 ### Example Test
 
 ```csharp
-[Collection("E2E")]
+[Collection("AdminE2E")]  // All tests in this collection share one Aspire instance
 public class TagsE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
 {
     public TagsE2ETests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
@@ -75,6 +91,15 @@ public class TagsE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixtu
     }
 }
 ```
+
+## Performance Optimizations
+
+This test project is optimized for fast execution:
+
+1. **Minimal Services**: Only starts PostgreSQL, API, and Admin app (skips Redis, Service Bus, Functions, Designer)
+2. **Shared Aspire Instance**: All tests in the `AdminE2E` collection share one Aspire instance
+3. **Simplified Dependencies**: API only depends on PostgreSQL; Admin app has no dependencies
+4. **Parallel Test Execution**: Tests can run in parallel within the shared Aspire instance
 
 ## Advantages Over Standalone Tests
 
@@ -140,37 +165,42 @@ pwsh bin/Debug/net10.0/playwright.ps1 install chromium
 ### Tests timeout waiting for Aspire to start
 **Error**: `Polly.Timeout.TimeoutRejectedException: The operation didn't complete within the allowed timeout of '00:00:20'`
 
-**Cause**: Aspire is taking longer than 20 seconds to start all services (PostgreSQL, Redis, Azure Service Bus emulator, API, Admin app).
+**Note**: This should be much less common now with the optimized configuration that only starts 3 services instead of 8+.
+
+**Cause**: Aspire is taking longer than 20 seconds to start services (PostgreSQL, API, Admin app).
 
 **Solutions**:
-1. **Ensure Docker is running** - Aspire uses containers for databases and services
+1. **Ensure Docker is running** - Aspire uses containers for databases
    ```bash
    docker ps  # Should show containers running
    ```
 
 2. **Ensure sufficient system resources**:
-   - At least 4GB RAM available
+   - At least 2GB RAM available (reduced from 4GB due to fewer services)
    - Docker has adequate CPU/memory limits configured
-   - No other heavy processes running
 
-3. **Run tests with more time** - On slow systems, services may need more time to initialize:
-   - First run is slower (downloading images)
-   - Subsequent runs are faster (images cached)
+3. **First run is slower** - Container images need to be downloaded
+   - Subsequent runs are much faster (images cached)
 
-4. **Pre-start services** - Start Aspire manually first, then run tests:
+4. **Pre-start services** - Start Aspire manually first (rare need now):
    ```bash
    # Terminal 1: Start Aspire
    cd src/AppHost
    dotnet run
 
-   # Wait for all services to be healthy (check Aspire dashboard)
-   # Terminal 2: Run tests (they'll connect to existing Aspire instance)
+   # Wait for all services to be healthy
+   # Terminal 2: Run tests
    cd src/Admin.E2ETests
    dotnet test
    ```
 
+### Tests run slowly
+- Tests share a single Aspire instance via the `AdminE2E` collection
+- If tests seem slow, ensure all test classes use `[Collection("AdminE2E")]`
+- Each test class that uses a different collection name will start its own Aspire instance
+
 ### Can't find Admin app URL
-The test uses `CreateHttpClient("app-admin")` to get the URL. Verify the AppHost has `app-admin` resource.
+The test uses `CreateHttpClient("app-admin")` to get the URL. Verify the TestAppHost has `app-admin` resource.
 
 ## CI/CD Integration
 

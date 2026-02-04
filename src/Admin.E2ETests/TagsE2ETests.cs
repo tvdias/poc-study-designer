@@ -6,7 +6,7 @@ namespace Admin.E2ETests;
 /// E2E tests for Tags page functionality.
 /// Tests the complete flow from UI to API with real database operations.
 /// </summary>
-[Collection("E2E")]
+[Collection("AdminE2E")]
 public class TagsE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
 {
     public TagsE2ETests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
