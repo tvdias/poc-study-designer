@@ -1,3 +1,92 @@
+# Admin Application
+
+Administration portal for POC Study Designer, built with React, TypeScript, and Vite.
+
+## Features
+
+- **Tags Management**: Create, edit, and manage tags
+- **Commissioning Markets**: Manage commissioning market data
+- **Fieldwork Markets**: Manage fieldwork market data
+
+## Development
+
+### Prerequisites
+
+- Node.js 18.x or later
+- npm or yarn
+
+### Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server (requires Aspire to run the API)
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linter
+npm run lint
+```
+
+### Running with the Full Stack
+
+This application requires the backend API to be running. The recommended approach is to use .NET Aspire to orchestrate all services:
+
+```bash
+# From the project root
+cd src/AppHost
+dotnet run
+```
+
+The Aspire dashboard will show all running services and their URLs.
+
+## Testing
+
+### Unit Tests
+
+Run unit tests with Vitest:
+
+```bash
+npm test
+```
+
+### E2E Tests
+
+End-to-end tests use Playwright and require the full application stack to be running via Aspire.
+
+```bash
+# Run E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode
+npm run test:e2e:headed
+```
+
+For detailed E2E testing instructions, see [e2e/README.md](./e2e/README.md).
+
+## Project Structure
+
+```
+src/
+├── assets/          # Static assets
+├── components/      # Reusable UI components
+├── layouts/         # Layout components
+├── pages/           # Page components
+│   ├── TagsPage.tsx
+│   ├── CommissioningMarketsPage.tsx
+│   └── FieldworkMarketsPage.tsx
+├── services/        # API services
+└── e2e/            # End-to-end tests
+```
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

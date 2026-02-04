@@ -87,7 +87,7 @@ test.describe('Tags Page E2E Tests', () => {
     await expect(page.getByRole('row').filter({ hasText: updatedTagName })).not.toBeVisible();
   });
 
-  test('should handle validation errors when creating a tag without a name', async ({ page }) => {
+  test('should handle validation errors when creating a tag without a name', async () => {
     // Open create form
     await helpers.clickNewButton();
     await helpers.waitForSidePanelTitle(/New Tag/i);

@@ -20,36 +20,47 @@ Before running the E2E tests, ensure you have:
 
 ## Running E2E Tests
 
-### Option 1: With Aspire (Recommended)
+### Prerequisites
 
-The easiest way to run E2E tests is using .NET Aspire to orchestrate all services:
+**Important**: E2E tests require the full application stack to be running, including:
+- PostgreSQL database
+- Redis cache
+- API service
+- Admin frontend
 
-1. Start the application with Aspire:
+The recommended way to run the full stack is using .NET Aspire.
+
+### Using Aspire (Required for E2E Tests)
+
+1. **Install Aspire workload** (if not already installed):
+   ```bash
+   dotnet workload install aspire
+   ```
+
+2. **Start the application with Aspire**:
    ```bash
    # From the project root
-   aspire run
+   cd src/AppHost
+   dotnet run
    ```
+   
+   This will:
+   - Start the Aspire Dashboard (typically at http://localhost:15888)
+   - Orchestrate all services (API, databases, Redis, etc.)
+   - Start the Admin frontend
 
-2. In a separate terminal, run the E2E tests:
+3. **Note the Admin app URL** from the Aspire dashboard. It's usually something like:
+   - `http://localhost:5173` (or another port if that's occupied)
+
+4. **Run the E2E tests** in a separate terminal:
    ```bash
    cd src/Admin
+   
+   # If the Admin app is at http://localhost:5173 (default)
    npm run test:e2e
-   ```
-
-### Option 2: Manual Setup
-
-If you prefer to run services manually:
-
-1. Start the API and database services
-2. Start the Admin dev server:
-   ```bash
-   cd src/Admin
-   npm run dev
-   ```
-
-3. In a separate terminal, run the tests with a custom base URL:
-   ```bash
-   BASE_URL=http://localhost:5173 npm run test:e2e
+   
+   # If the Admin app is at a different URL (e.g., http://localhost:5174)
+   PLAYWRIGHT_BASE_URL=http://localhost:5174 npm run test:e2e
    ```
 
 ## Available Test Commands
@@ -97,11 +108,15 @@ Each feature test includes:
 
 Test configuration is in `playwright.config.ts`. Key settings:
 
-- **Base URL**: `http://localhost:5173` (can be overridden with `BASE_URL` env var)
+- **Base URL**: Configurable via environment variables:
+  - `PLAYWRIGHT_BASE_URL` (preferred)
+  - `BASE_URL` (alternative)
+  - Default: `http://localhost:5173`
+  - **Important**: Set this to match the Admin app URL shown in the Aspire dashboard
 - **Browser**: Chromium (Desktop Chrome)
-- **Workers**: 1 (tests run sequentially to avoid conflicts)
+- **Workers**: 1 (tests run sequentially to avoid database conflicts)
 - **Retry**: 2 on CI, 0 locally
-- **Web Server**: Automatically starts `npm run dev` if not already running
+- **Web Server**: Not auto-started (must be started via Aspire before running tests)
 
 ## Viewing Test Results
 
@@ -165,10 +180,16 @@ Example CI configuration:
 
 ## Troubleshooting
 
-### Tests fail with "Connection refused"
-- Ensure the API and Admin dev server are running
-- Check the BASE_URL is correct
-- Verify all services are healthy in Aspire dashboard
+### Tests fail with "Connection refused" or "Navigation timeout"
+- **Ensure Aspire is running**: Check that `dotnet run` is active in the AppHost directory
+- **Verify services are healthy**: Open the Aspire dashboard and ensure all services are running
+- **Check the Admin app URL**: Make sure `PLAYWRIGHT_BASE_URL` matches the URL shown in Aspire
+- **Verify API connectivity**: The Admin frontend proxies `/api` calls to the backend
+
+### Tests fail with database errors
+- Check PostgreSQL container is running in Aspire
+- Verify database migrations have been applied
+- Check Aspire dashboard logs for database connection issues
 
 ### Tests timeout
 - Increase timeouts in `playwright.config.ts` if needed
