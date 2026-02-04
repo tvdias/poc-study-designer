@@ -55,20 +55,41 @@ npm test
 
 ### E2E Tests
 
-End-to-end tests use Playwright and require the full application stack to be running via Aspire.
+There are two ways to run E2E tests:
+
+#### Option 1: Aspire-Integrated Tests (Recommended)
+
+Run E2E tests that are fully integrated with Aspire orchestration:
 
 ```bash
-# Run E2E tests
+# From project root
+dotnet test src/Admin.E2ETests/Admin.E2ETests.csproj
+```
+
+**Benefits:**
+- ✅ Automatically starts all services (API, databases, Redis, Admin)
+- ✅ No manual URL configuration (Aspire dynamically assigns ports)
+- ✅ Integrated with .NET test suite
+- ✅ Works reliably even when ports change
+
+See [Admin.E2ETests/README.md](../Admin.E2ETests/README.md) for details.
+
+#### Option 2: Standalone Playwright Tests
+
+Run standalone E2E tests from this directory:
+
+```bash
+# Requires Aspire running in another terminal
 npm run test:e2e
 
-# Run E2E tests with UI
+# Or with UI mode
 npm run test:e2e:ui
 
-# Run E2E tests in headed mode
+# Or in headed mode
 npm run test:e2e:headed
 ```
 
-For detailed E2E testing instructions, see [e2e/README.md](./e2e/README.md).
+For detailed instructions, see [e2e/README.md](./e2e/README.md).
 
 ## Project Structure
 
