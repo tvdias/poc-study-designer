@@ -27,13 +27,6 @@ public static class CreateTagEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var exists = await db.Tags.AnyAsync(t => t.Name == request.Name, cancellationToken);
-
-        if (exists)
-        {
-            return TypedResults.Conflict($"Tag '{request.Name}' already exists.");
-        }
-
         var tag = new Tag
         {
             Id = Guid.NewGuid(),
@@ -43,7 +36,23 @@ public static class CreateTagEndpoint
         };
 
         db.Tags.Add(tag);
-        await db.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            // Different database providers use different error codes for unique constraint violations.
+            // This is a generic check that looks for common keywords in the inner exception.
+            if (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) == true
+                || ex.InnerException?.Message.Contains("constraint", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return TypedResults.Conflict($"Tag '{request.Name}' already exists.");
+            }
+
+            throw;
+        }
 
         return TypedResults.CreatedAtRoute(new CreateTagResponse(tag.Id, tag.Name), "GetTagById", new { id = tag.Id });
     }
