@@ -12,14 +12,14 @@ public class AspireAppHostFixture : IAsyncLifetime
 {
     public DistributedApplication App { get; private set; } = null!;
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<AppHostAssembly::Program>();
         App = await appHost.BuildAsync();
         await App.StartAsync();
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await App.DisposeAsync();
     }
