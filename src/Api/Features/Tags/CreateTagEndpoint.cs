@@ -27,13 +27,11 @@ public static class CreateTagEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var existingTag = await db.Tags
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Name == request.Name, cancellationToken);
-        
-        if (existingTag != null) 
+        var exists = await db.Tags.AnyAsync(t => t.Name == request.Name, cancellationToken);
+
+        if (exists)
         {
-             return TypedResults.Conflict($"Tag '{request.Name}' already exists.");
+            return TypedResults.Conflict($"Tag '{request.Name}' already exists.");
         }
 
         var tag = new Tag
