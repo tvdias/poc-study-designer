@@ -17,6 +17,12 @@ Unlike the standalone Playwright tests in `src/Admin/e2e/`, these E2E tests:
 - .NET 10.0 SDK
 - .NET Aspire 13 workload: `dotnet workload install aspire`
 - Docker Desktop (or Podman)
+- Playwright browsers: Install once with:
+  ```bash
+  cd src/Admin.E2ETests
+  dotnet build
+  pwsh bin/Debug/net10.0/playwright.ps1 install chromium
+  ```
 
 ### Run Tests
 

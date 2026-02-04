@@ -21,9 +21,6 @@ public class AspireAppHostFixture : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        if (App != null)
-        {
-            await App.DisposeAsync();
-        }
+        await App.DisposeAsync();
     }
 }

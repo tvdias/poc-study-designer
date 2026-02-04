@@ -43,8 +43,8 @@ public class PlaywrightTestBase : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        // Install Playwright browsers if needed
-        Microsoft.Playwright.Program.Main(new[] { "install", "chromium" });
+        // Note: Playwright browsers should be installed once via: pwsh bin/Debug/net10.0/playwright.ps1 install chromium
+        // The Program.Main call is idempotent but slow, so it's better to install browsers separately
 
         _playwright = await Playwright.CreateAsync();
         _browser = await _playwright.Chromium.LaunchAsync(new()

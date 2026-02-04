@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+using System.Text.RegularExpressions;
 
 namespace Admin.E2ETests;
 
@@ -8,6 +9,12 @@ namespace Admin.E2ETests;
 public class TestHelpers
 {
     private readonly IPage _page;
+
+    // Reusable regex patterns for button matching
+    private static readonly Regex NewButtonRegex = new("new", RegexOptions.IgnoreCase);
+    private static readonly Regex SaveButtonRegex = new("^save$", RegexOptions.IgnoreCase);
+    private static readonly Regex EditButtonRegex = new("^edit$", RegexOptions.IgnoreCase);
+    private static readonly Regex DeleteButtonRegex = new("^delete$", RegexOptions.IgnoreCase);
 
     public TestHelpers(IPage page)
     {
@@ -27,7 +34,7 @@ public class TestHelpers
     /// </summary>
     public async Task ClickNewButtonAsync()
     {
-        await _page.GetByRole(AriaRole.Button, new() { NameRegex = new System.Text.RegularExpressions.Regex("new", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { NameRegex = NewButtonRegex }).ClickAsync();
     }
 
     /// <summary>
@@ -35,7 +42,7 @@ public class TestHelpers
     /// </summary>
     public async Task ClickSaveButtonAsync()
     {
-        await _page.GetByRole(AriaRole.Button, new() { NameRegex = new System.Text.RegularExpressions.Regex("^save$", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { NameRegex = SaveButtonRegex }).ClickAsync();
     }
 
     /// <summary>
@@ -43,7 +50,7 @@ public class TestHelpers
     /// </summary>
     public async Task ClickEditButtonAsync()
     {
-        await _page.GetByRole(AriaRole.Button, new() { NameRegex = new System.Text.RegularExpressions.Regex("^edit$", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { NameRegex = EditButtonRegex }).ClickAsync();
     }
 
     /// <summary>
@@ -51,7 +58,7 @@ public class TestHelpers
     /// </summary>
     public async Task ClickDeleteButtonAsync()
     {
-        await _page.GetByRole(AriaRole.Button, new() { NameRegex = new System.Text.RegularExpressions.Regex("^delete$", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { NameRegex = DeleteButtonRegex }).ClickAsync();
     }
 
     /// <summary>
