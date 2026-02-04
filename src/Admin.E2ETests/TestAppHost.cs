@@ -32,22 +32,23 @@ public class TestAppHost
         var srcDir = Path.GetFullPath(Path.Combine(sourceDir, ".."));
 
         // Only add PostgreSQL - required by API
+        // No WaitFor - let Aspire handle startup order
         var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
 
         // Add API with only PostgreSQL dependency (skip Redis/Service Bus)
         // Using absolute path resolved from the source directory
+        // Remove health checks and WaitFor to speed up startup
         var apiPath = Path.Combine(srcDir, "Api", "Api.csproj");
         var api = builder.AddProject("api", apiPath)
             .WithReference(postgres)
-            .WaitFor(postgres)
-            .WithHttpHealthCheck("/health")
             .WithExternalHttpEndpoints();
 
-        // Add Admin app without any dependencies or wait conditions
-        // The Admin app will connect to API via environment variables set by Aspire
+        // Add Admin app - it gets API URL via WithReference which sets environment variables
+        // Remove WaitFor to allow parallel startup
         var adminPath = Path.Combine(srcDir, "Admin");
         builder.AddViteApp("app-admin", adminPath)
-            .WithReference(api);
+            .WithReference(api)
+            .WithExternalHttpEndpoints();
 
         return builder;
     }

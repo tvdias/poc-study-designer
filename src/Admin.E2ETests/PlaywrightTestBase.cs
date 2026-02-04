@@ -25,20 +25,49 @@ public class PlaywrightTestBase : IAsyncLifetime
     /// <summary>
     /// Gets the base URL of the Admin application from Aspire.
     /// The URL is automatically determined by Aspire and may change between runs.
+    /// Waits up to 60 seconds for the service to become available.
     /// </summary>
-    protected string GetAdminAppUrl()
+    protected async Task<string> GetAdminAppUrlAsync()
     {
-        // Create an HTTP client for the app-admin resource
-        // This will give us the correct URL that Aspire assigned
-        var client = AspireFixture.App.CreateHttpClient("app-admin");
-        var baseUrl = client.BaseAddress?.ToString().TrimEnd('/');
+        // Wait for the app-admin resource to be allocated a URL
+        // This should be quick since we removed blocking health checks
+        var timeout = TimeSpan.FromSeconds(60);
+        var start = DateTime.UtcNow;
         
-        if (string.IsNullOrEmpty(baseUrl))
+        while (DateTime.UtcNow - start < timeout)
         {
-            throw new InvalidOperationException("Admin app URL could not be determined from Aspire");
+            try
+            {
+                // Create an HTTP client for the app-admin resource
+                // This will give us the correct URL that Aspire assigned
+                var client = AspireFixture.App.CreateHttpClient("app-admin");
+                var baseUrl = client.BaseAddress?.ToString().TrimEnd('/');
+                
+                if (!string.IsNullOrEmpty(baseUrl))
+                {
+                    // Verify the URL is actually responding
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    try
+                    {
+                        var response = await client.GetAsync("/", cts.Token);
+                        // Don't care about status code, just that we got a response
+                        return baseUrl;
+                    }
+                    catch
+                    {
+                        // Service not ready yet, continue waiting
+                    }
+                }
+            }
+            catch
+            {
+                // Resource not allocated yet, continue waiting
+            }
+            
+            await Task.Delay(1000); // Wait 1 second before retry
         }
-
-        return baseUrl;
+        
+        throw new TimeoutException($"Admin app did not become available within {timeout.TotalSeconds} seconds");
     }
 
     public async ValueTask InitializeAsync()
