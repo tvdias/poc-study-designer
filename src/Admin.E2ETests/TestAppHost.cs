@@ -32,23 +32,22 @@ public class TestAppHost
         var srcDir = Path.GetFullPath(Path.Combine(sourceDir, ".."));
 
         // Only add PostgreSQL - required by API
-        // No WaitFor - let Aspire handle startup order
-        var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
+        var postgres = builder.AddPostgres("postgres")
+            .WithEnvironment("POSTGRES_DB", "studydesigner")
+            .AddDatabase("studydb");
 
         // Add API with only PostgreSQL dependency (skip Redis/Service Bus)
         // Using absolute path resolved from the source directory
-        // Remove health checks and WaitFor to speed up startup
         var apiPath = Path.Combine(srcDir, "Api", "Api.csproj");
-        var api = builder.AddProject("api", apiPath)
+        builder.AddProject("api", apiPath)
             .WithReference(postgres)
             .WithExternalHttpEndpoints();
 
-        // Add Admin app - it gets API URL via WithReference which sets environment variables
-        // Remove WaitFor to allow parallel startup
-        var adminPath = Path.Combine(srcDir, "Admin");
-        builder.AddViteApp("app-admin", adminPath)
-            .WithReference(api)
-            .WithExternalHttpEndpoints();
+        // NOTE: We don't add the Admin Vite app here because:
+        // 1. Starting Vite via Aspire is slow (npm install, build, dev server startup)
+        // 2. Playwright has built-in webServer support that starts Vite automatically
+        // 3. This makes tests faster and more reliable
+        // The Admin app URL will be managed by Playwright's webServer config
 
         return builder;
     }
