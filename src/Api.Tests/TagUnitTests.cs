@@ -1,6 +1,5 @@
 using Api.Features.Tags;
 using Api.Features.Tags.Validators;
-using Xunit;
 
 namespace Api.Tests;
 
@@ -26,7 +25,7 @@ public class CreateTagValidatorTests
         var request = new CreateTagRequest("Valid Tag Name");
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsValid);
@@ -40,7 +39,7 @@ public class CreateTagValidatorTests
         var request = new CreateTagRequest("");
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -55,7 +54,7 @@ public class CreateTagValidatorTests
         var request = new CreateTagRequest(null!);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -70,7 +69,7 @@ public class CreateTagValidatorTests
         var request = new CreateTagRequest(longName);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -86,7 +85,7 @@ public class CreateTagValidatorTests
         var request = new CreateTagRequest(maxLengthName);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsValid);
@@ -100,7 +99,7 @@ public class CreateTagValidatorTests
         var request = new CreateTagRequest("   ");
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -119,7 +118,7 @@ public class UpdateTagValidatorTests
         var request = new UpdateTagRequest("Updated Tag Name", true);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsValid);
@@ -133,7 +132,7 @@ public class UpdateTagValidatorTests
         var request = new UpdateTagRequest("", true);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -148,7 +147,7 @@ public class UpdateTagValidatorTests
         var request = new UpdateTagRequest(null!, false);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -163,7 +162,7 @@ public class UpdateTagValidatorTests
         var request = new UpdateTagRequest(longName, true);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
@@ -179,7 +178,7 @@ public class UpdateTagValidatorTests
         var request = new UpdateTagRequest(maxLengthName, false);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsValid);
@@ -193,7 +192,7 @@ public class UpdateTagValidatorTests
         var request = new UpdateTagRequest("   ", true);
 
         // Act
-        var result = await _validator.ValidateAsync(request);
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);

@@ -1,5 +1,3 @@
-using System;
-
 namespace Api.Features.Shared;
 
 public abstract class AuditableEntity
