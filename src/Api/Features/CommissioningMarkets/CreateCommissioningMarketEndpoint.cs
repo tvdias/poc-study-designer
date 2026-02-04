@@ -55,6 +55,6 @@ public static class CreateCommissioningMarketEndpoint
             throw;
         }
 
-        return TypedResults.CreatedAtRoute(new CreateCommissioningMarketResponse(market.Id, market.IsoCode, market.Name), "GetCommissioningMarketById", new { id = market.Id });
+        return TypedResults.CreatedAtRoute(new CreateCommissioningMarketResponse(market.Id, market.IsoCode, market.Name, market.IsActive), "GetCommissioningMarketById", new { id = market.Id });
     }
 }
