@@ -42,10 +42,10 @@ export class TestHelpers {
   }
 
   /**
-   * Confirm the deletion dialog
+   * Confirm the deletion dialog (call this before clicking delete)
    */
-  async confirmDelete() {
-    this.page.on('dialog', dialog => dialog.accept());
+  confirmDelete() {
+    this.page.once('dialog', dialog => dialog.accept());
   }
 
   /**
