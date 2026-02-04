@@ -13,6 +13,42 @@ export interface UpdateTagRequest {
     isActive: boolean;
 }
 
+export interface CommissioningMarket {
+    id: string;
+    isoCode: string;
+    name: string;
+    isActive: boolean;
+}
+
+export interface CreateCommissioningMarketRequest {
+    isoCode: string;
+    name: string;
+}
+
+export interface UpdateCommissioningMarketRequest {
+    isoCode: string;
+    name: string;
+    isActive: boolean;
+}
+
+export interface FieldworkMarket {
+    id: string;
+    isoCode: string;
+    name: string;
+    isActive: boolean;
+}
+
+export interface CreateFieldworkMarketRequest {
+    isoCode: string;
+    name: string;
+}
+
+export interface UpdateFieldworkMarketRequest {
+    isoCode: string;
+    name: string;
+    isActive: boolean;
+}
+
 export interface ValidationErrorResponse {
     type: string;
     title: string;
@@ -71,3 +107,104 @@ export const tagsApi = {
         if (!response.ok) throw new Error('Failed to delete tag');
     }
 };
+
+export const commissioningMarketsApi = {
+    getAll: async (query?: string): Promise<CommissioningMarket[]> => {
+        const url = query ? `${API_BASE}/commissioning-markets?query=${encodeURIComponent(query)}` : `${API_BASE}/commissioning-markets`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch commissioning markets');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<CommissioningMarket> => {
+        const response = await fetch(`${API_BASE}/commissioning-markets/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch commissioning market');
+        return response.json();
+    },
+
+    create: async (data: CreateCommissioningMarketRequest): Promise<CommissioningMarket> => {
+        const response = await fetch(`${API_BASE}/commissioning-markets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateCommissioningMarketRequest): Promise<CommissioningMarket> => {
+        const response = await fetch(`${API_BASE}/commissioning-markets/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/commissioning-markets/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete commissioning market');
+    }
+};
+
+export const fieldworkMarketsApi = {
+    getAll: async (query?: string): Promise<FieldworkMarket[]> => {
+        const url = query ? `${API_BASE}/fieldwork-markets?query=${encodeURIComponent(query)}` : `${API_BASE}/fieldwork-markets`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch fieldwork markets');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<FieldworkMarket> => {
+        const response = await fetch(`${API_BASE}/fieldwork-markets/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch fieldwork market');
+        return response.json();
+    },
+
+    create: async (data: CreateFieldworkMarketRequest): Promise<FieldworkMarket> => {
+        const response = await fetch(`${API_BASE}/fieldwork-markets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateFieldworkMarketRequest): Promise<FieldworkMarket> => {
+        const response = await fetch(`${API_BASE}/fieldwork-markets/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/fieldwork-markets/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete fieldwork market');
+    }
+};
+
