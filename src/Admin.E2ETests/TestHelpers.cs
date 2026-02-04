@@ -64,12 +64,15 @@ public class TestHelpers
     /// <summary>
     /// Set up handler to confirm the deletion dialog.
     /// Call this immediately before triggering the delete action that will show the dialog.
+    /// Note: Uses GetAwaiter().GetResult() as we're in a sync event handler context.
+    /// This is the recommended pattern for Playwright dialog handling in tests.
     /// </summary>
     public void ConfirmDelete()
     {
         // Use a one-time event handler that auto-removes after firing
         void DialogHandler(object? sender, IDialog dialog)
         {
+            // Synchronous wait is appropriate in this event handler context
             dialog.AcceptAsync().GetAwaiter().GetResult();
             _page.Dialog -= DialogHandler;  // Remove handler after use
         }
