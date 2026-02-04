@@ -66,9 +66,9 @@ public class TestHelpers
     /// </summary>
     public void ConfirmDelete()
     {
-        _page.Dialog += (_, dialog) =>
+        _page.Dialog += async (_, dialog) =>
         {
-            dialog.AcceptAsync();
+            await dialog.AcceptAsync();
         };
     }
 
