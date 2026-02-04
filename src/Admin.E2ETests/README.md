@@ -129,14 +129,45 @@ public class MyFeatureE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHost
 
 ## Troubleshooting
 
-### Tests fail with "Playwright not installed"
-The tests automatically install Playwright browsers on first run. If this fails:
+### Playwright browsers not installed
+The tests require Playwright browsers to be installed. Install them once after building:
 ```bash
+cd src/Admin.E2ETests
+dotnet build
 pwsh bin/Debug/net10.0/playwright.ps1 install chromium
 ```
 
-### Tests timeout waiting for services
-Increase timeout in `AspireAppHostFixture.InitializeAsync()` or check Docker is running.
+### Tests timeout waiting for Aspire to start
+**Error**: `Polly.Timeout.TimeoutRejectedException: The operation didn't complete within the allowed timeout of '00:00:20'`
+
+**Cause**: Aspire is taking longer than 20 seconds to start all services (PostgreSQL, Redis, Azure Service Bus emulator, API, Admin app).
+
+**Solutions**:
+1. **Ensure Docker is running** - Aspire uses containers for databases and services
+   ```bash
+   docker ps  # Should show containers running
+   ```
+
+2. **Ensure sufficient system resources**:
+   - At least 4GB RAM available
+   - Docker has adequate CPU/memory limits configured
+   - No other heavy processes running
+
+3. **Run tests with more time** - On slow systems, services may need more time to initialize:
+   - First run is slower (downloading images)
+   - Subsequent runs are faster (images cached)
+
+4. **Pre-start services** - Start Aspire manually first, then run tests:
+   ```bash
+   # Terminal 1: Start Aspire
+   cd src/AppHost
+   dotnet run
+
+   # Wait for all services to be healthy (check Aspire dashboard)
+   # Terminal 2: Run tests (they'll connect to existing Aspire instance)
+   cd src/Admin.E2ETests
+   dotnet test
+   ```
 
 ### Can't find Admin app URL
 The test uses `CreateHttpClient("app-admin")` to get the URL. Verify the AppHost has `app-admin` resource.
