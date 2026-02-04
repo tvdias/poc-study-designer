@@ -24,9 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppHost\AppHost.csproj">
-      <Aliases>AppHostAssembly</Aliases>
-    </ProjectReference>
     <ProjectReference Include="..\Api\Api.csproj" />
   </ItemGroup>
 

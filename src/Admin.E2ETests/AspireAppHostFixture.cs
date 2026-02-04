@@ -14,11 +14,8 @@ public class AspireAppHostFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        // Create the test-specific AppHost builder
-        var builder = TestAppHost.CreateBuilder(Array.Empty<string>());
-        
-        // Build and start the application
-        App = builder.Build();
+        // Use the test-specific AppHost that builds and returns ready application
+        App = TestAppHost.Build(Array.Empty<string>());
         await App.StartAsync();
     }
 
