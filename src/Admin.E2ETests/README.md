@@ -128,15 +128,16 @@ src/Admin.E2ETests/
 ## Adding New Tests
 
 1. Create a new test class inheriting from `PlaywrightTestBase`
-2. Add `IClassFixture<AspireAppHostFixture>` to share the Aspire instance
-3. Use `GetAdminAppUrl()` to get the base URL
-4. Write Playwright tests as usual
+2. Add `[Collection("AdminE2E")]` attribute to use the shared Aspire instance
+3. **Important**: Do NOT add `IClassFixture<AspireAppHostFixture>` - it conflicts with the collection fixture
+4. Use `GetAdminAppUrl()` to get the base URL
+5. Write Playwright tests as usual
 
 Example:
 
 ```csharp
-[Collection("E2E")]
-public class MyFeatureE2ETests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
+[Collection("AdminE2E")]  // ✅ Use collection fixture
+public class MyFeatureE2ETests : PlaywrightTestBase  // ❌ Do NOT add IClassFixture
 {
     public MyFeatureE2ETests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
     {
@@ -193,6 +194,28 @@ pwsh bin/Debug/net10.0/playwright.ps1 install chromium
    cd src/Admin.E2ETests
    dotnet test
    ```
+
+### Tests hang or timeout for 1.5+ minutes
+**Error**: Test appears to hang during initialization and never completes.
+
+**Cause**: Conflicting xUnit fixture patterns. If a test class has both `[Collection("AdminE2E")]` and `IClassFixture<AspireAppHostFixture>`, xUnit tries to initialize the fixture in two incompatible ways, causing deadlocks.
+
+**Solution**: Remove `IClassFixture<AspireAppHostFixture>` from the class declaration. Only use the collection fixture:
+
+```csharp
+// ❌ WRONG - Causes hanging
+[Collection("AdminE2E")]
+public class MyTests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
+
+// ✅ CORRECT - Works properly
+[Collection("AdminE2E")]
+public class MyTests : PlaywrightTestBase
+{
+    public MyTests(AspireAppHostFixture fixture) : base(fixture) { }
+}
+```
+
+The collection definition (`AdminE2ECollection.cs`) already declares the fixture, so individual test classes should NOT use `IClassFixture`.
 
 ### Tests run slowly
 - Tests share a single Aspire instance via the `AdminE2E` collection
