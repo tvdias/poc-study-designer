@@ -7,9 +7,11 @@ This project contains end-to-end (E2E) tests for the Admin application that are 
 These E2E tests use an optimized Aspire configuration that only starts the services needed for testing:
 - ✅ **PostgreSQL** - Database for API
 - ✅ **API** - Backend service
-- ✅ **Admin app** - Frontend application being tested
+
+The **Admin Vite app** is started manually by the test framework (not via Aspire) for better performance and reliability.
 
 Services NOT started (faster startup):
+- ❌ Admin app via Aspire (started manually with Process for speed)
 - ❌ Redis (not required for Admin app)
 - ❌ Azure Service Bus (not required for Admin app)
 - ❌ Designer app (not being tested)
@@ -17,11 +19,13 @@ Services NOT started (faster startup):
 
 ### Key Features
 
-- ✅ Run as part of the .NET test suite
+- ✅ Run as part of the .NET test suite (`dotnet test`)
 - ✅ **Single Aspire instance shared across all tests** (much faster)
+- ✅ **Vite dev server started once and shared across all tests**
 - ✅ Automatically start only required services
-- ✅ Automatically discover service URLs from Aspire (no manual configuration)
+- ✅ Automatically discover API URL from Aspire and pass to Vite
 - ✅ Tests run in collection to ensure proper sequencing
+- ✅ Fast initialization (~30-40 seconds for complete stack)
 
 ## Running the Tests
 
@@ -29,7 +33,8 @@ Services NOT started (faster startup):
 
 - .NET 10.0 SDK
 - .NET Aspire 13 workload: `dotnet workload install aspire`
-- Docker Desktop (or Podman)
+- Docker Desktop (or Podman) - for PostgreSQL container
+- Node.js 18+ and npm - for Vite dev server
 - Playwright browsers: Install once with:
   ```bash
   cd src/Admin.E2ETests
@@ -52,10 +57,10 @@ dotnet test --list-tests
 ```
 
 That's it! The tests will:
-1. Start only the required services (PostgreSQL, API, Admin app) - **much faster than full stack**
+1. Start required Aspire services (PostgreSQL, API) - **much faster than full stack**
 2. **Reuse the same Aspire instance for all tests** (even faster)
-3. Wait for all services to be healthy
-4. Automatically discover the Admin app URL
+3. Start Vite dev server for Admin app (once, shared across all tests)
+4. Automatically discover the API URL and pass it to Vite
 5. Run Playwright E2E tests against the running application
 6. Clean up all resources when complete
 
@@ -66,7 +71,8 @@ That's it! The tests will:
 The Admin E2E tests are optimized for fast execution:
 
 **Minimal Services**
-- Only starts: PostgreSQL, API, and Admin app
+- Only starts via Aspire: PostgreSQL and API
+- Admin app started manually via Process (faster than Aspire orchestration)
 - Skips: Redis, Azure Service Bus, Designer app, Azure Functions
 - Result: ~60% fewer services = faster startup
 
