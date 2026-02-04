@@ -70,6 +70,9 @@ public class PlaywrightTestBase : IAsyncLifetime
             Path.GetDirectoryName(typeof(PlaywrightTestBase).Assembly.Location)!,
             "..", "..", "..", "..", "Admin"));
 
+        // Use TaskCompletionSource for thread-safe ready signaling
+        var readyTcs = new TaskCompletionSource<bool>();
+
         // Start Vite dev server
         var startInfo = new ProcessStartInfo
         {
@@ -92,36 +95,64 @@ public class PlaywrightTestBase : IAsyncLifetime
             throw new InvalidOperationException("Failed to start Vite dev server");
         }
 
-        // Wait for Vite to be ready (look for "Local:" in output)
-        var ready = false;
-        var timeout = TimeSpan.FromSeconds(60);
-        var start = DateTime.UtcNow;
-
+        // Start monitoring output before process can output anything (avoid race condition)
         _ = Task.Run(async () =>
         {
-            while (!_viteProcess.HasExited)
+            try
             {
-                var line = await _viteProcess.StandardOutput.ReadLineAsync();
-                if (line != null && (line.Contains("Local:") || line.Contains("ready in")))
+                while (!_viteProcess.HasExited)
                 {
-                    ready = true;
-                    break;
+                    var line = await _viteProcess.StandardOutput.ReadLineAsync();
+                    if (line == null)
+                    {
+                        // Process exited or stream closed
+                        break;
+                    }
+                    
+                    if (line.Contains("Local:") || line.Contains("ready in"))
+                    {
+                        readyTcs.TrySetResult(true);
+                        break;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                readyTcs.TrySetException(ex);
             }
         });
 
-        while (!ready && DateTime.UtcNow - start < timeout)
-        {
-            if (_viteProcess.HasExited)
-            {
-                throw new InvalidOperationException($"Vite dev server exited with code {_viteProcess.ExitCode}");
-            }
-            await Task.Delay(500);
-        }
+        // Wait for Vite to be ready with timeout
+        var timeout = TimeSpan.FromSeconds(60);
+        var readyTask = readyTcs.Task;
+        var timeoutTask = Task.Delay(timeout);
+        
+        var completedTask = await Task.WhenAny(readyTask, timeoutTask);
 
-        if (!ready)
+        if (completedTask == timeoutTask || _viteProcess.HasExited)
         {
-            _viteProcess.Kill();
+            // Timeout or process exited before ready
+            try
+            {
+                if (!_viteProcess.HasExited)
+                {
+                    _viteProcess.Kill(entireProcessTree: true);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // Process already exited, ignore
+            }
+            finally
+            {
+                _viteProcess?.Dispose();
+                _viteProcess = null;
+            }
+
+            if (_viteProcess?.HasExited == true)
+            {
+                throw new InvalidOperationException($"Vite dev server exited prematurely with code {_viteProcess.ExitCode}");
+            }
             throw new TimeoutException("Vite dev server did not start within 60 seconds");
         }
 
@@ -132,6 +163,7 @@ public class PlaywrightTestBase : IAsyncLifetime
     /// <summary>
     /// Gets the API URL from Aspire.
     /// Waits up to 60 seconds for the API to become available.
+    /// Note: The API project must have a /health endpoint for this check to work.
     /// </summary>
     private async Task<string> GetApiUrlAsync()
     {
@@ -148,6 +180,7 @@ public class PlaywrightTestBase : IAsyncLifetime
                 if (!string.IsNullOrEmpty(apiUrl))
                 {
                     // Verify the API is actually responding
+                    // Assumes the API has a /health endpoint (standard for .NET Aspire apps)
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                     try
                     {
