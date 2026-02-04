@@ -1,0 +1,235 @@
+# Copilot Instructions for POC Study Designer
+
+## Project Overview
+
+POC Study Designer is a comprehensive study design platform built with .NET Aspire, featuring a distributed microservices architecture with React-based frontends, serverless processing functions, and Azure Service Bus integration.
+
+## Technology Stack
+
+### Backend
+- **.NET 10.0** - Core backend framework
+- **.NET Aspire 13** - Orchestration and service management
+- **PostgreSQL** - Primary database (via Npgsql)
+- **Redis** - Output caching
+- **Azure Functions** - Serverless processing (CluedinProcessor, ProjectsProcessor)
+- **Azure Service Bus** - Event-driven messaging
+- **FluentValidation** - Request validation
+- **Entity Framework Core** - ORM for database operations
+- **xUnit** - Testing framework
+
+### Frontend
+- **React 19** - UI framework
+- **TypeScript 5.9** - Type safety
+- **Vite 7** - Build tool and dev server
+- **ESLint 9** - Code linting
+
+## Project Structure
+
+```
+src/
+├── Admin/              # React TypeScript administration portal
+├── Designer/           # React TypeScript study design interface
+├── Api/                # Main REST API (.NET)
+├── Api.Tests/          # Unit tests for API
+├── Api.IntegrationTests/ # Integration tests
+├── AppHost/            # .NET Aspire orchestrator
+├── CluedinProcessor/   # Azure Function for CluedIn integration
+├── ProjectsProcessor/  # Azure Function for project processing
+└── ServiceBusPublisher/ # Event publisher utility
+```
+
+## Coding Standards
+
+### C# Guidelines
+
+1. **Code Style**:
+   - Use 4 spaces for indentation
+   - Follow .editorconfig rules (see `src/.editorconfig`)
+   - Use explicit types (no `var` unless type is apparent)
+   - Prefer expression-bodied members for accessors and properties
+   - Use pattern matching where appropriate
+   - Prefer top-level statements in Program.cs
+
+2. **Naming Conventions**:
+   - PascalCase for types, methods, and properties
+   - Interfaces must start with 'I' (e.g., `IValidator`)
+   - Use meaningful, descriptive names
+
+3. **Architecture Patterns**:
+   - **Vertical Slice Architecture**: Features are organized by feature (e.g., `Features/Tags/`)
+   - **Minimal APIs**: Use `MapPost`, `MapGet`, etc. with typed results
+   - Each feature should have its own folder containing:
+     - Endpoint definitions (e.g., `CreateTagEndpoint.cs`)
+     - Models (e.g., `CreateTagRequest`, `CreateTagResponse`)
+     - Validators (in `Validators/` subfolder)
+     - Entity definitions (e.g., `Tag.cs`)
+
+4. **API Endpoints**:
+   - Use static classes with extension methods for endpoint mapping
+   - Example: `public static void MapCreateTagEndpoint(this IEndpointRouteBuilder app)`
+   - Return typed results: `Results<CreatedAtRoute<T>, ValidationProblem, Conflict<string>>`
+   - Use FluentValidation for request validation
+   - Group endpoints under `/api` prefix
+
+5. **Validation**:
+   - Use FluentValidation for all request validation
+   - Create validators in `Validators/` subfolder within each feature
+   - Validate early in the endpoint handler
+   - Return `TypedResults.ValidationProblem()` for validation failures
+
+6. **Error Handling**:
+   - Use typed results for known error scenarios
+   - Return appropriate status codes (e.g., `Conflict`, `NotFound`, `ValidationProblem`)
+   - Handle database-specific errors (e.g., unique constraint violations)
+   - Use descriptive error messages
+
+7. **Database**:
+   - Use Entity Framework Core with PostgreSQL
+   - Place migrations in `Migrations/` folder
+   - Use UTC timestamps: `DateTime.UtcNow`
+   - Entity properties should include: `Id`, `CreatedOn`, `CreatedBy`, etc.
+
+### TypeScript/React Guidelines
+
+1. **Code Style**:
+   - Use ESLint configuration from `eslint.config.js`
+   - Use TypeScript for type safety
+   - Define interfaces for all data structures
+   - Use functional components with hooks
+
+2. **Component Structure**:
+   - Use arrow functions for components
+   - Extract complex logic into custom hooks
+   - Use semantic HTML
+   - Include accessibility attributes (aria-labels, roles, etc.)
+
+3. **State Management**:
+   - Use `useState` for component state
+   - Use `useEffect` for side effects
+   - Handle loading and error states explicitly
+
+4. **API Communication**:
+   - Use fetch API for HTTP requests
+   - Define TypeScript interfaces for API responses
+   - Handle errors gracefully
+   - Use `/api` prefix for all API calls
+
+## Testing
+
+### Unit Tests (xUnit)
+
+1. **Test Organization**:
+   - Tests go in `Api.Tests` project
+   - Name test files: `{Feature}UnitTests.cs`
+   - Use descriptive test method names: `{Scenario}_{ExpectedBehavior}`
+
+2. **Test Structure**:
+   - Use Arrange-Act-Assert pattern
+   - One assertion per test (when possible)
+   - Test both happy paths and error cases
+
+3. **Example Test**:
+```csharp
+[Fact]
+public async Task ValidTag_ShouldPassValidation()
+{
+    // Arrange
+    var request = new CreateTagRequest("Valid Tag Name");
+
+    // Act
+    var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+    // Assert
+    Assert.True(result.IsValid);
+    Assert.Empty(result.Errors);
+}
+```
+
+### Integration Tests
+
+- Use `Api.IntegrationTests` project
+- Test full API workflows
+- Use WebApplicationFactory for testing
+
+## Development Workflow
+
+### Running the Application
+
+Use .NET Aspire to run the entire stack:
+```bash
+aspire run
+```
+
+This starts:
+- Aspire Dashboard
+- All configured services
+- Container orchestration
+- Logs and health monitoring
+
+### Frontend Development
+
+For Designer or Admin apps:
+```bash
+cd src/Designer  # or src/Admin
+npm install
+npm run dev      # Development server
+npm run build    # Production build
+npm run lint     # Run ESLint
+```
+
+### Backend Development
+
+```bash
+dotnet build              # Build solution
+dotnet test               # Run tests
+dotnet run --project src/AppHost  # Run with Aspire
+```
+
+### Azure Functions
+
+```bash
+cd src/CluedinProcessor  # or src/ProjectsProcessor
+func start               # Local function runtime
+```
+
+## Prerequisites
+
+When helping users set up the project, ensure they have:
+- .NET 10.0 SDK
+- Node.js 18.x or later
+- .NET Aspire 13 workload
+- Docker Desktop (or Podman)
+- Azure CLI with valid subscription
+- Azure Functions Core Tools
+
+## Common Patterns
+
+### Adding a New API Feature
+
+1. Create a new folder under `src/Api/Features/`
+2. Add entity class (e.g., `MyEntity.cs`)
+3. Add DTOs (e.g., `CreateMyEntityRequest`, `CreateMyEntityResponse`)
+4. Add validators in `Validators/` subfolder
+5. Add endpoint handlers (e.g., `CreateMyEntityEndpoint.cs`)
+6. Register endpoints in `Program.cs`
+7. Add migration if database changes are needed
+8. Write unit tests in `Api.Tests`
+
+### Adding a New React Component
+
+1. Create component in `src/Designer/src/` or `src/Admin/src/`
+2. Define TypeScript interfaces for props and state
+3. Implement with accessibility in mind
+4. Use semantic HTML elements
+5. Handle loading and error states
+
+## Important Notes
+
+- Use feature-based organization (vertical slices) rather than layer-based
+- Prefer minimal APIs over traditional controllers
+- Always validate input using FluentValidation
+- Return typed results for better API contracts
+- Use UTC for all timestamps
+- Include comprehensive error handling
+- Write tests for new features
+- Follow existing code patterns for consistency
