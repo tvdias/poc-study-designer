@@ -1,3 +1,9 @@
+using Api.Data;
+using Api.Features.Tags;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
+using FluentValidation;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
@@ -7,9 +13,12 @@ builder.AddRedisClientBuilder("cache")
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.AddNpgsqlDbContext<ApplicationDbContext>("studydb");
 
 var app = builder.Build();
 
@@ -19,6 +28,11 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
+
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseOutputCache();
@@ -26,6 +40,11 @@ app.UseOutputCache();
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 var api = app.MapGroup("/api");
+api.MapCreateTagEndpoint();
+api.MapGetTagsEndpoint();
+api.MapGetTagByIdEndpoint();
+api.MapUpdateTagEndpoint();
+api.MapDeleteTagEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
@@ -51,3 +70,5 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+public partial class Program { }

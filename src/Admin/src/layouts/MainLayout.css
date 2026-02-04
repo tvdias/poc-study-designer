@@ -1,0 +1,54 @@
+.layout-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-app);
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-default);
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--spacing-lg);
+    z-index: 10;
+}
+
+.brand {
+    padding: 0 var(--spacing-lg) var(--spacing-xxl);
+}
+
+.brand h2 {
+    color: var(--brand-primary);
+    font-size: 18px;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-item {
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 400;
+    border-left: 3px solid transparent;
+    transition: all 0.1s;
+}
+
+.nav-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.nav-item.active {
+    background-color: var(--bg-hover);
+    border-left-color: var(--brand-primary);
+    font-weight: 600;
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-xl);
+}
