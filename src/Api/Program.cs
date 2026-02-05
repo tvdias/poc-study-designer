@@ -2,6 +2,8 @@ using Api.Data;
 using Api.Features.Tags;
 using Api.Features.CommissioningMarkets;
 using Api.Features.FieldworkMarkets;
+using Api.Features.Modules;
+using Api.Features.Questions;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -57,6 +59,18 @@ api.MapGetFieldworkMarketsEndpoint();
 api.MapGetFieldworkMarketByIdEndpoint();
 api.MapUpdateFieldworkMarketEndpoint();
 api.MapDeleteFieldworkMarketEndpoint();
+api.MapCreateModuleEndpoint();
+api.MapGetModulesEndpoint();
+api.MapGetModuleByIdEndpoint();
+api.MapUpdateModuleEndpoint();
+api.MapDeleteModuleEndpoint();
+api.MapAddQuestionToModuleEndpoint();
+api.MapRemoveQuestionFromModuleEndpoint();
+api.MapReorderModuleQuestionsEndpoint();
+api.MapGetModuleVersionsEndpoint();
+api.MapCreateQuestionEndpoint();
+api.MapGetQuestionsEndpoint();
+api.MapGetQuestionByIdEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
