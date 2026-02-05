@@ -32,13 +32,13 @@ if (!isAdminE2ETest)
         .WaitFor(api);
 }
 
-// Always add Admin app
-var appAdmin = builder.AddViteApp("app-admin", "../Admin")
-    .WithReference(api);
-
+// Add Admin app only when not in AdminE2E test mode
+// In AdminE2E mode, tests manually start the Vite dev server to avoid slow Aspire Vite integration
 if (!isAdminE2ETest)
 {
-    appAdmin = appAdmin.WaitFor(api);
+    builder.AddViteApp("app-admin", "../Admin")
+        .WithReference(api)
+        .WaitFor(api);
 }
 
 // Add Azure Service Bus and Functions only when not in AdminE2E test mode
