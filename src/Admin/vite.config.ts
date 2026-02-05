@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls to the app service
       '/api': {
-        target: process.env.services__api__https__0 || process.env.services__api__http__0,
+        target: process.env.services__api__https__0 || process.env.services__api__http__0 || 'http://localhost:5000',
         changeOrigin: true
       }
     }
