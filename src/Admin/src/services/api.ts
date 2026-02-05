@@ -49,6 +49,30 @@ export interface UpdateFieldworkMarketRequest {
     isActive: boolean;
 }
 
+export interface Client {
+    id: string;
+    accountName: string;
+    companyNumber: string | null;
+    customerNumber: string | null;
+    companyCode: string | null;
+    isActive: boolean;
+}
+
+export interface CreateClientRequest {
+    accountName: string;
+    companyNumber?: string | null;
+    customerNumber?: string | null;
+    companyCode?: string | null;
+}
+
+export interface UpdateClientRequest {
+    accountName: string;
+    companyNumber?: string | null;
+    customerNumber?: string | null;
+    companyCode?: string | null;
+    isActive: boolean;
+}
+
 export interface ValidationErrorResponse {
     type: string;
     title: string;
@@ -205,6 +229,56 @@ export const fieldworkMarketsApi = {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete fieldwork market');
+    }
+};
+
+export const clientsApi = {
+    getAll: async (query?: string): Promise<Client[]> => {
+        const url = query ? `${API_BASE}/clients?query=${encodeURIComponent(query)}` : `${API_BASE}/clients`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch clients');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<Client> => {
+        const response = await fetch(`${API_BASE}/clients/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch client');
+        return response.json();
+    },
+
+    create: async (data: CreateClientRequest): Promise<Client> => {
+        const response = await fetch(`${API_BASE}/clients`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateClientRequest): Promise<Client> => {
+        const response = await fetch(`${API_BASE}/clients/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/clients/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete client');
     }
 };
 
