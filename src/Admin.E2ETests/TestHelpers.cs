@@ -55,11 +55,12 @@ public class TestHelpers
     }
 
     /// <summary>
-    /// Click the Delete button in the side panel
+    /// Click the Delete button in the side panel footer
     /// </summary>
     public async Task ClickDeleteButtonAsync()
     {
-        await _page.GetByRole(AriaRole.Button, new() { NameRegex = DeleteButtonRegex }).ClickAsync();
+        var sidePanelFooter = _page.Locator(".side-panel-footer");
+        await sidePanelFooter.GetByRole(AriaRole.Button, new() { NameRegex = DeleteButtonRegex }).ClickAsync();
     }
 
     /// <summary>
