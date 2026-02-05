@@ -21,26 +21,12 @@ public static class GetModuleByIdEndpoint
     {
         var module = await db.Modules
             .AsNoTracking()
-            .Include(m => m.ModuleQuestions)
-                .ThenInclude(mq => mq.Question)
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
         if (module is null)
         {
             return TypedResults.NotFound();
         }
-
-        var questions = module.ModuleQuestions
-            .OrderBy(mq => mq.DisplayOrder)
-            .Select(mq => new ModuleQuestionDto(
-                mq.Question.Id,
-                mq.Question.VariableName,
-                mq.Question.QuestionType,
-                mq.Question.QuestionText,
-                mq.Question.QuestionSource,
-                mq.DisplayOrder,
-                mq.Question.CreatedBy ?? "System"))
-            .ToList();
 
         var response = new GetModuleByIdResponse(
             module.Id,
@@ -52,8 +38,7 @@ public static class GetModuleByIdEndpoint
             module.Instructions,
             module.Status,
             module.StatusReason,
-            module.IsActive,
-            questions
+            module.IsActive
         );
 
         return TypedResults.Ok(response);
@@ -70,16 +55,5 @@ public record GetModuleByIdResponse(
     string? Instructions,
     string Status,
     string? StatusReason,
-    bool IsActive,
-    List<ModuleQuestionDto> Questions
-);
-
-public record ModuleQuestionDto(
-    Guid QuestionId,
-    string VariableName,
-    string QuestionType,
-    string QuestionText,
-    string QuestionSource,
-    int DisplayOrder,
-    string CreatedBy
+    bool IsActive
 );

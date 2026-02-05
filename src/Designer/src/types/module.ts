@@ -9,26 +9,6 @@ export interface Module {
   status: string;
   statusReason?: string;
   isActive: boolean;
-  questions?: ModuleQuestion[];
-}
-
-export interface ModuleQuestion {
-  questionId: string;
-  variableName: string;
-  questionType: string;
-  questionText: string;
-  questionSource: string;
-  displayOrder: number;
-  createdBy: string;
-}
-
-export interface Question {
-  id: string;
-  variableName: string;
-  questionType: string;
-  questionText: string;
-  questionSource: string;
-  isActive: boolean;
 }
 
 export interface ModuleVersion {

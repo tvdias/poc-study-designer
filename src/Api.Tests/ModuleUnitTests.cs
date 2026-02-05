@@ -143,36 +143,3 @@ public class UpdateModuleValidatorTests
         Assert.Contains(result.Errors, e => e.ErrorMessage == "Variable name is required.");
     }
 }
-
-public class AddQuestionToModuleValidatorTests
-{
-    private readonly AddQuestionToModuleValidator _validator = new();
-
-    [Fact]
-    public async Task ValidRequest_ShouldPassValidation()
-    {
-        // Arrange
-        var request = new AddQuestionToModuleRequest(Guid.NewGuid(), 1);
-
-        // Act
-        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.True(result.IsValid);
-        Assert.Empty(result.Errors);
-    }
-
-    [Fact]
-    public async Task DisplayOrderZero_ShouldFailValidation()
-    {
-        // Arrange
-        var request = new AddQuestionToModuleRequest(Guid.NewGuid(), 0);
-
-        // Act
-        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage == "Display order must be greater than 0.");
-    }
-}

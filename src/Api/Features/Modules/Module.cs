@@ -17,6 +17,5 @@ public class Module : AuditableEntity
     public bool IsActive { get; set; } = true;
     
     public ICollection<Module> ChildModules { get; set; } = new List<Module>();
-    public ICollection<ModuleQuestion> ModuleQuestions { get; set; } = new List<ModuleQuestion>();
     public ICollection<ModuleVersion> Versions { get; set; } = new List<ModuleVersion>();
 }

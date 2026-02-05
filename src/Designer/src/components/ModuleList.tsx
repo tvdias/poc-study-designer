@@ -110,7 +110,6 @@ export const ModuleList = ({ onSelectModule, onNewModule }: ModuleListProps) => 
                   )}
                   <div className="module-meta">
                     <span>Version: {module.versionNumber}</span>
-                    <span>Questions: {module.questions?.length || 0}</span>
                   </div>
                 </div>
               </article>
