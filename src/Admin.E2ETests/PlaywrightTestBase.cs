@@ -1,22 +1,17 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Microsoft.Playwright;
-using System.Diagnostics;
 
 namespace Admin.E2ETests;
 
 /// <summary>
 /// Base class for E2E tests using Playwright.
-/// Handles Playwright browser initialization and Vite dev server management.
-/// Gets the API URL from Aspire and starts a local Vite dev server with that configuration.
+/// Handles Playwright browser initialization and gets the Admin app URL from Aspire.
 /// </summary>
 public class PlaywrightTestBase : IAsyncLifetime
 {
     private IPlaywright? _playwright;
     private IBrowser? _browser;
-    private static Process? _viteProcess;
-    private static string? _adminAppUrl;
-    private static readonly SemaphoreSlim _viteServerLock = new(1, 1);
 
     protected AspireAppHostFixture AspireFixture { get; }
     protected IBrowserContext? Context { get; private set; }
@@ -28,183 +23,13 @@ public class PlaywrightTestBase : IAsyncLifetime
     }
 
     /// <summary>
-    /// Gets the base URL of the Admin application.
-    /// Starts the Vite dev server if it hasn't been started yet.
+    /// Gets the base URL of the Admin application from Aspire.
     /// </summary>
-    protected async Task<string> GetAdminAppUrlAsync()
+    protected string GetAdminAppUrl()
     {
-        await _viteServerLock.WaitAsync();
-        try
-        {
-            if (_adminAppUrl == null)
-            {
-                // Get API URL from Aspire
-                var apiUrl = await GetApiUrlAsync();
-                
-                // Start Vite dev server
-                await StartViteServerAsync(apiUrl);
-                
-                // Admin app will run on port 5174 (Vite's default + 1 to avoid conflicts)
-                _adminAppUrl = "http://localhost:5174";
-            }
-            return _adminAppUrl;
-        }
-        finally
-        {
-            _viteServerLock.Release();
-        }
-    }
-
-    /// <summary>
-    /// Starts the Vite dev server for the Admin app.
-    /// </summary>
-    private async Task StartViteServerAsync(string apiUrl)
-    {
-        if (_viteProcess != null)
-        {
-            return; // Already started
-        }
-
-        // Get path to Admin directory
-        var adminPath = Path.GetFullPath(Path.Combine(
-            Path.GetDirectoryName(typeof(PlaywrightTestBase).Assembly.Location)!,
-            "..", "..", "..", "..", "Admin"));
-
-        // Use TaskCompletionSource for thread-safe ready signaling
-        var readyTcs = new TaskCompletionSource<bool>();
-
-        // Start Vite dev server
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "npm",
-            Arguments = "run dev -- --port 5174 --strictPort",
-            WorkingDirectory = adminPath,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-        
-        // Set API URL as environment variable for Vite
-        startInfo.EnvironmentVariables["VITE_API_URL"] = apiUrl;
-
-        _viteProcess = Process.Start(startInfo);
-        
-        if (_viteProcess == null)
-        {
-            throw new InvalidOperationException("Failed to start Vite dev server");
-        }
-
-        // Start monitoring output before process can output anything (avoid race condition)
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                while (!_viteProcess.HasExited)
-                {
-                    var line = await _viteProcess.StandardOutput.ReadLineAsync();
-                    if (line == null)
-                    {
-                        // Process exited or stream closed
-                        break;
-                    }
-                    
-                    if (line.Contains("Local:") || line.Contains("ready in"))
-                    {
-                        readyTcs.TrySetResult(true);
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                readyTcs.TrySetException(ex);
-            }
-        });
-
-        // Wait for Vite to be ready with timeout
-        var timeout = TimeSpan.FromSeconds(60);
-        var readyTask = readyTcs.Task;
-        var timeoutTask = Task.Delay(timeout);
-        
-        var completedTask = await Task.WhenAny(readyTask, timeoutTask);
-
-        if (completedTask == timeoutTask || _viteProcess.HasExited)
-        {
-            // Timeout or process exited before ready
-            try
-            {
-                if (!_viteProcess.HasExited)
-                {
-                    _viteProcess.Kill(entireProcessTree: true);
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                // Process already exited, ignore
-            }
-            finally
-            {
-                _viteProcess?.Dispose();
-                _viteProcess = null;
-            }
-
-            if (_viteProcess?.HasExited == true)
-            {
-                throw new InvalidOperationException($"Vite dev server exited prematurely with code {_viteProcess.ExitCode}");
-            }
-            throw new TimeoutException("Vite dev server did not start within 60 seconds");
-        }
-
-        // Give it a bit more time to be fully ready
-        await Task.Delay(2000);
-    }
-
-    /// <summary>
-    /// Gets the API URL from Aspire.
-    /// Waits up to 60 seconds for the API to become available.
-    /// Note: The API project must have a /health endpoint for this check to work.
-    /// </summary>
-    private async Task<string> GetApiUrlAsync()
-    {
-        var timeout = TimeSpan.FromSeconds(60);
-        var start = DateTime.UtcNow;
-        
-        while (DateTime.UtcNow - start < timeout)
-        {
-            try
-            {
-                var client = AspireFixture.App.CreateHttpClient("api");
-                var apiUrl = client.BaseAddress?.ToString().TrimEnd('/');
-                
-                if (!string.IsNullOrEmpty(apiUrl))
-                {
-                    // Verify the API is actually responding
-                    // Assumes the API has a /health endpoint (standard for .NET Aspire apps)
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    try
-                    {
-                        var response = await client.GetAsync("/health", cts.Token);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return apiUrl;
-                        }
-                    }
-                    catch
-                    {
-                        // Service not ready yet, continue waiting
-                    }
-                }
-            }
-            catch
-            {
-                // Resource not allocated yet, continue waiting
-            }
-            
-            await Task.Delay(1000); // Wait 1 second before retry
-        }
-        
-        throw new TimeoutException($"API did not become available within {timeout.TotalSeconds} seconds");
+        // Get Admin app URL from Aspire's CreateHttpClient which returns the allocated URL
+        var client = AspireFixture.App.CreateHttpClient("app-admin");
+        return client.BaseAddress?.ToString().TrimEnd('/') ?? throw new InvalidOperationException("Admin app URL not found");
     }
 
     public async ValueTask InitializeAsync()
@@ -235,8 +60,5 @@ public class PlaywrightTestBase : IAsyncLifetime
             await _browser.CloseAsync();
         }
         _playwright?.Dispose();
-
-        // Note: We don't kill the Vite process here because it's shared across all tests
-        // It will be cleaned up when the test process exits
     }
 }

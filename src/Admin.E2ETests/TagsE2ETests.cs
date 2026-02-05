@@ -21,7 +21,7 @@ public class TagsE2ETests : PlaywrightTestBase
         var tagName = helpers.GenerateUniqueName("E2E_Tag");
 
         // Get the Admin app URL from Aspire (waits for service to be ready)
-        var baseUrl = await GetAdminAppUrlAsync();
+        var baseUrl = GetAdminAppUrl();
 
         // Step 1: Navigate to Tags page
         await Page.GotoAsync($"{baseUrl}/tags");
@@ -89,7 +89,7 @@ public class TagsE2ETests : PlaywrightTestBase
     {
         Assert.NotNull(Page);
         var helpers = new TestHelpers(Page);
-        var baseUrl = await GetAdminAppUrlAsync();
+        var baseUrl = GetAdminAppUrl();
 
         await Page.GotoAsync($"{baseUrl}/tags");
         await helpers.WaitForPageLoadAsync();
