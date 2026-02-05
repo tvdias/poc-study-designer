@@ -3,6 +3,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { TagsPage } from './pages/TagsPage';
 import { CommissioningMarketsPage } from './pages/CommissioningMarketsPage';
 import { FieldworkMarketsPage } from './pages/FieldworkMarketsPage';
+import { ModulesPage } from './pages/ModulesPage';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="tags" element={<TagsPage />} />
           <Route path="commissioning-markets" element={<CommissioningMarketsPage />} />
           <Route path="fieldwork-markets" element={<FieldworkMarketsPage />} />
+          <Route path="modules" element={<ModulesPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
