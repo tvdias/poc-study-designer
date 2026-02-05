@@ -7,6 +7,5 @@ public record GetModulesResponse(
     string? Description,
     int VersionNumber,
     Guid? ParentModuleId,
-    string Status,
     bool IsActive
 );

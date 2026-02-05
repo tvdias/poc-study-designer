@@ -4,10 +4,9 @@ public record UpdateModuleRequest(
     string VariableName,
     string Label,
     string? Description,
+    int VersionNumber,
     Guid? ParentModuleId,
     string? Instructions,
-    string Status,
-    string? StatusReason,
     bool IsActive
 );
 
@@ -19,7 +18,5 @@ public record UpdateModuleResponse(
     int VersionNumber,
     Guid? ParentModuleId,
     string? Instructions,
-    string Status,
-    string? StatusReason,
     bool IsActive
 );

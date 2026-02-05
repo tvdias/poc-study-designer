@@ -36,7 +36,6 @@ public static class GetModulesEndpoint
                 m.Description,
                 m.VersionNumber,
                 m.ParentModuleId,
-                m.Status,
                 m.IsActive))
             .ToListAsync(cancellationToken);
     }

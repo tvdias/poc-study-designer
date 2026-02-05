@@ -36,8 +36,6 @@ public static class GetModuleByIdEndpoint
             module.VersionNumber,
             module.ParentModuleId,
             module.Instructions,
-            module.Status,
-            module.StatusReason,
             module.IsActive
         );
 
@@ -53,7 +51,5 @@ public record GetModuleByIdResponse(
     int VersionNumber,
     Guid? ParentModuleId,
     string? Instructions,
-    string Status,
-    string? StatusReason,
     bool IsActive
 );

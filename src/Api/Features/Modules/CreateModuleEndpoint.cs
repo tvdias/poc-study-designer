@@ -43,28 +43,14 @@ public static class CreateModuleEndpoint
             VariableName = request.VariableName,
             Label = request.Label,
             Description = request.Description,
-            VersionNumber = 1,
+            VersionNumber = request.VersionNumber > 0 ? request.VersionNumber : 1,
             ParentModuleId = request.ParentModuleId,
             Instructions = request.Instructions,
-            Status = request.Status,
-            StatusReason = request.StatusReason,
             CreatedOn = DateTime.UtcNow,
             CreatedBy = "System" // TODO: Replace with real user when auth is available
         };
 
         db.Modules.Add(module);
-
-        // Create initial version record
-        var version = new ModuleVersion
-        {
-            Id = Guid.NewGuid(),
-            ModuleId = module.Id,
-            VersionNumber = 1,
-            ChangeDescription = "Initial version",
-            CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
-        };
-        db.ModuleVersions.Add(version);
 
         try
         {
@@ -88,9 +74,7 @@ public static class CreateModuleEndpoint
             module.Description,
             module.VersionNumber,
             module.ParentModuleId,
-            module.Instructions,
-            module.Status,
-            module.StatusReason
+            module.Instructions
         );
 
         return TypedResults.CreatedAtRoute(response, "GetModuleById", new { id = module.Id });

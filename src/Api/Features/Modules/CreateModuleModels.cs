@@ -4,10 +4,9 @@ public record CreateModuleRequest(
     string VariableName,
     string Label,
     string? Description,
+    int VersionNumber,
     Guid? ParentModuleId,
-    string? Instructions,
-    string Status,
-    string? StatusReason
+    string? Instructions
 );
 
 public record CreateModuleResponse(
@@ -17,7 +16,5 @@ public record CreateModuleResponse(
     string? Description,
     int VersionNumber,
     Guid? ParentModuleId,
-    string? Instructions,
-    string Status,
-    string? StatusReason
+    string? Instructions
 );

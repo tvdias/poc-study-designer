@@ -11,12 +11,12 @@ public class ModuleUnitTests
         var variableName = "AGE - V1";
         var label = "AGE";
         var description = "AGE Module";
-        var status = "Active";
-        var request = new CreateModuleRequest(variableName, label, description, null, null, status, null);
+        var versionNumber = 1;
+        var request = new CreateModuleRequest(variableName, label, description, versionNumber, null, null);
         Assert.Equal(variableName, request.VariableName);
         Assert.Equal(label, request.Label);
         Assert.Equal(description, request.Description);
-        Assert.Equal(status, request.Status);
+        Assert.Equal(versionNumber, request.VersionNumber);
     }
 }
 
@@ -28,7 +28,7 @@ public class CreateModuleValidatorTests
     public async Task ValidModule_ShouldPassValidation()
     {
         // Arrange
-        var request = new CreateModuleRequest("AGE - V1", "AGE", "AGE Module", null, null, "Active", null);
+        var request = new CreateModuleRequest("AGE - V1", "AGE", "AGE Module", 1, null, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -42,7 +42,7 @@ public class CreateModuleValidatorTests
     public async Task EmptyVariableName_ShouldFailValidation()
     {
         // Arrange
-        var request = new CreateModuleRequest("", "AGE", "AGE Module", null, null, "Active", null);
+        var request = new CreateModuleRequest("", "AGE", "AGE Module", 1, null, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -56,7 +56,7 @@ public class CreateModuleValidatorTests
     public async Task EmptyLabel_ShouldFailValidation()
     {
         // Arrange
-        var request = new CreateModuleRequest("AGE - V1", "", "AGE Module", null, null, "Active", null);
+        var request = new CreateModuleRequest("AGE - V1", "", "AGE Module", 1, null, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -67,17 +67,17 @@ public class CreateModuleValidatorTests
     }
 
     [Fact]
-    public async Task EmptyStatus_ShouldFailValidation()
+    public async Task VersionNumberZero_ShouldFailValidation()
     {
         // Arrange
-        var request = new CreateModuleRequest("AGE - V1", "AGE", "AGE Module", null, null, "", null);
+        var request = new CreateModuleRequest("AGE - V1", "AGE", "AGE Module", 0, null, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage == "Status is required.");
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Version number must be greater than 0.");
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class CreateModuleValidatorTests
     {
         // Arrange
         var longName = new string('a', 101);
-        var request = new CreateModuleRequest(longName, "AGE", "AGE Module", null, null, "Active", null);
+        var request = new CreateModuleRequest(longName, "AGE", "AGE Module", 1, null, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -100,7 +100,7 @@ public class CreateModuleValidatorTests
     {
         // Arrange
         var longDescription = new string('a', 501);
-        var request = new CreateModuleRequest("AGE - V1", "AGE", longDescription, null, null, "Active", null);
+        var request = new CreateModuleRequest("AGE - V1", "AGE", longDescription, 1, null, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -119,7 +119,7 @@ public class UpdateModuleValidatorTests
     public async Task ValidModule_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateModuleRequest("AGE - V1", "AGE", "AGE Module", null, null, "Active", null, true);
+        var request = new UpdateModuleRequest("AGE - V1", "AGE", "AGE Module", 1, null, null, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -133,7 +133,7 @@ public class UpdateModuleValidatorTests
     public async Task EmptyVariableName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateModuleRequest("", "AGE", "AGE Module", null, null, "Active", null, true);
+        var request = new UpdateModuleRequest("", "AGE", "AGE Module", 1, null, null, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

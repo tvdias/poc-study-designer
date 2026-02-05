@@ -53,10 +53,9 @@ public static class UpdateModuleEndpoint
         module.VariableName = request.VariableName;
         module.Label = request.Label;
         module.Description = request.Description;
+        module.VersionNumber = request.VersionNumber;
         module.ParentModuleId = request.ParentModuleId;
         module.Instructions = request.Instructions;
-        module.Status = request.Status;
-        module.StatusReason = request.StatusReason;
         module.IsActive = request.IsActive;
         module.ModifiedOn = DateTime.UtcNow;
         module.ModifiedBy = "System"; // TODO: Replace with real user
@@ -71,8 +70,6 @@ public static class UpdateModuleEndpoint
             module.VersionNumber,
             module.ParentModuleId,
             module.Instructions,
-            module.Status,
-            module.StatusReason,
             module.IsActive
         );
 

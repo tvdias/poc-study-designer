@@ -16,7 +16,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<CommissioningMarket> CommissioningMarkets => Set<CommissioningMarket>();
     public DbSet<FieldworkMarket> FieldworkMarkets => Set<FieldworkMarket>();
     public DbSet<Module> Modules => Set<Module>();
-    public DbSet<ModuleVersion> ModuleVersions => Set<ModuleVersion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,25 +51,12 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Label).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.Instructions).HasMaxLength(2000);
-            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.StatusReason).HasMaxLength(200);
             entity.HasIndex(e => e.VariableName).IsUnique();
             
             entity.HasOne(e => e.ParentModule)
                 .WithMany(e => e.ChildModules)
                 .HasForeignKey(e => e.ParentModuleId)
                 .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        modelBuilder.Entity<ModuleVersion>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.ChangeDescription).HasMaxLength(500);
-            
-            entity.HasOne(e => e.Module)
-                .WithMany(e => e.Versions)
-                .HasForeignKey(e => e.ModuleId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

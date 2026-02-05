@@ -63,7 +63,6 @@ api.MapGetModulesEndpoint();
 api.MapGetModuleByIdEndpoint();
 api.MapUpdateModuleEndpoint();
 api.MapDeleteModuleEndpoint();
-api.MapGetModuleVersionsEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>

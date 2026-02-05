@@ -22,12 +22,7 @@ public class UpdateModuleValidator : AbstractValidator<UpdateModuleRequest>
             .MaximumLength(2000).WithMessage("Instructions must not exceed 2000 characters.")
             .When(x => !string.IsNullOrEmpty(x.Instructions));
 
-        RuleFor(x => x.Status)
-            .NotEmpty().WithMessage("Status is required.")
-            .MaximumLength(50).WithMessage("Status must not exceed 50 characters.");
-
-        RuleFor(x => x.StatusReason)
-            .MaximumLength(200).WithMessage("Status reason must not exceed 200 characters.")
-            .When(x => !string.IsNullOrEmpty(x.StatusReason));
+        RuleFor(x => x.VersionNumber)
+            .GreaterThan(0).WithMessage("Version number must be greater than 0.");
     }
 }

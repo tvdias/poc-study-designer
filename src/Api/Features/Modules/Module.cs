@@ -12,10 +12,7 @@ public class Module : AuditableEntity
     public Guid? ParentModuleId { get; set; }
     public Module? ParentModule { get; set; }
     public string? Instructions { get; set; }
-    public required string Status { get; set; } = "Active";
-    public string? StatusReason { get; set; }
     public bool IsActive { get; set; } = true;
     
     public ICollection<Module> ChildModules { get; set; } = new List<Module>();
-    public ICollection<ModuleVersion> Versions { get; set; } = new List<ModuleVersion>();
 }
