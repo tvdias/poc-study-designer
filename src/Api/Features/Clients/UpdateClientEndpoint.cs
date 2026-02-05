@@ -35,9 +35,10 @@ public static class UpdateClientEndpoint
             return TypedResults.NotFound();
         }
 
-        client.Name = request.Name;
-        client.IntegrationMetadata = request.IntegrationMetadata;
-        client.ProductsModules = request.ProductsModules;
+        client.AccountName = request.AccountName;
+        client.CompanyNumber = request.CompanyNumber;
+        client.CustomerNumber = request.CustomerNumber;
+        client.CompanyCode = request.CompanyCode;
         client.IsActive = request.IsActive;
         client.ModifiedOn = DateTime.UtcNow;
         client.ModifiedBy = "System"; // TODO: Replace with real user
@@ -46,9 +47,10 @@ public static class UpdateClientEndpoint
 
         return TypedResults.Ok(new UpdateClientResponse(
             client.Id,
-            client.Name,
-            client.IntegrationMetadata,
-            client.ProductsModules,
+            client.AccountName,
+            client.CompanyNumber,
+            client.CustomerNumber,
+            client.CompanyCode,
             client.IsActive));
     }
 }

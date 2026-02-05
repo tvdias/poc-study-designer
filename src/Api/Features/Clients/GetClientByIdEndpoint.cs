@@ -27,9 +27,10 @@ public static class GetClientByIdEndpoint
 
         return TypedResults.Ok(new GetClientsResponse(
             client.Id,
-            client.Name,
-            client.IntegrationMetadata,
-            client.ProductsModules,
+            client.AccountName,
+            client.CompanyNumber,
+            client.CustomerNumber,
+            client.CompanyCode,
             client.IsActive));
     }
 }

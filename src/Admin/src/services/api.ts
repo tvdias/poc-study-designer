@@ -51,22 +51,25 @@ export interface UpdateFieldworkMarketRequest {
 
 export interface Client {
     id: string;
-    name: string;
-    integrationMetadata: string | null;
-    productsModules: string | null;
+    accountName: string;
+    companyNumber: string | null;
+    customerNumber: string | null;
+    companyCode: string | null;
     isActive: boolean;
 }
 
 export interface CreateClientRequest {
-    name: string;
-    integrationMetadata?: string | null;
-    productsModules?: string | null;
+    accountName: string;
+    companyNumber?: string | null;
+    customerNumber?: string | null;
+    companyCode?: string | null;
 }
 
 export interface UpdateClientRequest {
-    name: string;
-    integrationMetadata?: string | null;
-    productsModules?: string | null;
+    accountName: string;
+    companyNumber?: string | null;
+    customerNumber?: string | null;
+    companyCode?: string | null;
     isActive: boolean;
 }
 

@@ -16,9 +16,10 @@ namespace Api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    IntegrationMetadata = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    ProductsModules = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AccountName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    CompanyNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    CustomerNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    CompanyCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -31,9 +32,9 @@ namespace Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Clients_Name",
+                name: "IX_Clients_AccountName",
                 table: "Clients",
-                column: "Name",
+                column: "AccountName",
                 unique: true);
         }
 

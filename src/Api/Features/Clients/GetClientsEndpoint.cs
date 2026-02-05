@@ -23,11 +23,11 @@ public static class GetClientsEndpoint
         if (!string.IsNullOrWhiteSpace(query))
         {
             var pattern = $"%{query.Trim()}%";
-            clientsQuery = clientsQuery.Where(c => EF.Functions.ILike(c.Name, pattern));
+            clientsQuery = clientsQuery.Where(c => EF.Functions.ILike(c.AccountName, pattern));
         }
 
         return await clientsQuery
-            .Select(c => new GetClientsResponse(c.Id, c.Name, c.IntegrationMetadata, c.ProductsModules, c.IsActive))
+            .Select(c => new GetClientsResponse(c.Id, c.AccountName, c.CompanyNumber, c.CustomerNumber, c.CompanyCode, c.IsActive))
             .ToListAsync(cancellationToken);
     }
 }

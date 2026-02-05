@@ -47,10 +47,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Client>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.IntegrationMetadata).HasMaxLength(1000);
-            entity.Property(e => e.ProductsModules).HasMaxLength(500);
-            entity.HasIndex(e => e.Name).IsUnique(); // Ensure client names are unique
+            entity.Property(e => e.AccountName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CompanyNumber).HasMaxLength(50);
+            entity.Property(e => e.CustomerNumber).HasMaxLength(50);
+            entity.Property(e => e.CompanyCode).HasMaxLength(50);
+            entity.HasIndex(e => e.AccountName).IsUnique(); // Ensure account names are unique
         });
     }
 }

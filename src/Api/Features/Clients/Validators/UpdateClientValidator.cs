@@ -6,16 +6,20 @@ public class UpdateClientValidator : AbstractValidator<UpdateClientRequest>
 {
     public UpdateClientValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Client name is required.")
-            .MaximumLength(200).WithMessage("Client name must not exceed 200 characters.");
+        RuleFor(x => x.AccountName)
+            .NotEmpty().WithMessage("Account name is required.")
+            .MaximumLength(200).WithMessage("Account name must not exceed 200 characters.");
 
-        RuleFor(x => x.IntegrationMetadata)
-            .MaximumLength(1000).WithMessage("Integration metadata must not exceed 1000 characters.")
-            .When(x => !string.IsNullOrEmpty(x.IntegrationMetadata));
+        RuleFor(x => x.CompanyNumber)
+            .MaximumLength(50).WithMessage("Company number must not exceed 50 characters.")
+            .When(x => !string.IsNullOrEmpty(x.CompanyNumber));
 
-        RuleFor(x => x.ProductsModules)
-            .MaximumLength(500).WithMessage("Products/modules must not exceed 500 characters.")
-            .When(x => !string.IsNullOrEmpty(x.ProductsModules));
+        RuleFor(x => x.CustomerNumber)
+            .MaximumLength(50).WithMessage("Customer number must not exceed 50 characters.")
+            .When(x => !string.IsNullOrEmpty(x.CustomerNumber));
+
+        RuleFor(x => x.CompanyCode)
+            .MaximumLength(50).WithMessage("Company code must not exceed 50 characters.")
+            .When(x => !string.IsNullOrEmpty(x.CompanyCode));
     }
 }

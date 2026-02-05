@@ -16,9 +16,10 @@ export function ClientsPage() {
     const [mode, setMode] = useState<Mode>('list');
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [formData, setFormData] = useState({ 
-        name: '', 
-        integrationMetadata: '', 
-        productsModules: '',
+        accountName: '', 
+        companyNumber: '', 
+        customerNumber: '',
+        companyCode: '',
         isActive: true 
     });
 
@@ -46,7 +47,7 @@ export function ClientsPage() {
 
     const openCreate = () => {
         setSelectedClient(null);
-        setFormData({ name: '', integrationMetadata: '', productsModules: '', isActive: true });
+        setFormData({ accountName: '', companyNumber: '', customerNumber: '', companyCode: '', isActive: true });
         setErrors({});
         setServerError('');
         setMode('create');
@@ -65,9 +66,10 @@ export function ClientsPage() {
         if (client) setSelectedClient(client);
 
         setFormData({ 
-            name: target.name, 
-            integrationMetadata: target.integrationMetadata || '', 
-            productsModules: target.productsModules || '',
+            accountName: target.accountName, 
+            companyNumber: target.companyNumber || '', 
+            customerNumber: target.customerNumber || '',
+            companyCode: target.companyCode || '',
             isActive: target.isActive 
         });
         setErrors({});
@@ -88,9 +90,10 @@ export function ClientsPage() {
         try {
             let savedClient: Client;
             const requestData = {
-                name: formData.name,
-                integrationMetadata: formData.integrationMetadata || null,
-                productsModules: formData.productsModules || null,
+                accountName: formData.accountName,
+                companyNumber: formData.companyNumber || null,
+                customerNumber: formData.customerNumber || null,
+                companyCode: formData.companyCode || null,
                 isActive: formData.isActive
             };
 
@@ -119,7 +122,7 @@ export function ClientsPage() {
 
     const handleDelete = async (client?: Client) => {
         const target = client || selectedClient;
-        if (!target || !confirm(`Are you sure you want to delete client '${target.name}'?`)) return;
+        if (!target || !confirm(`Are you sure you want to delete client '${target.accountName}'?`)) return;
 
         try {
             await clientsApi.delete(target.id);
@@ -161,9 +164,10 @@ export function ClientsPage() {
                     <table className="details-list">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Integration Metadata</th>
-                                <th>Products/Modules</th>
+                                <th>Account Name</th>
+                                <th>Company Number</th>
+                                <th>Customer Number</th>
+                                <th>Company Code</th>
                                 <th style={{ width: '100px' }}>Status</th>
                                 <th style={{ width: '150px' }}>Actions</th>
                             </tr>
@@ -171,9 +175,10 @@ export function ClientsPage() {
                         <tbody>
                             {clients.map((client) => (
                                 <tr key={client.id} onClick={() => openView(client)} className="clickable-row">
-                                    <td>{client.name}</td>
-                                    <td>{client.integrationMetadata || '-'}</td>
-                                    <td>{client.productsModules || '-'}</td>
+                                    <td>{client.accountName}</td>
+                                    <td>{client.companyNumber || '-'}</td>
+                                    <td>{client.customerNumber || '-'}</td>
+                                    <td>{client.companyCode || '-'}</td>
                                     <td>
                                         <span className={`status-text ${client.isActive ? 'active' : 'inactive'}`}>
                                             {client.isActive ? 'Active' : 'Inactive'}
@@ -195,7 +200,7 @@ export function ClientsPage() {
                                 </tr>
                             ))}
                             {clients.length === 0 && (
-                                <tr><td colSpan={5} className="empty-state">No clients found.</td></tr>
+                                <tr><td colSpan={6} className="empty-state">No clients found.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -206,7 +211,7 @@ export function ClientsPage() {
             <SidePanel
                 isOpen={mode !== 'list'}
                 onClose={closePanel}
-                title={mode === 'create' ? 'New Client' : mode === 'edit' ? 'Edit Client' : selectedClient?.name || 'Client Details'}
+                title={mode === 'create' ? 'New Client' : mode === 'edit' ? 'Edit Client' : selectedClient?.accountName || 'Client Details'}
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
@@ -227,16 +232,20 @@ export function ClientsPage() {
                 {mode === 'view' && selectedClient && (
                     <div className="view-details">
                         <div className="detail-item">
-                            <label>Name</label>
-                            <div className="value">{selectedClient.name}</div>
+                            <label>Account Name</label>
+                            <div className="value">{selectedClient.accountName}</div>
                         </div>
                         <div className="detail-item">
-                            <label>Integration Metadata</label>
-                            <div className="value">{selectedClient.integrationMetadata || 'N/A'}</div>
+                            <label>Company Number</label>
+                            <div className="value">{selectedClient.companyNumber || 'N/A'}</div>
                         </div>
                         <div className="detail-item">
-                            <label>Products/Modules</label>
-                            <div className="value">{selectedClient.productsModules || 'N/A'}</div>
+                            <label>Customer Number</label>
+                            <div className="value">{selectedClient.customerNumber || 'N/A'}</div>
+                        </div>
+                        <div className="detail-item">
+                            <label>Company Code</label>
+                            <div className="value">{selectedClient.companyCode || 'N/A'}</div>
                         </div>
                         <div className="detail-item">
                             <label>Status</label>
@@ -255,42 +264,55 @@ export function ClientsPage() {
                 {(mode === 'create' || mode === 'edit') && (
                     <form className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
-                            <label htmlFor="clientName">Name *</label>
+                            <label htmlFor="accountName">Account Name *</label>
                             <input
-                                id="clientName"
+                                id="accountName"
                                 type="text"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className={errors.Name ? 'error' : ''}
+                                value={formData.accountName}
+                                onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                                className={errors.AccountName ? 'error' : ''}
                                 autoFocus
                             />
-                            {errors.Name && <span className="field-error">{errors.Name[0]}</span>}
+                            {errors.AccountName && <span className="field-error">{errors.AccountName[0]}</span>}
                         </div>
 
                         <div className="form-field">
-                            <label htmlFor="integrationMetadata">Integration Metadata</label>
-                            <textarea
-                                id="integrationMetadata"
-                                value={formData.integrationMetadata}
-                                onChange={(e) => setFormData({ ...formData, integrationMetadata: e.target.value })}
-                                className={errors.IntegrationMetadata ? 'error' : ''}
-                                rows={4}
-                                placeholder="Enter integration-related metadata (optional)"
+                            <label htmlFor="companyNumber">Company Number</label>
+                            <input
+                                id="companyNumber"
+                                type="text"
+                                value={formData.companyNumber}
+                                onChange={(e) => setFormData({ ...formData, companyNumber: e.target.value })}
+                                className={errors.CompanyNumber ? 'error' : ''}
+                                placeholder="Enter company number (optional)"
                             />
-                            {errors.IntegrationMetadata && <span className="field-error">{errors.IntegrationMetadata[0]}</span>}
+                            {errors.CompanyNumber && <span className="field-error">{errors.CompanyNumber[0]}</span>}
                         </div>
 
                         <div className="form-field">
-                            <label htmlFor="productsModules">Products/Modules</label>
-                            <textarea
-                                id="productsModules"
-                                value={formData.productsModules}
-                                onChange={(e) => setFormData({ ...formData, productsModules: e.target.value })}
-                                className={errors.ProductsModules ? 'error' : ''}
-                                rows={3}
-                                placeholder="Enter products or modules (optional)"
+                            <label htmlFor="customerNumber">Customer Number</label>
+                            <input
+                                id="customerNumber"
+                                type="text"
+                                value={formData.customerNumber}
+                                onChange={(e) => setFormData({ ...formData, customerNumber: e.target.value })}
+                                className={errors.CustomerNumber ? 'error' : ''}
+                                placeholder="Enter customer number (optional)"
                             />
-                            {errors.ProductsModules && <span className="field-error">{errors.ProductsModules[0]}</span>}
+                            {errors.CustomerNumber && <span className="field-error">{errors.CustomerNumber[0]}</span>}
+                        </div>
+
+                        <div className="form-field">
+                            <label htmlFor="companyCode">Company Code</label>
+                            <input
+                                id="companyCode"
+                                type="text"
+                                value={formData.companyCode}
+                                onChange={(e) => setFormData({ ...formData, companyCode: e.target.value })}
+                                className={errors.CompanyCode ? 'error' : ''}
+                                placeholder="Enter company code (optional)"
+                            />
+                            {errors.CompanyCode && <span className="field-error">{errors.CompanyCode[0]}</span>}
                         </div>
 
                         {mode === 'edit' && (

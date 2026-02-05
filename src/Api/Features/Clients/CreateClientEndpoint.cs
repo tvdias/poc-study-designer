@@ -30,9 +30,10 @@ public static class CreateClientEndpoint
         var client = new Client
         {
             Id = Guid.NewGuid(),
-            Name = request.Name,
-            IntegrationMetadata = request.IntegrationMetadata,
-            ProductsModules = request.ProductsModules,
+            AccountName = request.AccountName,
+            CompanyNumber = request.CompanyNumber,
+            CustomerNumber = request.CustomerNumber,
+            CompanyCode = request.CompanyCode,
             CreatedOn = DateTime.UtcNow,
             CreatedBy = "System" // TODO: Replace with real user when auth is available
         };
@@ -50,14 +51,14 @@ public static class CreateClientEndpoint
             if (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) == true
                 || ex.InnerException?.Message.Contains("constraint", StringComparison.OrdinalIgnoreCase) == true)
             {
-                return TypedResults.Conflict($"Client '{request.Name}' already exists.");
+                return TypedResults.Conflict($"Client '{request.AccountName}' already exists.");
             }
 
             throw;
         }
 
         return TypedResults.CreatedAtRoute(
-            new CreateClientResponse(client.Id, client.Name, client.IntegrationMetadata, client.ProductsModules),
+            new CreateClientResponse(client.Id, client.AccountName, client.CompanyNumber, client.CustomerNumber, client.CompanyCode),
             "GetClientById",
             new { id = client.Id });
     }

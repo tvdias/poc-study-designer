@@ -1,5 +1,5 @@
 namespace Api.Features.Clients;
 
-public record CreateClientRequest(string Name, string? IntegrationMetadata, string? ProductsModules);
+public record CreateClientRequest(string AccountName, string? CompanyNumber, string? CustomerNumber, string? CompanyCode);
 
-public record CreateClientResponse(Guid Id, string Name, string? IntegrationMetadata, string? ProductsModules);
+public record CreateClientResponse(Guid Id, string AccountName, string? CompanyNumber, string? CustomerNumber, string? CompanyCode);
