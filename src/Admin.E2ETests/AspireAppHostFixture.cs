@@ -33,7 +33,7 @@ public class AspireAppHostFixture : IAsyncLifetime
             await App.DisposeAsync();
         }
         
-        // Clean up environment variable
-        Environment.SetEnvironmentVariable("ASPIRE_TEST_MODE", null);
+        // Clean up environment variable (best-effort cleanup for process-scoped variable)
+        Environment.SetEnvironmentVariable("ASPIRE_TEST_MODE", string.Empty);
     }
 }

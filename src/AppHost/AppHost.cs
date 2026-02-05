@@ -7,27 +7,19 @@ var isAdminE2ETest = testMode == "AdminE2E";
 // Always add PostgreSQL - required by API
 var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
 
-// Add Redis and Service Bus only when not in AdminE2E test mode
-var cache = isAdminE2ETest ? null : builder.AddRedis("cache");
-var serviceBus = isAdminE2ETest ? null : builder.AddAzureServiceBus("servicebus")
-    .AddTopic("questions")
-    .AddTopic("projects");
-
 // Configure API with conditional dependencies
 var apiBuilder = builder.AddProject<Projects.Api>("api")
     .WithReference(postgres)
     .WaitFor(postgres);
 
-if (cache != null)
-{
-    apiBuilder = apiBuilder
-        .WithReference(cache)
-        .WaitFor(cache);
-}
-
+// Add Redis and configure API to use it only when not in AdminE2E test mode
 if (!isAdminE2ETest)
 {
-    apiBuilder = apiBuilder.WithHttpHealthCheck("/health");
+    var cache = builder.AddRedis("cache");
+    apiBuilder = apiBuilder
+        .WithReference(cache)
+        .WaitFor(cache)
+        .WithHttpHealthCheck("/health");
 }
 
 var api = apiBuilder.WithExternalHttpEndpoints();
@@ -49,14 +41,18 @@ if (!isAdminE2ETest)
     appAdmin = appAdmin.WaitFor(api);
 }
 
-// Add Azure Functions only when not in AdminE2E test mode
+// Add Azure Service Bus and Functions only when not in AdminE2E test mode
 if (!isAdminE2ETest)
 {
+    var serviceBus = builder.AddAzureServiceBus("servicebus")
+        .AddTopic("questions")
+        .AddTopic("projects");
+
     builder.AddAzureFunctionsProject<Projects.CluedinProcessor>("func-cluedin-processor")
-        .WithReference(serviceBus!);
+        .WithReference(serviceBus);
 
     builder.AddAzureFunctionsProject<Projects.ProjectsProcessor>("func-projects-processor")
-        .WithReference(serviceBus!);
+        .WithReference(serviceBus);
 }
 
 builder.Build().Run();
