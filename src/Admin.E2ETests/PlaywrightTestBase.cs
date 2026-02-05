@@ -10,15 +10,25 @@ namespace Admin.E2ETests;
 /// Handles Playwright browser initialization and manually starts the Vite dev server.
 /// The Admin Vite app is NOT started by Aspire in AdminE2E mode to avoid slow npm operations.
 /// Instead, we manually start it here with the API URL from Aspire.
+/// 
+/// Note: The Vite server is started once and shared across all tests via static fields.
+/// It will be cleaned up when the test process exits. This is safe because all tests
+/// in the AdminE2E collection run sequentially (xUnit collection fixtures enforce this).
 /// </summary>
 public class PlaywrightTestBase : IAsyncLifetime
 {
     private IPlaywright? _playwright;
     private IBrowser? _browser;
+    
+    // Static fields for shared Vite server across all tests in the collection
+    // Safe because xUnit collection fixtures ensure tests run sequentially
     private static Process? _viteProcess;
     private static readonly SemaphoreSlim _viteStartLock = new(1, 1);
     private static TaskCompletionSource<bool>? _viteReadyTcs;
     private const string ViteUrl = "http://localhost:5174";
+    private const int VitePort = 5174;
+    private const int ViteStartupTimeoutSeconds = 60;
+    private const int ViteStabilizationDelayMs = 2000; // Additional wait after Vite reports ready to ensure full stability
 
     protected AspireAppHostFixture AspireFixture { get; }
     protected IBrowserContext? Context { get; private set; }
@@ -83,7 +93,7 @@ public class PlaywrightTestBase : IAsyncLifetime
                 if (args.Data != null)
                 {
                     Console.WriteLine($"[Vite] {args.Data}");
-                    if (args.Data.Contains("Local:") && args.Data.Contains("5174"))
+                    if (args.Data.Contains("Local:") && args.Data.Contains(VitePort.ToString()))
                     {
                         _viteReadyTcs?.TrySetResult(true);
                     }
@@ -102,18 +112,18 @@ public class PlaywrightTestBase : IAsyncLifetime
             _viteProcess.BeginOutputReadLine();
             _viteProcess.BeginErrorReadLine();
 
-            // Wait for Vite to be ready (max 60 seconds)
-            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(60));
+            // Wait for Vite to be ready
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(ViteStartupTimeoutSeconds));
             var completedTask = await Task.WhenAny(_viteReadyTcs.Task, timeoutTask);
 
             if (completedTask == timeoutTask)
             {
                 _viteProcess?.Kill();
-                throw new TimeoutException("Vite dev server failed to start within 60 seconds");
+                throw new TimeoutException($"Vite dev server failed to start within {ViteStartupTimeoutSeconds} seconds");
             }
 
             // Additional wait to ensure server is fully ready to accept connections
-            await Task.Delay(2000);
+            await Task.Delay(ViteStabilizationDelayMs);
 
             Console.WriteLine($"Vite dev server started successfully at {ViteUrl} with API URL {apiUrl}");
         }
