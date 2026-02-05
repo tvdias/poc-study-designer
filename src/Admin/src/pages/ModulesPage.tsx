@@ -340,7 +340,7 @@ export function ModulesPage() {
                                 onChange={(e) => setFormData({ ...formData, parentModuleId: e.target.value })}
                                 placeholder="Leave empty for no parent"
                             />
-                            <small>When creating a new version (> 1), enter the ID of the previous version</small>
+                            <small>When creating a new version (greater than 1), enter the ID of the previous version</small>
                         </div>
 
                         <div className="form-field">
