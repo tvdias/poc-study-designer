@@ -4,14 +4,13 @@ This project contains end-to-end (E2E) tests for the Admin application that are 
 
 ## Overview
 
-These E2E tests use an optimized Aspire configuration that only starts the services needed for testing:
+These E2E tests use the **main AppHost** with environment-based service filtering. When `ASPIRE_TEST_MODE=AdminE2E` is set, only the services needed for testing are started:
+
 - ✅ **PostgreSQL** - Database for API
-- ✅ **API** - Backend service
+- ✅ **API** - Backend service  
+- ✅ **Admin Vite app** - Frontend application (via Aspire's ViteApp)
 
-The **Admin Vite app** is started manually by the test framework (not via Aspire) for better performance and reliability.
-
-Services NOT started (faster startup):
-- ❌ Admin app via Aspire (started manually with Process for speed)
+Services NOT started in AdminE2E mode (faster startup):
 - ❌ Redis (not required for Admin app)
 - ❌ Azure Service Bus (not required for Admin app)
 - ❌ Designer app (not being tested)
@@ -19,13 +18,12 @@ Services NOT started (faster startup):
 
 ### Key Features
 
+- ✅ Uses **main AppHost** (single source of truth, same as Api.IntegrationTests)
+- ✅ Environment-based service filtering (no separate test AppHost needed)
 - ✅ Run as part of the .NET test suite (`dotnet test`)
 - ✅ **Single Aspire instance shared across all tests** (much faster)
-- ✅ **Vite dev server started once and shared across all tests**
-- ✅ Automatically start only required services
-- ✅ Automatically discover API URL from Aspire and pass to Vite
 - ✅ Tests run in collection to ensure proper sequencing
-- ✅ Fast initialization (~30-40 seconds for complete stack)
+- ✅ Fast initialization (~30-50 seconds for complete stack)
 
 ## Running the Tests
 
@@ -34,7 +32,6 @@ Services NOT started (faster startup):
 - .NET 10.0 SDK
 - .NET Aspire 13 workload: `dotnet workload install aspire`
 - Docker Desktop (or Podman) - for PostgreSQL container
-- Node.js 18+ and npm - for Vite dev server
 - Playwright browsers: Install once with:
   ```bash
   cd src/Admin.E2ETests
@@ -57,240 +54,180 @@ dotnet test --list-tests
 ```
 
 That's it! The tests will:
-1. Start required Aspire services (PostgreSQL, API) - **much faster than full stack**
-2. **Reuse the same Aspire instance for all tests** (even faster)
-3. Start Vite dev server for Admin app (once, shared across all tests)
-4. Automatically discover the API URL and pass it to Vite
-5. Run Playwright E2E tests against the running application
-6. Clean up all resources when complete
+1. Set `ASPIRE_TEST_MODE=AdminE2E` environment variable
+2. Start main AppHost in AdminE2E mode (PostgreSQL, API, Admin app only)
+3. **Reuse the same Aspire instance for all tests** (even faster)
+4. Run Playwright E2E tests against the running application
+5. Clean up all resources when complete
 
 ## How It Works
 
+### Environment-Based Service Filtering
+
+The main `AppHost.cs` checks the `ASPIRE_TEST_MODE` environment variable:
+
+```csharp
+var testMode = Environment.GetEnvironmentVariable("ASPIRE_TEST_MODE");
+var isAdminE2ETest = testMode == "AdminE2E";
+
+// Only add services when NOT in AdminE2E mode
+if (!isAdminE2ETest)
+{
+    builder.AddRedis("cache");
+    builder.AddAzureServiceBus("servicebus");
+    builder.AddViteApp("app-designer", "../Designer");
+    // Azure Functions...
+}
+```
+
 ### Performance Optimizations
 
-The Admin E2E tests are optimized for fast execution:
-
-**Minimal Services**
-- Only starts via Aspire: PostgreSQL and API
-- Admin app started manually via Process (faster than Aspire orchestration)
+**Minimal Services via Environment Variable**
+- AppHost checks `ASPIRE_TEST_MODE` and skips unnecessary services
+- Only starts: PostgreSQL, API, and Admin app
 - Skips: Redis, Azure Service Bus, Designer app, Azure Functions
 - Result: ~60% fewer services = faster startup
 
-**Parallel Startup**
-- Removed `.WaitFor()` chains that forced sequential startup
-- Removed health checks that blocked until services were fully ready
-- Aspire starts services in parallel automatically
-- Tests wait intelligently for services with retry logic
-
 **Shared Aspire Instance**
 - Single Aspire instance shared across all tests via xUnit collection
-- First test pays startup cost (~10-30 seconds)
+- First test pays startup cost (~20-30 seconds)
 - Subsequent tests run immediately (~1-5 seconds each)
 
 **Expected Timings**
-- First test (cold start): 10-30 seconds
+- First test (cold start): 20-40 seconds
 - Subsequent tests: 1-5 seconds each
-- Total for 2 tests: ~15-35 seconds
+- Total for 2 tests: ~25-45 seconds
 
 If tests take longer than 60 seconds, see troubleshooting section below.
 
 ## Architecture
 
-1. **TestAppHost**: Custom Aspire configuration that only starts required services (PostgreSQL, API, Admin)
-2. **AspireAppHostFixture**: Starts the optimized Aspire stack using TestAppHost
-3. **AdminE2ECollection**: xUnit collection that ensures all tests share the same Aspire instance (faster)
-4. **PlaywrightTestBase**: Initializes Playwright and provides helper methods to get service URLs from Aspire
-5. **Test Classes**: Inherit from `PlaywrightTestBase` and use the automatically discovered URLs
+1. **AppHost (Main)**: Production AppHost with environment-based service filtering
+2. **AspireAppHostFixture**: Sets `ASPIRE_TEST_MODE=AdminE2E` and starts the main AppHost
+3. **AdminE2ECollection**: xUnit collection definition that ensures all tests share the fixture
+4. **PlaywrightTestBase**: Base class for E2E tests with Playwright browser automation
+5. **TagsE2ETests**: Actual test class that inherits from PlaywrightTestBase
 
-### Example Test
+### Test Flow
 
-```csharp
-[Collection("AdminE2E")]  // All tests in this collection share one Aspire instance
-public class TagsE2ETests : PlaywrightTestBase
-{
-    public TagsE2ETests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
-    {
-    }
-
-    [Fact]
-    public async Task ShouldCompleteFullCrudFlowForTag()
-    {
-        // Get the Admin app URL from Aspire (waits up to 60s for service to be ready)
-        var baseUrl = await GetAdminAppUrlAsync();
-        
-        // Navigate and test
-        await Page.GotoAsync($"{baseUrl}/tags");
-        // ... test code ...
-    }
-}
-```
-
-## Performance Optimizations
-
-This test project is optimized for fast execution:
-
-1. **Minimal Services**: Only starts PostgreSQL, API, and Admin app (skips Redis, Service Bus, Functions, Designer)
-2. **Shared Aspire Instance**: All tests in the `AdminE2E` collection share one Aspire instance
-3. **Simplified Dependencies**: API only depends on PostgreSQL; Admin app has no dependencies
-4. **Parallel Test Execution**: Tests can run in parallel within the shared Aspire instance
-
-## Advantages Over Standalone Tests
-
-| Feature | Standalone (`src/Admin/e2e/`) | Aspire Integrated (this project) |
-|---------|-------------------------------|----------------------------------|
-| Manual setup | ❌ Must start Aspire separately | ✅ Automatic |
-| URL configuration | ❌ Manual (ports change) | ✅ Automatic discovery |
-| Dependency management | ❌ Manual | ✅ Aspire handles it |
-| Test isolation | ⚠️ Shared state | ✅ Fresh stack per run |
-| CI/CD integration | ⚠️ Complex | ✅ Simple `dotnet test` |
-| Run command | `npm run test:e2e` | `dotnet test` |
-
-## Test Structure
-
-```
-src/Admin.E2ETests/
-├── Admin.E2ETests.csproj          # Project file with Aspire + Playwright
-├── AspireAppHostFixture.cs        # Starts entire Aspire stack
-├── PlaywrightTestBase.cs          # Base class with Playwright setup
-├── TestHelpers.cs                 # Common test operations
-├── TagsE2ETests.cs                # Tags feature tests
-├── CommissioningMarketsE2ETests.cs # (to be added)
-└── FieldworkMarketsE2ETests.cs    # (to be added)
-```
+1. **xUnit** discovers tests and sees `[Collection("AdminE2E")]` attribute
+2. **AdminE2ECollection** creates a single `AspireAppHostFixture` instance
+3. **AspireAppHostFixture.InitializeAsync()** sets environment variable and starts main AppHost in AdminE2E mode
+4. Main AppHost starts only required services (PostgreSQL, API, Admin)
+5. **PlaywrightTestBase.InitializeAsync()** creates Playwright browser and page
+6. **Test methods** get Admin app URL from Aspire and run Playwright tests
+7. After all tests complete, fixtures are disposed and services are cleaned up
 
 ## Adding New Tests
 
-1. Create a new test class inheriting from `PlaywrightTestBase`
-2. Add `[Collection("AdminE2E")]` attribute to use the shared Aspire instance
-3. **Important**: Do NOT add `IClassFixture<AspireAppHostFixture>` - it conflicts with the collection fixture
-4. Use `GetAdminAppUrl()` to get the base URL
-5. Write Playwright tests as usual
-
-Example:
+To add a new E2E test class:
 
 ```csharp
-[Collection("AdminE2E")]  // ✅ Use collection fixture
-public class MyFeatureE2ETests : PlaywrightTestBase  // ❌ Do NOT add IClassFixture
+using Microsoft.Playwright;
+
+namespace Admin.E2ETests;
+
+[Collection("AdminE2E")]  // ✅ IMPORTANT: Use collection to share Aspire instance
+public class MyNewTests : PlaywrightTestBase
 {
-    public MyFeatureE2ETests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
+    public MyNewTests(AspireAppHostFixture aspireFixture) : base(aspireFixture)
     {
     }
 
     [Fact]
     public async Task MyTest()
     {
-        var baseUrl = await GetAdminAppUrlAsync();
-        await Page.GotoAsync($"{baseUrl}/my-feature");
-        // ... test code ...
+        Assert.NotNull(Page);
+        var baseUrl = GetAdminAppUrl(); // ✅ Get URL from Aspire
+        
+        await Page.GotoAsync($"{baseUrl}/my-page");
+        // ... test logic ...
     }
 }
 ```
 
+**Key points:**
+- ✅ Use `[Collection("AdminE2E")]` attribute
+- ✅ Inherit from `PlaywrightTestBase`
+- ✅ Use `GetAdminAppUrl()` to get the Admin app URL
+- ❌ Do NOT add `IClassFixture<AspireAppHostFixture>` (creates conflicts)
+
 ## Troubleshooting
 
-### Playwright browsers not installed
-The tests require Playwright browsers to be installed. Install them once after building:
+### Tests Hang or Take Too Long
+
+**Symptoms:** Tests take longer than 60 seconds or appear to hang
+
+**Common Causes:**
+1. **Docker not running**: Aspire needs Docker for PostgreSQL
+   - Solution: Start Docker Desktop
+2. **Insufficient resources**: PostgreSQL + API + Admin app need resources
+   - Solution: Ensure Docker has at least 2-3GB RAM allocated
+3. **First run**: Docker images need to be downloaded
+   - Solution: Wait for first run (can take 2-3 minutes), subsequent runs are faster
+4. **Port conflicts**: Another service using required ports
+   - Solution: Stop other services or let Aspire allocate dynamic ports
+
+### Conflicting Fixture Patterns
+
+**Symptoms:** Tests hang or fixtures are created multiple times
+
+**Problem:** Using both `[Collection("AdminE2E")]` and `IClassFixture<AspireAppHostFixture>` causes xUnit to try creating the fixture twice.
+
+**Solution:** Use ONLY the collection:
+```csharp
+[Collection("AdminE2E")]  // ✅ Correct
+public class MyTests : PlaywrightTestBase
+{
+    // ❌ Do NOT add: IClassFixture<AspireAppHostFixture>
+}
+```
+
+### Environment Variable Not Set
+
+**Symptoms:** All services start (Redis, Service Bus, etc.) even in tests
+
+**Problem:** `ASPIRE_TEST_MODE` environment variable not set
+
+**Solution:** The `AspireAppHostFixture.InitializeAsync()` should set it automatically. If not working, check:
+1. Fixture is being used (via collection)
+2. No other code is clearing environment variables
+3. Tests are running in the same process
+
+### Playwright Browsers Not Installed
+
+**Symptoms:** Error about missing Chromium or browser executables
+
+**Solution:** Install Playwright browsers:
 ```bash
 cd src/Admin.E2ETests
 dotnet build
 pwsh bin/Debug/net10.0/playwright.ps1 install chromium
 ```
 
-### Tests timeout waiting for Aspire to start
-**Error**: `Polly.Timeout.TimeoutRejectedException: The operation didn't complete within the allowed timeout of '00:00:20'`
+## Project Structure
 
-**Note**: This should be much less common now with the optimized configuration that only starts 3 services instead of 8+.
-
-**Cause**: Aspire is taking longer than 20 seconds to start services (PostgreSQL, API, Admin app).
-
-**Solutions**:
-1. **Ensure Docker is running** - Aspire uses containers for databases
-   ```bash
-   docker ps  # Should show containers running
-   ```
-
-2. **Ensure sufficient system resources**:
-   - At least 2GB RAM available (reduced from 4GB due to fewer services)
-   - Docker has adequate CPU/memory limits configured
-
-3. **First run is slower** - Container images need to be downloaded
-   - Subsequent runs are much faster (images cached)
-
-4. **Pre-start services** - Start Aspire manually first (rare need now):
-   ```bash
-   # Terminal 1: Start Aspire
-   cd src/AppHost
-   dotnet run
-
-   # Wait for all services to be healthy
-   # Terminal 2: Run tests
-   cd src/Admin.E2ETests
-   dotnet test
-   ```
-
-### Tests hang or timeout for 1.5+ minutes
-**Error**: Test appears to hang during initialization and never completes.
-
-**Recent Fix**: Tests now include intelligent retry logic that waits up to 60 seconds for services to become available. If tests still hang beyond this:
-
-**Cause**: Could be conflicting xUnit fixture patterns, Docker issues, or service startup problems.
-
-**Solutions**:
-
-1. **Check for conflicting fixtures**: If a test class has both `[Collection("AdminE2E")]` and `IClassFixture<AspireAppHostFixture>`, xUnit tries to initialize the fixture in two incompatible ways, causing deadlocks.
-
-   ```csharp
-   // ❌ WRONG - Causes hanging
-   [Collection("AdminE2E")]
-   public class MyTests : PlaywrightTestBase, IClassFixture<AspireAppHostFixture>
-
-   // ✅ CORRECT - Works properly  
-   [Collection("AdminE2E")]
-   public class MyTests : PlaywrightTestBase
-   {
-       public MyTests(AspireAppHostFixture fixture) : base(fixture) { }
-   }
-   ```
-
-   The collection definition (`AdminE2ECollection.cs`) already declares the fixture, so individual test classes should NOT use `IClassFixture`.
-
-2. **Check Docker**: Ensure Docker is running and has adequate resources (2-3GB RAM)
-
-3. **Check service logs**: Look at Aspire Dashboard or test output for specific error messages
-
-4. **Try manual startup**: Start Aspire manually to see detailed startup logs:
-   ```bash
-   cd src/AppHost && dotnet run
-   ```
-
-### Tests run slowly
-- Tests share a single Aspire instance via the `AdminE2E` collection
-- If tests seem slow, ensure all test classes use `[Collection("AdminE2E")]`
-- Each test class that uses a different collection name will start its own Aspire instance
-
-### Can't find Admin app URL
-The test uses `CreateHttpClient("app-admin")` to get the URL. Verify the TestAppHost has `app-admin` resource.
-
-## CI/CD Integration
-
-Since xUnit v3 requires running the test executable directly:
-
-```yaml
-- name: Run E2E Tests
-  run: dotnet test src/Admin.E2ETests/Admin.E2ETests.csproj
-  env:
-    ASPIRE_ALLOW_UNSECURED_TRANSPORT: true
+```
+src/Admin.E2ETests/
+├── Admin.E2ETests.csproj      # Project file with AppHost reference
+├── AdminE2ECollection.cs      # xUnit collection definition
+├── AspireAppHostFixture.cs    # Starts main AppHost in AdminE2E mode
+├── PlaywrightTestBase.cs      # Base class for Playwright tests
+├── TagsE2ETests.cs            # Example E2E test class
+├── TestHelpers.cs             # Helper methods for UI interactions
+└── README.md                  # This file
 ```
 
-**Note**: Playwright browsers will be automatically installed when the test project is built for the first time.
+## Comparison with Api.IntegrationTests
 
-## Comparison with API Integration Tests
+Both test projects follow the same pattern:
 
-This project follows the same pattern as `src/Api.IntegrationTests/`:
-- Uses `Aspire.Hosting.Testing`
-- Uses `BoxedAppHostFixture` / `AspireAppHostFixture` pattern
-- Starts the entire application stack
-- Discovers service URLs automatically
-- Works with `dotnet test` command
+| Aspect | Api.IntegrationTests | Admin.E2ETests |
+|--------|---------------------|----------------|
+| AppHost | Uses main AppHost | Uses main AppHost |
+| Service Filtering | None (all services) | Via `ASPIRE_TEST_MODE=AdminE2E` |
+| Fixture Pattern | `IClassFixture` per test class | `[Collection]` shared across all |
+| Test Framework | xUnit v3 | xUnit v3 |
+| What's Tested | API endpoints (HTTP) | UI flows (Playwright) |
 
-The difference is that API integration tests use HttpClient to test the API directly, while these E2E tests use Playwright to test the full UI→API→Database flow.
+The key difference is that Admin.E2ETests uses environment-based filtering to skip unnecessary services, making tests faster while still using the same main AppHost configuration.
