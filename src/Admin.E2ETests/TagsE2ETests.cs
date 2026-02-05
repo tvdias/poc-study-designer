@@ -36,7 +36,8 @@ public class TagsE2ETests : PlaywrightTestBase
 
         // Wait for view mode (title changes to the tag name)
         await helpers.WaitForSidePanelTitleAsync(tagName);
-        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
+        // Verify Edit button is visible in the side panel (not the table row action)
+        await helpers.ExpectSidePanelEditButtonAsync();
 
         // Step 3: Verify the tag appears in the list
         await Page.Keyboard.PressAsync("Escape");

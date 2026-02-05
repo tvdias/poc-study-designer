@@ -135,4 +135,14 @@ public class TestHelpers
     {
         return $"{prefix}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
     }
+
+    /// <summary>
+    /// Verify that the Edit button is visible in the side panel footer.
+    /// This scopes the selector to avoid matching table row action buttons.
+    /// </summary>
+    public async Task ExpectSidePanelEditButtonAsync()
+    {
+        var sidePanelFooter = _page.Locator(".side-panel-footer");
+        await Assertions.Expect(sidePanelFooter.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
+    }
 }
