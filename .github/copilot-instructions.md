@@ -233,4 +233,4 @@ When helping users set up the project, ensure they have:
 - Include comprehensive error handling
 - Write tests for new features
 - Follow existing code patterns for consistency
-- bin/* and obj/* folders shouldn't be commited
+- `**/bin/*` and `**/obj/*` folders shouldn't be commited
