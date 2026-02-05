@@ -46,7 +46,7 @@ public class TestHelpers
     }
 
     /// <summary>
-    /// Click the Edit button in the side panel footer
+    /// Clicks the Edit button in the side panel footer
     /// </summary>
     public async Task ClickEditButtonAsync()
     {
@@ -55,7 +55,7 @@ public class TestHelpers
     }
 
     /// <summary>
-    /// Click the Delete button in the side panel footer
+    /// Clicks the Delete button in the side panel footer
     /// </summary>
     public async Task ClickDeleteButtonAsync()
     {
