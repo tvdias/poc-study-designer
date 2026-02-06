@@ -5,6 +5,7 @@ import { CommissioningMarketsPage } from './pages/CommissioningMarketsPage';
 import { FieldworkMarketsPage } from './pages/FieldworkMarketsPage';
 import { ModulesPage } from './pages/ModulesPage';
 import { ClientsPage } from './pages/ClientsPage';
+import { ConfigurationQuestionsPage } from './pages/ConfigurationQuestionsPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="fieldwork-markets" element={<FieldworkMarketsPage />} />
           <Route path="modules" element={<ModulesPage />} />
           <Route path="clients" element={<ClientsPage />} />
+          <Route path="configuration-questions" element={<ConfigurationQuestionsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

@@ -27,6 +27,9 @@ export function MainLayout() {
                     <NavLink to="/clients" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
                         Clients
                     </NavLink>
+                    <NavLink to="/configuration-questions" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Configuration Questions
+                    </NavLink>
                 </nav>
             </aside>
             <main className="main-content">
