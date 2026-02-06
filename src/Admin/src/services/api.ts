@@ -73,6 +73,36 @@ export interface UpdateClientRequest {
     isActive: boolean;
 }
 
+export interface Module {
+    id: string;
+    variableName: string;
+    label: string;
+    description?: string;
+    versionNumber: number;
+    parentModuleId?: string;
+    instructions?: string;
+    isActive: boolean;
+}
+
+export interface CreateModuleRequest {
+    variableName: string;
+    label: string;
+    description?: string;
+    versionNumber: number;
+    parentModuleId?: string;
+    instructions?: string;
+}
+
+export interface UpdateModuleRequest {
+    variableName: string;
+    label: string;
+    description?: string;
+    versionNumber: number;
+    parentModuleId?: string;
+    instructions?: string;
+    isActive: boolean;
+}
+
 export interface ValidationErrorResponse {
     type: string;
     title: string;
@@ -279,6 +309,56 @@ export const clientsApi = {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete client');
+    }
+};
+
+export const modulesApi = {
+    getAll: async (query?: string): Promise<Module[]> => {
+        const url = query ? `${API_BASE}/modules?query=${encodeURIComponent(query)}` : `${API_BASE}/modules`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch modules');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<Module> => {
+        const response = await fetch(`${API_BASE}/modules/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch module');
+        return response.json();
+    },
+
+    create: async (data: CreateModuleRequest): Promise<Module> => {
+        const response = await fetch(`${API_BASE}/modules`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateModuleRequest): Promise<Module> => {
+        const response = await fetch(`${API_BASE}/modules/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/modules/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete module');
     }
 };
 
