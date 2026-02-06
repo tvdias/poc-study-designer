@@ -2,6 +2,7 @@ using Api.Features.Tags;
 using Api.Features.CommissioningMarkets;
 using Api.Features.FieldworkMarkets;
 using Api.Features.Modules;
+using Api.Features.Clients;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -16,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CommissioningMarket> CommissioningMarkets => Set<CommissioningMarket>();
     public DbSet<FieldworkMarket> FieldworkMarkets => Set<FieldworkMarket>();
     public DbSet<Module> Modules => Set<Module>();
+    public DbSet<Client> Clients => Set<Client>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -57,6 +59,16 @@ public class ApplicationDbContext : DbContext
                 .WithMany(e => e.ChildModules)
                 .HasForeignKey(e => e.ParentModuleId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Client>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AccountName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CompanyNumber).HasMaxLength(50);
+            entity.Property(e => e.CustomerNumber).HasMaxLength(50);
+            entity.Property(e => e.CompanyCode).HasMaxLength(50);
+            entity.HasIndex(e => e.AccountName).IsUnique(); // Ensure account names are unique
         });
     }
 }

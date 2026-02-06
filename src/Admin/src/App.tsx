@@ -4,6 +4,7 @@ import { TagsPage } from './pages/TagsPage';
 import { CommissioningMarketsPage } from './pages/CommissioningMarketsPage';
 import { FieldworkMarketsPage } from './pages/FieldworkMarketsPage';
 import { ModulesPage } from './pages/ModulesPage';
+import { ClientsPage } from './pages/ClientsPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="commissioning-markets" element={<CommissioningMarketsPage />} />
           <Route path="fieldwork-markets" element={<FieldworkMarketsPage />} />
           <Route path="modules" element={<ModulesPage />} />
+          <Route path="clients" element={<ClientsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

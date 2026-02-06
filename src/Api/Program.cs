@@ -3,6 +3,7 @@ using Api.Features.Tags;
 using Api.Features.CommissioningMarkets;
 using Api.Features.FieldworkMarkets;
 using Api.Features.Modules;
+using Api.Features.Clients;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -63,6 +64,11 @@ api.MapGetModulesEndpoint();
 api.MapGetModuleByIdEndpoint();
 api.MapUpdateModuleEndpoint();
 api.MapDeleteModuleEndpoint();
+api.MapCreateClientEndpoint();
+api.MapGetClientsEndpoint();
+api.MapGetClientByIdEndpoint();
+api.MapUpdateClientEndpoint();
+api.MapDeleteClientEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
