@@ -191,7 +191,7 @@ export function CommissioningMarketsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
+                            <button className="btn primary" type="submit" form="commissioning-markets-form">Save</button>
                             <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
@@ -230,7 +230,7 @@ export function CommissioningMarketsPage() {
 
                 {/* Form Mode */}
                 {(mode === 'create' || mode === 'edit') && (
-                    <form className="panel-form" onSubmit={handleSubmit}>
+                    <form id="commissioning-markets-form" className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
                             <label htmlFor="marketIsoCode">ISO Code</label>
                             <input

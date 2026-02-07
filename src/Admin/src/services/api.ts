@@ -100,6 +100,7 @@ export interface UpdateModuleRequest {
     versionNumber: number;
     parentModuleId?: string;
     instructions?: string;
+    isActive: boolean;
 }
 
 export interface ConfigurationQuestion {

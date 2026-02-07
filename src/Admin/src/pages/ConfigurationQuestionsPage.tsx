@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { 
-    configurationQuestionsApi, 
-    configurationAnswersApi, 
+import {
+    configurationQuestionsApi,
+    configurationAnswersApi,
     dependencyRulesApi,
-    type ConfigurationQuestionDetail, 
-    type ConfigurationAnswer, 
+    type ConfigurationQuestionDetail,
+    type ConfigurationAnswer,
     type DependencyRule
 } from '../services/api';
 import { SidePanel } from '../components/ui/SidePanel';
@@ -23,9 +23,9 @@ export function ConfigurationQuestionsPage() {
     // Panel State
     const [mode, setMode] = useState<Mode>('list');
     const [selectedQuestion, setSelectedQuestion] = useState<ConfigurationQuestionDetail | null>(null);
-    const [formData, setFormData] = useState({ 
-        question: '', 
-        aiPrompt: '', 
+    const [formData, setFormData] = useState({
+        question: '',
+        aiPrompt: '',
         ruleType: 'SingleCoded' as 'SingleCoded' | 'MultiCoded',
         isActive: true
     });
@@ -104,9 +104,9 @@ export function ConfigurationQuestionsPage() {
 
         if (question) setSelectedQuestion(question);
 
-        setFormData({ 
-            question: target.question, 
-            aiPrompt: target.aiPrompt || '', 
+        setFormData({
+            question: target.question,
+            aiPrompt: target.aiPrompt || '',
             ruleType: target.ruleType,
             isActive: target.isActive
         });
@@ -130,14 +130,14 @@ export function ConfigurationQuestionsPage() {
         try {
             let savedQuestion: ConfigurationQuestionDetail;
             if (mode === 'edit' && selectedQuestion) {
-                savedQuestion = await configurationQuestionsApi.update(selectedQuestion.id, { 
+                savedQuestion = await configurationQuestionsApi.update(selectedQuestion.id, {
                     question: formData.question,
                     aiPrompt: formData.aiPrompt || undefined,
                     ruleType: formData.ruleType,
                     isActive: formData.isActive
                 });
             } else {
-                savedQuestion = await configurationQuestionsApi.create({ 
+                savedQuestion = await configurationQuestionsApi.create({
                     question: formData.question,
                     aiPrompt: formData.aiPrompt || undefined,
                     ruleType: formData.ruleType
@@ -420,7 +420,7 @@ export function ConfigurationQuestionsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
+                            <button className="btn primary" type="submit" form="configuration-questions-form">Save</button>
                             <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
@@ -472,7 +472,7 @@ export function ConfigurationQuestionsPage() {
                                     <PlusIcon /> Add Answer
                                 </button>
                             </div>
-                            
+
                             {answerMode === 'none' ? (
                                 <table className="sub-details-list">
                                     <thead>
@@ -553,7 +553,7 @@ export function ConfigurationQuestionsPage() {
                                     <PlusIcon /> Add Rule
                                 </button>
                             </div>
-                            
+
                             {ruleMode === 'none' ? (
                                 <table className="sub-details-list">
                                     <thead>
@@ -719,7 +719,7 @@ export function ConfigurationQuestionsPage() {
 
                 {/* Form Mode */}
                 {(mode === 'create' || mode === 'edit') && (
-                    <form className="panel-form" onSubmit={handleSubmit}>
+                    <form id="configuration-questions-form" className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
                             <label htmlFor="question">Question</label>
                             <input
