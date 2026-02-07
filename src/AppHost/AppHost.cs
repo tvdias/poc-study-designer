@@ -7,7 +7,7 @@ var cache = builder.AddRedis("cache");
 var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
 
 var api = builder.AddProject<Projects.Api>("api")
-.WithReference(cache)
+    .WithReference(cache)
     .WithReference(postgres)
     .WaitFor(postgres)
     .WithHttpHealthCheck("/health")
