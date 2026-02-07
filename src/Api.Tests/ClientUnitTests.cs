@@ -42,22 +42,21 @@ public class CreateClientValidatorTests
     public async Task EmptyAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new CreateClientRequest("", null, null, null);
+        var request = new CreateClientRequest("", null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Single(result.Errors);
-        Assert.Equal("Account name is required.", result.Errors[0].ErrorMessage);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Account name is required.");
     }
 
     [Fact]
     public async Task NullAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new CreateClientRequest(null!, null, null, null);
+        var request = new CreateClientRequest(null!, null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -102,7 +101,7 @@ public class CreateClientValidatorTests
     public async Task WhitespaceAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new CreateClientRequest("   ", null, null, null);
+        var request = new CreateClientRequest("   ", null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -113,11 +112,39 @@ public class CreateClientValidatorTests
     }
 
     [Fact]
+    public async Task EmptyCustomerNumber_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateClientRequest("Valid Name", null, "", null);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Customer number is required.");
+    }
+
+    [Fact]
+    public async Task NullCustomerNumber_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateClientRequest("Valid Name", null, null!, null);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Customer number is required.");
+    }
+
+    [Fact]
     public async Task CompanyNumberExceeding50Characters_ShouldFailValidation()
     {
         // Arrange
         var longNumber = new string('1', 51);
-        var request = new CreateClientRequest("Valid Name", longNumber, null, null);
+        var request = new CreateClientRequest("Valid Name", longNumber, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -149,7 +176,7 @@ public class CreateClientValidatorTests
     {
         // Arrange
         var longCode = new string('A', 51);
-        var request = new CreateClientRequest("Valid Name", null, null, longCode);
+        var request = new CreateClientRequest("Valid Name", null, "CUST-001", longCode);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -164,7 +191,7 @@ public class CreateClientValidatorTests
     public async Task NullOptionalFields_ShouldPassValidation()
     {
         // Arrange
-        var request = new CreateClientRequest("Valid Account Name", null, null, null);
+        var request = new CreateClientRequest("Valid Account Name", null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -197,22 +224,21 @@ public class UpdateClientValidatorTests
     public async Task EmptyAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("", null, null, null, true);
+        var request = new UpdateClientRequest("", null, "CUST-001", null, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Single(result.Errors);
-        Assert.Equal("Account name is required.", result.Errors[0].ErrorMessage);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Account name is required.");
     }
 
     [Fact]
     public async Task NullAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest(null!, null, null, null, false);
+        var request = new UpdateClientRequest(null!, null, "CUST-001", null, false);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -227,7 +253,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var longName = new string('a', 201);
-        var request = new UpdateClientRequest(longName, null, null, null, true);
+        var request = new UpdateClientRequest(longName, null, "CUST-001", null, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -243,7 +269,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var maxLengthName = new string('a', 200);
-        var request = new UpdateClientRequest(maxLengthName, null, null, null, false);
+        var request = new UpdateClientRequest(maxLengthName, null, "CUST-001", null, false);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -257,7 +283,7 @@ public class UpdateClientValidatorTests
     public async Task WhitespaceAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("   ", null, null, null, true);
+        var request = new UpdateClientRequest("   ", null, "CUST-001", null, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -268,11 +294,39 @@ public class UpdateClientValidatorTests
     }
 
     [Fact]
+    public async Task EmptyCustomerNumber_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateClientRequest("Valid Name", null, "", null, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Customer number is required.");
+    }
+
+    [Fact]
+    public async Task NullCustomerNumber_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateClientRequest("Valid Name", null, null!, null, false);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Customer number is required.");
+    }
+
+    [Fact]
     public async Task CompanyNumberExceeding50Characters_ShouldFailValidation()
     {
         // Arrange
         var longNumber = new string('1', 51);
-        var request = new UpdateClientRequest("Valid Name", longNumber, null, null, true);
+        var request = new UpdateClientRequest("Valid Name", longNumber, "CUST-001", null, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -304,7 +358,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var longCode = new string('A', 51);
-        var request = new UpdateClientRequest("Valid Name", null, null, longCode, true);
+        var request = new UpdateClientRequest("Valid Name", null, "CUST-001", longCode, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

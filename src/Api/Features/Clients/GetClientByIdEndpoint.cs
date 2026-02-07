@@ -31,6 +31,7 @@ public static class GetClientByIdEndpoint
             client.CompanyNumber,
             client.CustomerNumber,
             client.CompanyCode,
-            client.IsActive));
+            client.IsActive,
+            client.CreatedOn));
     }
 }

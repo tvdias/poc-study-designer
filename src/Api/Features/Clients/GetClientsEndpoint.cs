@@ -27,7 +27,7 @@ public static class GetClientsEndpoint
         }
 
         return await clientsQuery
-            .Select(c => new GetClientsResponse(c.Id, c.AccountName, c.CompanyNumber, c.CustomerNumber, c.CompanyCode, c.IsActive))
+            .Select(c => new GetClientsResponse(c.Id, c.AccountName, c.CompanyNumber, c.CustomerNumber, c.CompanyCode, c.IsActive, c.CreatedOn))
             .ToListAsync(cancellationToken);
     }
 }
