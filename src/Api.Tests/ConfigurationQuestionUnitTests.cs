@@ -121,7 +121,7 @@ public class UpdateConfigurationQuestionValidatorTests
     public async Task ValidQuestion_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateConfigurationQuestionRequest("Updated Question?", "AI prompt", RuleType.MultiCoded, true, null);
+        var request = new UpdateConfigurationQuestionRequest("Updated Question?", "AI prompt", RuleType.MultiCoded, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -135,7 +135,7 @@ public class UpdateConfigurationQuestionValidatorTests
     public async Task EmptyQuestion_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateConfigurationQuestionRequest("", null, RuleType.SingleCoded, true, null);
+        var request = new UpdateConfigurationQuestionRequest("", null, RuleType.SingleCoded, true);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -144,22 +144,6 @@ public class UpdateConfigurationQuestionValidatorTests
         Assert.False(result.IsValid);
         Assert.Single(result.Errors);
         Assert.Equal("Question is required.", result.Errors[0].ErrorMessage);
-    }
-
-    [Fact]
-    public async Task StatusReasonExceeding200Characters_ShouldFailValidation()
-    {
-        // Arrange
-        var longStatusReason = new string('a', 201);
-        var request = new UpdateConfigurationQuestionRequest("Valid question", null, RuleType.SingleCoded, true, longStatusReason);
-
-        // Act
-        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.False(result.IsValid);
-        Assert.Single(result.Errors);
-        Assert.Equal("Status reason must not exceed 200 characters.", result.Errors[0].ErrorMessage);
     }
 }
 
