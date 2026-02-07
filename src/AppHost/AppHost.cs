@@ -3,9 +3,11 @@ using Microsoft.Extensions.Configuration;
 var builder = DistributedApplication.CreateBuilder(args);
 var enableAzureFunctions = builder.Configuration.GetValue<bool>("EnableAzureFunctions", false);
 
+var cache = builder.AddRedis("cache");
 var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
 
 var api = builder.AddProject<Projects.Api>("api")
+    .WithReference(cache)
     .WithReference(postgres)
     .WaitFor(postgres)
     .WithHttpHealthCheck("/health")
