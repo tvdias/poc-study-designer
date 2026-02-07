@@ -3,6 +3,7 @@ using Api.Features.CommissioningMarkets;
 using Api.Features.FieldworkMarkets;
 using Api.Features.Modules;
 using Api.Features.Clients;
+using Api.Features.ConfigurationQuestions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -18,6 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<FieldworkMarket> FieldworkMarkets => Set<FieldworkMarket>();
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ConfigurationQuestion> ConfigurationQuestions => Set<ConfigurationQuestion>();
+    public DbSet<ConfigurationAnswer> ConfigurationAnswers => Set<ConfigurationAnswer>();
+    public DbSet<DependencyRule> DependencyRules => Set<DependencyRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,5 +74,49 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CompanyCode).HasMaxLength(50);
             entity.HasIndex(e => e.AccountName).IsUnique(); // Ensure account names are unique
         });
+
+        modelBuilder.Entity<ConfigurationQuestion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Question).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.RuleType)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+            
+            entity.HasMany(e => e.Answers)
+                .WithOne(a => a.ConfigurationQuestion)
+                .HasForeignKey(a => a.ConfigurationQuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ConfigurationAnswer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<DependencyRule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Classification).HasMaxLength(100);
+            entity.Property(e => e.Type).HasMaxLength(100);
+            entity.Property(e => e.ContentType).HasMaxLength(100);
+            entity.Property(e => e.Module).HasMaxLength(100);
+            entity.Property(e => e.QuestionBank).HasMaxLength(100);
+            entity.Property(e => e.Tag).HasMaxLength(100);
+            entity.Property(e => e.StatusReason).HasMaxLength(200);
+            
+            entity.HasOne(e => e.ConfigurationQuestion)
+                .WithMany()
+                .HasForeignKey(e => e.ConfigurationQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.TriggeringAnswer)
+                .WithMany()
+                .HasForeignKey(e => e.TriggeringAnswerId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
     }
 }
