@@ -58,7 +58,7 @@ public static class CreateClientEndpoint
         }
 
         return TypedResults.CreatedAtRoute(
-            new CreateClientResponse(client.Id, client.AccountName, client.CompanyNumber, client.CustomerNumber, client.CompanyCode),
+            new CreateClientResponse(client.Id, client.AccountName, client.CompanyNumber, client.CustomerNumber, client.CompanyCode, client.IsActive),
             "GetClientById",
             new { id = client.Id });
     }
