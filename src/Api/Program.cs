@@ -5,6 +5,8 @@ using Api.Features.FieldworkMarkets;
 using Api.Features.Modules;
 using Api.Features.Clients;
 using Api.Features.ConfigurationQuestions;
+using Api.Features.Products;
+using Api.Features.ProductTemplates;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -85,6 +87,20 @@ api.MapGetDependencyRulesEndpoint();
 api.MapGetDependencyRuleByIdEndpoint();
 api.MapUpdateDependencyRuleEndpoint();
 api.MapDeleteDependencyRuleEndpoint();
+api.MapCreateProductEndpoint();
+api.MapGetProductsEndpoint();
+api.MapGetProductByIdEndpoint();
+api.MapUpdateProductEndpoint();
+api.MapDeleteProductEndpoint();
+api.MapCreateProductTemplateEndpoint();
+api.MapGetProductTemplatesEndpoint();
+api.MapGetProductTemplateByIdEndpoint();
+api.MapUpdateProductTemplateEndpoint();
+api.MapDeleteProductTemplateEndpoint();
+api.MapCreateProductConfigQuestionEndpoint();
+api.MapGetProductConfigQuestionByIdEndpoint();
+api.MapUpdateProductConfigQuestionEndpoint();
+api.MapDeleteProductConfigQuestionEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
