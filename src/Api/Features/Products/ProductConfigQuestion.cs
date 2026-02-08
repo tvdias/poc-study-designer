@@ -14,4 +14,5 @@ public class ProductConfigQuestion : AuditableEntity
     // Navigation properties
     public Product? Product { get; set; }
     public ConfigurationQuestion? ConfigurationQuestion { get; set; }
+    public ICollection<ProductConfigQuestionDisplayRule> DisplayRules { get; set; } = new List<ProductConfigQuestionDisplayRule>();
 }
