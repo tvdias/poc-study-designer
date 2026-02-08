@@ -12,11 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-<<<<<<<< HEAD:src/Api/Migrations/20260208103702_InitialCreate.Designer.cs
     [Migration("20260208103702_InitialCreate")]
-========
-    [Migration("20260207192253_InitialCreate")]
->>>>>>>> origin/main:src/Api/Migrations/20260207192253_InitialCreate.Designer.cs
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -355,7 +351,6 @@ namespace Api.Migrations
                     b.ToTable("Modules");
                 });
 
-<<<<<<<< HEAD:src/Api/Migrations/20260208103702_InitialCreate.Designer.cs
             modelBuilder.Entity("Api.Features.Products.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -475,8 +470,6 @@ namespace Api.Migrations
                     b.ToTable("ProductTemplates");
                 });
 
-========
->>>>>>>> origin/main:src/Api/Migrations/20260207192253_InitialCreate.Designer.cs
             modelBuilder.Entity("Api.Features.Tags.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -550,7 +543,6 @@ namespace Api.Migrations
                     b.Navigation("ParentModule");
                 });
 
-<<<<<<<< HEAD:src/Api/Migrations/20260208103702_InitialCreate.Designer.cs
             modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
                 {
                     b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationQuestion", "ConfigurationQuestion")
@@ -581,8 +573,6 @@ namespace Api.Migrations
                     b.Navigation("Product");
                 });
 
-========
->>>>>>>> origin/main:src/Api/Migrations/20260207192253_InitialCreate.Designer.cs
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationQuestion", b =>
                 {
                     b.Navigation("Answers");
@@ -592,7 +582,6 @@ namespace Api.Migrations
                 {
                     b.Navigation("ChildModules");
                 });
-<<<<<<<< HEAD:src/Api/Migrations/20260208103702_InitialCreate.Designer.cs
 
             modelBuilder.Entity("Api.Features.Products.Product", b =>
                 {
@@ -600,8 +589,6 @@ namespace Api.Migrations
 
                     b.Navigation("ProductTemplates");
                 });
-========
->>>>>>>> origin/main:src/Api/Migrations/20260207192253_InitialCreate.Designer.cs
 #pragma warning restore 612, 618
         }
     }
