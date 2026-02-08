@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260207192253_InitialCreate")]
+    [Migration("20260208103702_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -351,6 +351,125 @@ namespace Api.Migrations
                     b.ToTable("Modules");
                 });
 
+            modelBuilder.Entity("Api.Features.Products.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ConfigurationQuestionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StatusReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigurationQuestionId");
+
+                    b.HasIndex("ProductId", "ConfigurationQuestionId")
+                        .IsUnique();
+
+                    b.ToTable("ProductConfigQuestions");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "Name", "Version")
+                        .IsUnique();
+
+                    b.ToTable("ProductTemplates");
+                });
+
             modelBuilder.Entity("Api.Features.Tags.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -424,6 +543,36 @@ namespace Api.Migrations
                     b.Navigation("ParentModule");
                 });
 
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
+                {
+                    b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationQuestion", "ConfigurationQuestion")
+                        .WithMany()
+                        .HasForeignKey("ConfigurationQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Products.Product", "Product")
+                        .WithMany("ProductConfigQuestions")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConfigurationQuestion");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
+                {
+                    b.HasOne("Api.Features.Products.Product", "Product")
+                        .WithMany("ProductTemplates")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationQuestion", b =>
                 {
                     b.Navigation("Answers");
@@ -432,6 +581,13 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Features.Modules.Module", b =>
                 {
                     b.Navigation("ChildModules");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.Product", b =>
+                {
+                    b.Navigation("ProductConfigQuestions");
+
+                    b.Navigation("ProductTemplates");
                 });
 #pragma warning restore 612, 618
         }
