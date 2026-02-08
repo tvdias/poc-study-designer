@@ -18,14 +18,8 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Install envsubst (part of gettext package)
-RUN apk add --no-cache gettext
-
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration as template
-COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /docker-entrypoint.sh

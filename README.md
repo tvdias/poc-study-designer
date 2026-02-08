@@ -2,6 +2,16 @@
 
 A comprehensive study design platform built with .NET Aspire, featuring a distributed microservices architecture with React-based frontends, serverless processing functions, and Azure Service Bus integration.
 
+## Quick Start
+
+Choose your preferred development approach:
+
+- **[Container Development](#option-1-development-container-recommended)** - Full development environment in a container (recommended)
+- **[Local with Aspire](#option-2-running-with-aspire-local)** - Run locally with .NET Aspire orchestration
+- **[Docker Compose](#option-3-running-with-docker-compose)** - Production-like container deployment
+
+For detailed container documentation, see [CONTAINERS.md](CONTAINERS.md).
+
 ## Project Overview
 
 - **Frontend Applications**: React-based UIs for designing and administering studies
