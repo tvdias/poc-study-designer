@@ -97,7 +97,7 @@ export function ProductsPage() {
                     isActive: fullProduct.isActive 
                 });
             } catch (error) {
-                console.error('Failed to fetch product details', error);
+                console.error(`Failed to fetch product details for product ${product.id}`, error);
                 return;
             } finally {
                 setIsLoading(false);
