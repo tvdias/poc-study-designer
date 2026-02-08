@@ -91,10 +91,10 @@ export function ProductsPage() {
             try {
                 const fullProduct = await productsApi.getById(product.id);
                 setSelectedProduct(fullProduct);
-                setFormData({ 
-                    name: fullProduct.name, 
-                    description: fullProduct.description || '', 
-                    isActive: fullProduct.isActive 
+                setFormData({
+                    name: fullProduct.name,
+                    description: fullProduct.description || '',
+                    isActive: fullProduct.isActive
                 });
             } catch (error) {
                 console.error(`Failed to fetch product details for product ${product.id}`, error);
@@ -104,13 +104,13 @@ export function ProductsPage() {
             }
         } else {
             // Already have full details from view mode
-            setFormData({ 
-                name: target.name, 
-                description: target.description || '', 
-                isActive: target.isActive 
+            setFormData({
+                name: target.name,
+                description: target.description || '',
+                isActive: target.isActive
             });
         }
-        
+
         setErrors({});
         setServerError('');
         setMode('edit');
@@ -131,13 +131,13 @@ export function ProductsPage() {
         try {
             let savedProduct: Product;
             if (mode === 'edit' && selectedProduct) {
-                savedProduct = await productsApi.update(selectedProduct.id, { 
-                    name: formData.name, 
+                savedProduct = await productsApi.update(selectedProduct.id, {
+                    name: formData.name,
                     description: formData.description || undefined,
-                    isActive: formData.isActive 
+                    isActive: formData.isActive
                 });
             } else {
-                savedProduct = await productsApi.create({ 
+                savedProduct = await productsApi.create({
                     name: formData.name,
                     description: formData.description || undefined
                 });
@@ -361,14 +361,14 @@ export function ProductsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') && tabMode === 'general' ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
-                            <button type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form="product-form">Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )
@@ -377,19 +377,19 @@ export function ProductsPage() {
                 {/* Tabs */}
                 {mode !== 'create' && selectedProduct && (
                     <div className="tabs">
-                        <button 
+                        <button
                             className={`tab ${tabMode === 'general' ? 'active' : ''}`}
                             onClick={() => setTabMode('general')}
                         >
                             General
                         </button>
-                        <button 
+                        <button
                             className={`tab ${tabMode === 'config-questions' ? 'active' : ''}`}
                             onClick={() => setTabMode('config-questions')}
                         >
                             Configuration Questions
                         </button>
-                        <button 
+                        <button
                             className={`tab ${tabMode === 'templates' ? 'active' : ''}`}
                             onClick={() => setTabMode('templates')}
                         >
@@ -427,7 +427,7 @@ export function ProductsPage() {
 
                         {/* Form Mode */}
                         {(mode === 'create' || mode === 'edit') && (
-                            <form className="panel-form" onSubmit={handleSubmit}>
+                            <form id="product-form" className="panel-form" onSubmit={handleSubmit}>
                                 <div className="form-field">
                                     <label htmlFor="productName">Name <span className="required">*</span></label>
                                     <input
@@ -532,9 +532,9 @@ export function ProductsPage() {
                                         <td>{pcq.statusReason || '-'}</td>
                                         <td>
                                             <div className="row-actions">
-                                                <button 
-                                                    className="action-btn danger" 
-                                                    onClick={() => handleConfigQuestionDelete(pcq)} 
+                                                <button
+                                                    className="action-btn danger"
+                                                    onClick={() => handleConfigQuestionDelete(pcq)}
                                                     title="Remove"
                                                 >
                                                     <TrashIcon />
@@ -610,9 +610,9 @@ export function ProductsPage() {
                                         <td>{template.version}</td>
                                         <td>
                                             <div className="row-actions">
-                                                <button 
-                                                    className="action-btn danger" 
-                                                    onClick={() => handleTemplateDelete(template)} 
+                                                <button
+                                                    className="action-btn danger"
+                                                    onClick={() => handleTemplateDelete(template)}
                                                     title="Delete"
                                                 >
                                                     <TrashIcon />

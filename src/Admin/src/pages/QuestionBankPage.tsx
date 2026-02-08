@@ -1413,14 +1413,14 @@ export function QuestionBankPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" type="submit" form={activeTab === 'admin' ? 'question-bank-admin-form' : 'question-bank-form'}>Save</button>
-                            <button type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form={activeTab === 'admin' ? 'question-bank-admin-form' : 'question-bank-form'}>Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )
