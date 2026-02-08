@@ -117,6 +117,7 @@ export function QuestionBankPage() {
         } else {
             setMetricGroups([]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [metricGroupSearch]);
 
     const fetchMetricGroups = async () => {
@@ -149,9 +150,9 @@ export function QuestionBankPage() {
             setFormData({ ...formData, metricGroup: newMetricGroup.name });
             setMetricGroupSearch(newMetricGroup.name);
             setShowMetricGroupDropdown(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to create metric group', error);
-            if (error.status === 409) {
+            if (typeof error === 'object' && error !== null && 'status' in error && (error as { status: number }).status === 409) {
                 alert(`Metric Group "${metricGroupSearch}" already exists.`);
             }
         } finally {
