@@ -32,7 +32,6 @@ export function QuestionBankPage() {
         isDummy: false,
         questionTitle: '',
         status: '',
-        statusReason: '',
         methodology: '',
         dataQualityTag: '',
         rowSortOrder: null as number | null,
@@ -115,7 +114,6 @@ export function QuestionBankPage() {
             isDummy: false,
             questionTitle: '',
             status: '',
-            statusReason: '',
             methodology: '',
             dataQualityTag: '',
             rowSortOrder: null,
@@ -182,7 +180,6 @@ export function QuestionBankPage() {
             isDummy: target.isDummy,
             questionTitle: target.questionTitle || '',
             status: target.status || '',
-            statusReason: target.statusReason || '',
             methodology: target.methodology || '',
             dataQualityTag: target.dataQualityTag || '',
             rowSortOrder: target.rowSortOrder,
@@ -241,7 +238,6 @@ export function QuestionBankPage() {
                 isDummy: formData.isDummy,
                 questionTitle: formData.questionTitle || null,
                 status: formData.status || null,
-                statusReason: formData.statusReason || null,
                 methodology: formData.methodology || null,
                 dataQualityTag: formData.dataQualityTag || null,
                 rowSortOrder: formData.rowSortOrder,
@@ -428,10 +424,6 @@ export function QuestionBankPage() {
                             <div className="value">{selectedQuestion.status || '-'}</div>
                         </div>
                         <div className="detail-item">
-                            <label>Status Reason</label>
-                            <div className="value">{selectedQuestion.statusReason || '-'}</div>
-                        </div>
-                        <div className="detail-item">
                             <label>Question Type</label>
                             <div className="value">{selectedQuestion.questionType || '-'}</div>
                         </div>
@@ -492,7 +484,7 @@ export function QuestionBankPage() {
                             <div className="value text-content">{selectedQuestion.questionFormatDetails || '-'}</div>
                         </div>
                         <div className="detail-item">
-                            <label>Scraper Notes</label>
+                            <label>Scripter Notes</label>
                             <div className="value text-content">{selectedQuestion.scraperNotes || '-'}</div>
                         </div>
                         <div className="detail-item">
@@ -593,39 +585,35 @@ export function QuestionBankPage() {
                     </div>
 
                     <div className="form-field">
-                        <label htmlFor="statusReason">Status Reason</label>
-                        <input
-                            id="statusReason"
-                            type="text"
-                            value={formData.statusReason}
-                            onChange={(e) => setFormData({ ...formData, statusReason: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="form-field">
                         <label htmlFor="questionType">Question Type</label>
                         <select
                             id="questionType"
                             value={formData.questionType}
                             onChange={(e) => setFormData({ ...formData, questionType: e.target.value })}
                         >
-                            <option value="">-- Select Type --</option>
-                            <option value="SingleChoice">Single Choice</option>
-                            <option value="MultipleChoice">Multiple Choice</option>
-                            <option value="OpenEnded">Open Ended</option>
-                            <option value="Scale">Scale</option>
-                            <option value="Grid">Grid</option>
+                            <option value="">--Select--</option>
+                            <option value="Small text input">Small text input</option>
+                            <option value="Multiple choice">Multiple choice</option>
+                            <option value="Single choice">Single choice</option>
+                            <option value="Logic">Logic</option>
+                            <option value="Single-choice matrix">Single-choice matrix</option>
+                            <option value="Numeric input">Numeric input</option>
+                            <option value="Large text input">Large text input</option>
+                            <option value="Numeric matrix">Numeric matrix</option>
+                            <option value="Display screen">Display screen</option>
+                            <option value="Multiple-choice matrix">Multiple-choice matrix</option>
+                            <option value="Text input matrix">Text input matrix</option>
                         </select>
                     </div>
 
                     <div className="form-field">
-                        <label htmlFor="classification">Classification</label>
+                        <label htmlFor="classification">Standard or Custom</label>
                         <select
                             id="classification"
                             value={formData.classification}
                             onChange={(e) => setFormData({ ...formData, classification: e.target.value })}
                         >
-                            <option value="">-- Select Classification --</option>
+                            <option value="">--Select--</option>
                             <option value="Standard">Standard</option>
                             <option value="Custom">Custom</option>
                         </select>
@@ -653,12 +641,19 @@ export function QuestionBankPage() {
 
                     <div className="form-field">
                         <label htmlFor="dataQualityTag">Data Quality Tag</label>
-                        <input
+                        <select
                             id="dataQualityTag"
-                            type="text"
                             value={formData.dataQualityTag}
                             onChange={(e) => setFormData({ ...formData, dataQualityTag: e.target.value })}
-                        />
+                        >
+                            <option value="">--Select--</option>
+                            <option value="Checked">Checked</option>
+                            <option value="Missing">Missing</option>
+                            <option value="No Label">No Label</option>
+                            <option value="No Wording">No Wording</option>
+                            <option value="Standard Question">Standard Question</option>
+                            <option value="Review">Review</option>
+                        </select>
                     </div>
 
                     <div className="form-field">
@@ -668,10 +663,13 @@ export function QuestionBankPage() {
                             value={formData.methodology}
                             onChange={(e) => setFormData({ ...formData, methodology: e.target.value })}
                         >
-                            <option value="">-- Select Methodology --</option>
-                            <option value="Quantitative">Quantitative</option>
-                            <option value="Qualitative">Qualitative</option>
-                            <option value="Mixed">Mixed</option>
+                            <option value="">--Select--</option>
+                            <option value="CAWI">CAWI</option>
+                            <option value="CATI">CATI</option>
+                            <option value="CAPI">CAPI</option>
+                            <option value="F2F">F2F</option>
+                            <option value="Paper">Paper</option>
+                            <option value="Online">Online</option>
                         </select>
                     </div>
 
@@ -730,7 +728,7 @@ export function QuestionBankPage() {
                     </div>
 
                     <div className="form-field">
-                        <label htmlFor="scraperNotes">Scraper Notes</label>
+                        <label htmlFor="scraperNotes">Scripter Notes</label>
                         <textarea
                             id="scraperNotes"
                             value={formData.scraperNotes}
@@ -786,9 +784,9 @@ export function QuestionBankPage() {
                             value={formData.singleOrMulticode}
                             onChange={(e) => setFormData({ ...formData, singleOrMulticode: e.target.value })}
                         >
-                            <option value="">-- Select --</option>
-                            <option value="Single">Single</option>
-                            <option value="Multi">Multi</option>
+                            <option value="">--Select--</option>
+                            <option value="Singlecode">Singlecode</option>
+                            <option value="Multicode">Multicode</option>
                         </select>
                     </div>
 
@@ -1238,10 +1236,12 @@ export function QuestionBankPage() {
                             value={formData.scaleType}
                             onChange={(e) => setFormData({ ...formData, scaleType: e.target.value })}
                         >
-                            <option value="">-- Select Scale Type --</option>
-                            <option value="Likert">Likert</option>
-                            <option value="Numeric">Numeric</option>
-                            <option value="Semantic">Semantic</option>
+                            <option value="">---</option>
+                            <option value="Categorical">Categorical</option>
+                            <option value="Ordinal">Ordinal</option>
+                            <option value="Interval">Interval</option>
+                            <option value="Ratio">Ratio</option>
+                            <option value="Nominal">Nominal</option>
                         </select>
                     </div>
 
@@ -1252,12 +1252,15 @@ export function QuestionBankPage() {
                             value={formData.displayType}
                             onChange={(e) => setFormData({ ...formData, displayType: e.target.value })}
                         >
-                            <option value="">-- Select Display Type --</option>
-                            <option value="Radio">Radio</option>
-                            <option value="Checkbox">Checkbox</option>
+                            <option value="">---</option>
+                            <option value="Radio buttons">Radio buttons</option>
                             <option value="Dropdown">Dropdown</option>
+                            <option value="Checkboxes">Checkboxes</option>
+                            <option value="Text input">Text input</option>
+                            <option value="Numeric input">Numeric input</option>
                             <option value="Slider">Slider</option>
-                            <option value="Text">Text</option>
+                            <option value="Grid">Grid</option>
+                            <option value="Matrix">Matrix</option>
                         </select>
                     </div>
 
@@ -1342,7 +1345,6 @@ export function QuestionBankPage() {
                                 <th style={{ width: '80px' }}>Dummy</th>
                                 <th>Title</th>
                                 <th style={{ width: '100px' }}>Status</th>
-                                <th>Status Reason</th>
                                 <th>Created By</th>
                                 <th style={{ width: '150px' }}>Created On</th>
                                 <th>Methodology</th>
@@ -1364,7 +1366,6 @@ export function QuestionBankPage() {
                                             {question.status || '-'}
                                         </span>
                                     </td>
-                                    <td>{question.statusReason || '-'}</td>
                                     <td>{question.createdBy || '-'}</td>
                                     <td>{new Date(question.createdOn).toLocaleString()}</td>
                                     <td>{question.methodology || '-'}</td>
@@ -1384,7 +1385,7 @@ export function QuestionBankPage() {
                                 </tr>
                             ))}
                             {questions.length === 0 && (
-                                <tr><td colSpan={13} className="empty-state">No questions found.</td></tr>
+                                <tr><td colSpan={12} className="empty-state">No questions found.</td></tr>
                             )}
                         </tbody>
                     </table>

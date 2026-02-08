@@ -13,7 +13,6 @@ public class QuestionBankItem : AuditableEntity
     public bool IsDummy { get; set; } = false;
     public string? QuestionTitle { get; set; }
     public string? Status { get; set; } // Active/Inactive
-    public string? StatusReason { get; set; }
     public string? Methodology { get; set; }
     public string? DataQualityTag { get; set; }
     public int? RowSortOrder { get; set; }

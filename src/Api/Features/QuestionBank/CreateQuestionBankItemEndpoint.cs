@@ -38,7 +38,6 @@ public static class CreateQuestionBankItemEndpoint
             IsDummy = request.IsDummy,
             QuestionTitle = request.QuestionTitle,
             Status = request.Status,
-            StatusReason = request.StatusReason,
             Methodology = request.Methodology,
             DataQualityTag = request.DataQualityTag,
             RowSortOrder = request.RowSortOrder,

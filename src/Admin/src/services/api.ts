@@ -846,7 +846,6 @@ export interface QuestionBankItem {
     isDummy: boolean;
     questionTitle: string | null;
     status: string | null;
-    statusReason: string | null;
     methodology: string | null;
     createdOn: string;
     createdBy: string | null;
@@ -913,7 +912,6 @@ export interface CreateQuestionBankItemRequest {
     isDummy: boolean;
     questionTitle?: string | null;
     status?: string | null;
-    statusReason?: string | null;
     methodology?: string | null;
     dataQualityTag?: string | null;
     rowSortOrder?: number | null;
