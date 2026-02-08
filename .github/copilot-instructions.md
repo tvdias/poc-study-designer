@@ -23,6 +23,20 @@ POC Study Designer is a comprehensive study design platform built with .NET Aspi
 - **Vite 7** - Build tool and dev server
 - **ESLint 9** - Code linting
 
+## Context & Ignored Files
+
+**CRITICAL**: Copilot MUST NOT include, analyze, or suggest changes to the following file types or directories. These are build artifacts or dependencies and should never be part of a commit or task context:
+- **Binary Files**: `.dll`, `.exe`, `.pdb`, `.so`, `.dylib`, etc.
+- **Build Artifacts**:
+  - `**/bin/`
+  - `**/obj/`
+  - `**/dist/`
+  - `**/build/`
+- **Dependencies**: `**/node_modules/`
+- **System/IDE Files**: `.vs/`, `.vscode/`, `.DS_Store`
+
+**Rule**: If a user asks for help with a build issue, focus on the *source configuration* files (e.g., `.csproj`, `package.json`, `vite.config.ts`, `Dockerfile`) and source code, NEVER the generated output files.
+
 ## Project Structure
 
 ```
@@ -113,6 +127,25 @@ src/
    - Define TypeScript interfaces for API responses
    - Handle errors gracefully
    - Use `/api` prefix for all API calls
+
+## Best Practices
+
+### Security
+1. **Input Validation**: ALWAYS validate external inputs using FluentValidation (backend) or Zod/Formik (frontend). Do not trust client data.
+2. **Secrets Management**: NEVER hardcode secrets, connection strings, or keys. Use User Secrets for local dev and Azure Key Vault/Environment Variables for deployment.
+3. **Data Protection**: Use parameterized queries (handled by EF Core) to prevent SQL injection. Sanitize HTML output to prevent XSS.
+
+### Performance
+1. **Async/Await**: Use asynchronous programming for all I/O operations. Avoid `.Result` or `.Wait()` which can cause deadlocks.
+2. **Database Optimization**:
+   - Avoid N+1 queries by using `.Include()` or projections (`.Select()`) carefully.
+   - Use `AsNoTracking()` for read-only queries when appropriate.
+   - Example: `context.Users.AsNoTracking().Where(...)`.
+3. **Caching**: Utilize Redis output caching for expensive or frequently accessed read-only data.
+4. **Frontend Optimization**:
+   - Lazy load heavy components or routes using `React.lazy()` and `Suspense`.
+   - Minimize bundle size by importing only necessary parts of libraries.
+   - Memoize expensive calculations with `useMemo` and callbacks with `useCallback` where necessary to prevent unnecessary re-renders.
 
 ## Testing
 
