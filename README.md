@@ -111,13 +111,19 @@ You can run the entire application stack using Docker Compose for production-lik
 cp .env.example .env
 
 # Build and start all services
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop all services
-docker-compose down
+docker compose down
+
+# Or use the provided Makefile
+make up      # Start all services
+make logs    # View logs
+make down    # Stop all services
+make help    # See all available commands
 ```
 
 Services will be available at:
@@ -126,3 +132,9 @@ Services will be available at:
 - **API**: http://localhost:5000
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
+
+## Additional Resources
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for all development options
+- **[CONTAINERS.md](CONTAINERS.md)** - Comprehensive container documentation
+- **[Makefile](Makefile)** - Convenient commands for Docker operations
