@@ -69,11 +69,11 @@ export function ProductTemplatesPage() {
 
         if (template) setSelectedTemplate(template);
 
-        setFormData({ 
-            name: target.name, 
+        setFormData({
+            name: target.name,
             version: target.version,
             productId: target.productId,
-            isActive: target.isActive 
+            isActive: target.isActive
         });
         setErrors({});
         setServerError('');
@@ -93,14 +93,14 @@ export function ProductTemplatesPage() {
         try {
             let savedTemplate: ProductTemplate;
             if (mode === 'edit' && selectedTemplate) {
-                savedTemplate = await productTemplatesApi.update(selectedTemplate.id, { 
+                savedTemplate = await productTemplatesApi.update(selectedTemplate.id, {
                     name: formData.name,
                     version: formData.version,
                     productId: formData.productId,
-                    isActive: formData.isActive 
+                    isActive: formData.isActive
                 });
             } else {
-                savedTemplate = await productTemplatesApi.create({ 
+                savedTemplate = await productTemplatesApi.create({
                     name: formData.name,
                     version: formData.version,
                     productId: formData.productId
@@ -216,14 +216,14 @@ export function ProductTemplatesPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
-                            <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form="product-template-form">Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )
@@ -259,7 +259,7 @@ export function ProductTemplatesPage() {
 
                 {/* Form Mode */}
                 {(mode === 'create' || mode === 'edit') && (
-                    <form className="panel-form" onSubmit={handleSubmit}>
+                    <form id="product-template-form" className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
                             <label htmlFor="templateName">Name <span className="required">*</span></label>
                             <input
