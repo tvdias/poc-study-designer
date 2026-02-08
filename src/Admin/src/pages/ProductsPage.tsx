@@ -81,18 +81,36 @@ export function ProductsPage() {
         }
     };
 
-    const openEdit = (product?: Product) => {
+    const openEdit = async (product?: Product) => {
         const target = product || selectedProduct;
         if (!target) return;
 
-        // If opening from row action, ensure selectedProduct is updated
-        if (product) setSelectedProduct(product);
-
-        setFormData({ 
-            name: target.name, 
-            description: target.description || '', 
-            isActive: target.isActive 
-        });
+        // If opening from row action, fetch full product details first
+        if (product) {
+            setIsLoading(true);
+            try {
+                const fullProduct = await productsApi.getById(product.id);
+                setSelectedProduct(fullProduct);
+                setFormData({ 
+                    name: fullProduct.name, 
+                    description: fullProduct.description || '', 
+                    isActive: fullProduct.isActive 
+                });
+            } catch (error) {
+                console.error('Failed to fetch product details', error);
+                return;
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            // Already have full details from view mode
+            setFormData({ 
+                name: target.name, 
+                description: target.description || '', 
+                isActive: target.isActive 
+            });
+        }
+        
         setErrors({});
         setServerError('');
         setMode('edit');
