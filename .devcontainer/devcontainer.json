@@ -1,0 +1,77 @@
+{
+  "name": "POC Study Designer",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "10.0",
+      "installUsingApt": false
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/azure/azure-dev/azd:0": {
+      "version": "stable"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-node-azure-pack",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[csharp]": {
+          "editor.defaultFormatter": "ms-dotnettools.csharp"
+        }
+      }
+    }
+  },
+  "forwardPorts": [5000, 5001, 5173, 5174, 5432, 6379],
+  "portsAttributes": {
+    "5000": {
+      "label": "API (HTTP)",
+      "onAutoForward": "notify"
+    },
+    "5001": {
+      "label": "API (HTTPS)",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Designer App",
+      "onAutoForward": "notify"
+    },
+    "5174": {
+      "label": "Admin App",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "dotnet workload update && dotnet workload install aspire && npm install -g azure-functions-core-tools@4",
+  "postStartCommand": "cd /workspace && dotnet restore",
+  "remoteUser": "vscode"
+}
