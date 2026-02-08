@@ -85,29 +85,17 @@ export function ProductsPage() {
         const target = product || selectedProduct;
         if (!target) return;
 
-        if (product) {
-            openView(product).then(() => {
-                if (selectedProduct) {
-                    setFormData({ 
-                        name: selectedProduct.name, 
-                        description: selectedProduct.description || '', 
-                        isActive: selectedProduct.isActive 
-                    });
-                    setErrors({});
-                    setServerError('');
-                    setMode('edit');
-                }
-            });
-        } else {
-            setFormData({ 
-                name: target.name, 
-                description: target.description || '', 
-                isActive: target.isActive 
-            });
-            setErrors({});
-            setServerError('');
-            setMode('edit');
-        }
+        // If opening from row action, ensure selectedProduct is updated
+        if (product) setSelectedProduct(product);
+
+        setFormData({ 
+            name: target.name, 
+            description: target.description || '', 
+            isActive: target.isActive 
+        });
+        setErrors({});
+        setServerError('');
+        setMode('edit');
     };
 
     const closePanel = () => {
