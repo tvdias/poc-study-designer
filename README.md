@@ -118,12 +118,6 @@ docker compose logs -f
 
 # Stop all services
 docker compose down
-
-# Or use the provided Makefile
-make up      # Start all services
-make logs    # View logs
-make down    # Stop all services
-make help    # See all available commands
 ```
 
 Services will be available at:
@@ -137,4 +131,3 @@ Services will be available at:
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for all development options
 - **[CONTAINERS.md](CONTAINERS.md)** - Comprehensive container documentation
-- **[Makefile](Makefile)** - Convenient commands for Docker operations

@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - poc-network
+      - study-designer
 
   # Redis Cache
   redis:
@@ -35,7 +35,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - poc-network
+      - study-designer
 
   # API Service
   api:
@@ -63,7 +63,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - poc-network
+      - study-designer
 
   # Designer Frontend
   designer:
@@ -72,14 +72,12 @@ services:
       dockerfile: Dockerfile
     container_name: poc-study-designer-frontend
     restart: unless-stopped
-    environment:
-      - API_URL=http://api:8080
     ports:
       - "3000:80"
     depends_on:
       - api
     networks:
-      - poc-network
+      - study-designer
 
   # Admin Frontend
   admin:
@@ -88,17 +86,15 @@ services:
       dockerfile: Dockerfile
     container_name: poc-study-designer-admin
     restart: unless-stopped
-    environment:
-      - API_URL=http://api:8080
     ports:
       - "3001:80"
     depends_on:
       - api
     networks:
-      - poc-network
+      - study-designer
 
 networks:
-  poc-network:
+  study-designer:
     driver: bridge
 
 volumes:
