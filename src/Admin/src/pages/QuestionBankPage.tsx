@@ -591,12 +591,18 @@ export function QuestionBankPage() {
                             value={formData.questionType}
                             onChange={(e) => setFormData({ ...formData, questionType: e.target.value })}
                         >
-                            <option value="">-- Select Type --</option>
-                            <option value="SingleChoice">Single Choice</option>
-                            <option value="MultipleChoice">Multiple Choice</option>
-                            <option value="OpenEnded">Open Ended</option>
-                            <option value="Scale">Scale</option>
-                            <option value="Grid">Grid</option>
+                            <option value="">--Select--</option>
+                            <option value="Small text input">Small text input</option>
+                            <option value="Multiple choice">Multiple choice</option>
+                            <option value="Single choice">Single choice</option>
+                            <option value="Logic">Logic</option>
+                            <option value="Single-choice matrix">Single-choice matrix</option>
+                            <option value="Numeric input">Numeric input</option>
+                            <option value="Large text input">Large text input</option>
+                            <option value="Numeric matrix">Numeric matrix</option>
+                            <option value="Display screen">Display screen</option>
+                            <option value="Multiple-choice matrix">Multiple-choice matrix</option>
+                            <option value="Text input matrix">Text input matrix</option>
                         </select>
                     </div>
 
@@ -635,12 +641,19 @@ export function QuestionBankPage() {
 
                     <div className="form-field">
                         <label htmlFor="dataQualityTag">Data Quality Tag</label>
-                        <input
+                        <select
                             id="dataQualityTag"
-                            type="text"
                             value={formData.dataQualityTag}
                             onChange={(e) => setFormData({ ...formData, dataQualityTag: e.target.value })}
-                        />
+                        >
+                            <option value="">--Select--</option>
+                            <option value="Checked">Checked</option>
+                            <option value="Missing">Missing</option>
+                            <option value="No Label">No Label</option>
+                            <option value="No Wording">No Wording</option>
+                            <option value="Standard Question">Standard Question</option>
+                            <option value="Review">Review</option>
+                        </select>
                     </div>
 
                     <div className="form-field">
@@ -650,10 +663,13 @@ export function QuestionBankPage() {
                             value={formData.methodology}
                             onChange={(e) => setFormData({ ...formData, methodology: e.target.value })}
                         >
-                            <option value="">-- Select Methodology --</option>
-                            <option value="Quantitative">Quantitative</option>
-                            <option value="Qualitative">Qualitative</option>
-                            <option value="Mixed">Mixed</option>
+                            <option value="">--Select--</option>
+                            <option value="CAWI">CAWI</option>
+                            <option value="CATI">CATI</option>
+                            <option value="CAPI">CAPI</option>
+                            <option value="F2F">F2F</option>
+                            <option value="Paper">Paper</option>
+                            <option value="Online">Online</option>
                         </select>
                     </div>
 
@@ -768,9 +784,9 @@ export function QuestionBankPage() {
                             value={formData.singleOrMulticode}
                             onChange={(e) => setFormData({ ...formData, singleOrMulticode: e.target.value })}
                         >
-                            <option value="">-- Select --</option>
-                            <option value="Single">Single</option>
-                            <option value="Multi">Multi</option>
+                            <option value="">--Select--</option>
+                            <option value="Singlecode">Singlecode</option>
+                            <option value="Multicode">Multicode</option>
                         </select>
                     </div>
 
