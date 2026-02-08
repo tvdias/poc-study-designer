@@ -227,7 +227,7 @@ export function ModulesPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
+                            <button className="btn primary" type="submit" form="modules-form">Save</button>
                             <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
@@ -282,7 +282,7 @@ export function ModulesPage() {
 
                 {/* Form Mode */}
                 {(mode === 'create' || mode === 'edit') && (
-                    <form className="panel-form" onSubmit={handleSubmit}>
+                    <form id="modules-form" className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
                             <label htmlFor="variableName">Variable Name *</label>
                             <input

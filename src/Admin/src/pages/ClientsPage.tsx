@@ -15,12 +15,12 @@ export function ClientsPage() {
     // Panel State
     const [mode, setMode] = useState<Mode>('list');
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-    const [formData, setFormData] = useState({ 
-        accountName: '', 
-        companyNumber: '', 
+    const [formData, setFormData] = useState({
+        accountName: '',
+        companyNumber: '',
         customerNumber: '',
         companyCode: '',
-        isActive: true 
+        isActive: true
     });
 
     // Error State
@@ -65,12 +65,12 @@ export function ClientsPage() {
         // If opening from row action, ensure selectedClient is updated
         if (client) setSelectedClient(client);
 
-        setFormData({ 
-            accountName: target.accountName, 
-            companyNumber: target.companyNumber || '', 
+        setFormData({
+            accountName: target.accountName,
+            companyNumber: target.companyNumber || '',
             customerNumber: target.customerNumber || '',
             companyCode: target.companyCode || '',
-            isActive: target.isActive 
+            isActive: target.isActive
         });
         setErrors({});
         setServerError('');
@@ -215,7 +215,7 @@ export function ClientsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
+                            <button className="btn primary" type="submit" form="clients-form">Save</button>
                             <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
@@ -262,7 +262,7 @@ export function ClientsPage() {
 
                 {/* Form Mode */}
                 {(mode === 'create' || mode === 'edit') && (
-                    <form className="panel-form" onSubmit={handleSubmit}>
+                    <form id="clients-form" className="panel-form" onSubmit={handleSubmit}>
                         <div className="form-field">
                             <label htmlFor="accountName">Account Name *</label>
                             <input
