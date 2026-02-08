@@ -681,10 +681,13 @@ export function QuestionBankPage() {
                                 value={formData.rowSortOrder ?? ''}
                                 onChange={(e) => setFormData({ ...formData, rowSortOrder: e.target.value ? parseInt(e.target.value) : null })}
                             >
-                                <option value="">---</option>
-                                {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
-                                    <option key={num} value={num}>{num}</option>
-                                ))}
+                                <option value="">-- Select Row Sort Order --</option>
+                                <option value="1">None</option>
+                                <option value="2">Ascending</option>
+                                <option value="3">Descending</option>
+                                <option value="4">Random</option>
+                                <option value="5">As Shown</option>
+                                <option value="6">Custom</option>
                             </select>
                         </div>
 
@@ -695,10 +698,13 @@ export function QuestionBankPage() {
                                 value={formData.columnSortOrder ?? ''}
                                 onChange={(e) => setFormData({ ...formData, columnSortOrder: e.target.value ? parseInt(e.target.value) : null })}
                             >
-                                <option value="">---</option>
-                                {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
-                                    <option key={num} value={num}>{num}</option>
-                                ))}
+                                <option value="">-- Select Column Sort Order --</option>
+                                <option value="1">None</option>
+                                <option value="2">Ascending</option>
+                                <option value="3">Descending</option>
+                                <option value="4">Random</option>
+                                <option value="5">As Shown</option>
+                                <option value="6">Custom</option>
                             </select>
                         </div>
                     </div>
@@ -1244,7 +1250,7 @@ export function QuestionBankPage() {
                             value={formData.scaleType}
                             onChange={(e) => setFormData({ ...formData, scaleType: e.target.value })}
                         >
-                            <option value="">---</option>
+                            <option value="">-- Select Scale Type --</option>
                             <option value="Categorical">Categorical</option>
                             <option value="Ordinal">Ordinal</option>
                             <option value="Interval">Interval</option>
@@ -1260,7 +1266,7 @@ export function QuestionBankPage() {
                             value={formData.displayType}
                             onChange={(e) => setFormData({ ...formData, displayType: e.target.value })}
                         >
-                            <option value="">---</option>
+                            <option value="">-- Select Display Type --</option>
                             <option value="Radio buttons">Radio buttons</option>
                             <option value="Dropdown">Dropdown</option>
                             <option value="Checkboxes">Checkboxes</option>
