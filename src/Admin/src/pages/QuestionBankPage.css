@@ -1,0 +1,295 @@
+/* Question Bank Page Styles */
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+}
+
+.tab {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.tab:hover:not(:disabled) {
+    color: #0078d4;
+    background: #f5f5f5;
+}
+
+.tab.active {
+    color: #0078d4;
+    border-bottom-color: #0078d4;
+    background: transparent;
+}
+
+.tab:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Tab Content */
+.tab-content {
+    padding: 0;
+}
+
+.tab-empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.tab-empty-state p {
+    margin: 0;
+}
+
+/* Detail Sections */
+.detail-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.detail-section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+}
+
+/* Form Layout */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
+.form-row .form-field {
+    margin-bottom: 1rem;
+}
+
+/* Text Content Display */
+.text-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* Text Truncation */
+.text-truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Link Button */
+.btn-link {
+    background: none;
+    border: none;
+    color: #0078d4;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color 0.2s;
+}
+
+.btn-link:hover {
+    color: #106ebe;
+    text-decoration: underline;
+}
+
+.btn-link svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Sub Details List */
+.sub-details-list {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.sub-details-list thead {
+    background: #f5f5f5;
+}
+
+.sub-details-list th {
+    text-align: left;
+    padding: 0.5rem;
+    font-weight: 600;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.sub-details-list td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.sub-details-list tbody tr:hover {
+    background: #f9f9f9;
+}
+
+/* Sub Form */
+.sub-form {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.sub-form .form-field {
+    margin-bottom: 1rem;
+}
+
+.sub-form .form-field:last-of-type:not(.form-actions) {
+    margin-bottom: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Form Field Styles */
+.form-field textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+}
+
+.form-field textarea:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+/* Error Message */
+.error-message {
+    background: #fef0f0;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+/* Status Badge Enhancements */
+.status-text {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-text.active {
+    background: #e6f7e6;
+    color: #2d7a2d;
+}
+
+.status-text.inactive {
+    background: #f5f5f5;
+    color: #666;
+}
+
+/* Scrollbar Styling for Tab Content */
+.tab-content {
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.tab-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tab-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.tab-content::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.tab-content::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Empty State in Tables */
+.empty-state {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 2rem 1rem;
+}
+
+/* Row Actions in Sub Tables */
+.sub-details-list .row-actions {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab {
+        white-space: nowrap;
+    }
+}
