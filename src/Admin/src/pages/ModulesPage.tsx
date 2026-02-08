@@ -31,7 +31,6 @@ export function ModulesPage() {
     const [questionSearch, setQuestionSearch] = useState('');
     const [questionSearchResults, setQuestionSearchResults] = useState<QuestionBankItem[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
 
     // Error State
     const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -186,7 +185,6 @@ export function ModulesPage() {
             setQuestions([...questions, newQuestion]);
             setQuestionSearch('');
             setQuestionSearchResults([]);
-            setSelectedQuestionId('');
         } catch (err: any) {
             if (err.status === 409) {
                 alert(err.detail || 'This question is already added to this module.');
@@ -380,7 +378,6 @@ export function ModulesPage() {
                                                         key={item.id}
                                                         className="lookup-result-item"
                                                         onClick={() => {
-                                                            setSelectedQuestionId(item.id);
                                                             setQuestionSearch(item.variableName);
                                                             setQuestionSearchResults([]);
                                                             handleAddQuestion(item.id);
