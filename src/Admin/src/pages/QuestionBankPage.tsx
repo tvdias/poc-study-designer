@@ -676,22 +676,30 @@ export function QuestionBankPage() {
                     <div className="form-row">
                         <div className="form-field">
                             <label htmlFor="rowSortOrder">Row Sort Order</label>
-                            <input
+                            <select
                                 id="rowSortOrder"
-                                type="number"
                                 value={formData.rowSortOrder ?? ''}
                                 onChange={(e) => setFormData({ ...formData, rowSortOrder: e.target.value ? parseInt(e.target.value) : null })}
-                            />
+                            >
+                                <option value="">---</option>
+                                {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="form-field">
                             <label htmlFor="columnSortOrder">Column Sort Order</label>
-                            <input
+                            <select
                                 id="columnSortOrder"
-                                type="number"
                                 value={formData.columnSortOrder ?? ''}
                                 onChange={(e) => setFormData({ ...formData, columnSortOrder: e.target.value ? parseInt(e.target.value) : null })}
-                            />
+                            >
+                                <option value="">---</option>
+                                {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
