@@ -85,7 +85,6 @@ export function ConfigurationQuestionsPage() {
     };
 
     const openView = async (question: ConfigurationQuestionDetail) => {
-        setIsLoading(true);
         try {
             // Fetch full details including answers and rules
             const fullQuestion = await configurationQuestionsApi.getById(question.id);
@@ -93,16 +92,25 @@ export function ConfigurationQuestionsPage() {
             setMode('view');
         } catch (error) {
             console.error('Failed to fetch question details', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    const openEdit = (question?: ConfigurationQuestionDetail) => {
-        const target = question || selectedQuestion;
-        if (!target) return;
+    const openEdit = async (question?: ConfigurationQuestionDetail) => {
+        let target = selectedQuestion;
 
-        if (question) setSelectedQuestion(question);
+        if (question) {
+            try {
+                // Fetch full details including answers and rules so we can switch back to view correctly or show them
+                const fullQuestion = await configurationQuestionsApi.getById(question.id);
+                target = fullQuestion;
+                setSelectedQuestion(target);
+            } catch (error) {
+                console.error('Failed to fetch question details', error);
+                return;
+            }
+        }
+
+        if (!target) return;
 
         setFormData({
             question: target.question,
