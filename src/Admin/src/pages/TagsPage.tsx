@@ -76,18 +76,16 @@ export function TagsPage() {
         setServerError('');
 
         try {
-            let savedTag: Tag;
             if (mode === 'edit' && selectedTag) {
-                savedTag = await tagsApi.update(selectedTag.id, { name: formData.name, isActive: formData.isActive });
+                const savedTag = await tagsApi.update(selectedTag.id, { name: formData.name, isActive: formData.isActive });
+                await fetchTags();
+                setSelectedTag(savedTag);
+                setMode('view');
             } else {
-                savedTag = await tagsApi.create({ name: formData.name });
+                await tagsApi.create({ name: formData.name });
+                await fetchTags();
+                closePanel();
             }
-
-            // Refresh list and optionally switch to view mode or close
-            await fetchTags();
-            // stay in view mode of the saved tag
-            setSelectedTag(savedTag);
-            setMode('view');
 
         } catch (err: any) {
             if (err.status === 400 && err.errors) {
@@ -189,14 +187,14 @@ export function TagsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" type="submit" form="tags-form">Save</button>
-                            <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form="tags-form">Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )

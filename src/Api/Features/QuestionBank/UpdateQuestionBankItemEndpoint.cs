@@ -51,7 +51,7 @@ public static class UpdateQuestionBankItemEndpoint
         question.QuestionFormatDetails = request.QuestionFormatDetails;
         question.ScraperNotes = request.ScraperNotes;
         question.CustomNotes = request.CustomNotes;
-        question.MetricGroup = request.MetricGroup;
+        question.MetricGroupId = request.MetricGroupId;
         question.TableTitle = request.TableTitle;
         question.QuestionRationale = request.QuestionRationale;
         question.SingleOrMulticode = request.SingleOrMulticode;

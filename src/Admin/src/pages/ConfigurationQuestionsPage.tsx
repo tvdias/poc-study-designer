@@ -85,7 +85,6 @@ export function ConfigurationQuestionsPage() {
     };
 
     const openView = async (question: ConfigurationQuestionDetail) => {
-        setIsLoading(true);
         try {
             // Fetch full details including answers and rules
             const fullQuestion = await configurationQuestionsApi.getById(question.id);
@@ -93,16 +92,25 @@ export function ConfigurationQuestionsPage() {
             setMode('view');
         } catch (error) {
             console.error('Failed to fetch question details', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    const openEdit = (question?: ConfigurationQuestionDetail) => {
-        const target = question || selectedQuestion;
-        if (!target) return;
+    const openEdit = async (question?: ConfigurationQuestionDetail) => {
+        let target = selectedQuestion;
 
-        if (question) setSelectedQuestion(question);
+        if (question) {
+            try {
+                // Fetch full details including answers and rules so we can switch back to view correctly or show them
+                const fullQuestion = await configurationQuestionsApi.getById(question.id);
+                target = fullQuestion;
+                setSelectedQuestion(target);
+            } catch (error) {
+                console.error('Failed to fetch question details', error);
+                return;
+            }
+        }
+
+        if (!target) return;
 
         setFormData({
             question: target.question,
@@ -128,26 +136,26 @@ export function ConfigurationQuestionsPage() {
         setServerError('');
 
         try {
-            let savedQuestion: ConfigurationQuestionDetail;
             if (mode === 'edit' && selectedQuestion) {
-                savedQuestion = await configurationQuestionsApi.update(selectedQuestion.id, {
+                const savedQuestion = await configurationQuestionsApi.update(selectedQuestion.id, {
                     question: formData.question,
                     aiPrompt: formData.aiPrompt || undefined,
                     ruleType: formData.ruleType,
                     isActive: formData.isActive
                 });
+                await fetchQuestions();
+                const fullQuestion = await configurationQuestionsApi.getById(savedQuestion.id);
+                setSelectedQuestion(fullQuestion);
+                setMode('view');
             } else {
-                savedQuestion = await configurationQuestionsApi.create({
+                await configurationQuestionsApi.create({
                     question: formData.question,
                     aiPrompt: formData.aiPrompt || undefined,
                     ruleType: formData.ruleType
                 });
+                await fetchQuestions();
+                closePanel();
             }
-
-            await fetchQuestions();
-            const fullQuestion = await configurationQuestionsApi.getById(savedQuestion.id);
-            setSelectedQuestion(fullQuestion);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };
@@ -420,14 +428,14 @@ export function ConfigurationQuestionsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" type="submit" form="configuration-questions-form">Save</button>
-                            <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form="configuration-questions-form">Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )

@@ -6,6 +6,7 @@ using Api.Features.Clients;
 using Api.Features.ConfigurationQuestions;
 using Api.Features.Products;
 using Api.Features.QuestionBank;
+using Api.Features.MetricGroups;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -32,6 +33,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ProductConfigQuestionDisplayRule> ProductConfigQuestionDisplayRules => Set<ProductConfigQuestionDisplayRule>();
     public DbSet<QuestionBankItem> QuestionBankItems => Set<QuestionBankItem>();
     public DbSet<QuestionAnswer> QuestionAnswers => Set<QuestionAnswer>();
+    public DbSet<MetricGroup> MetricGroups => Set<MetricGroup>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -247,6 +249,11 @@ public class ApplicationDbContext : DbContext
                 .WithOne(a => a.QuestionBankItem)
                 .HasForeignKey(a => a.QuestionBankItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.MetricGroup)
+                .WithMany()
+                .HasForeignKey(e => e.MetricGroupId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<QuestionAnswer>(entity =>
@@ -255,6 +262,13 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.AnswerText).IsRequired().HasMaxLength(500);
             entity.Property(e => e.AnswerCode).HasMaxLength(50);
             entity.Property(e => e.AnswerLocation).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<MetricGroup>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.Name).IsUnique(); // Ensure metric group names are unique
         });
 
     }

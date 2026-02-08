@@ -68,46 +68,47 @@ export function ProductsPage() {
     };
 
     const openView = async (product: Product) => {
-        setIsLoading(true);
         try {
+            // Fetch full details before opening
             const fullProduct = await productsApi.getById(product.id);
             setSelectedProduct(fullProduct);
             setMode('view');
             setTabMode('general');
         } catch (error) {
             console.error('Failed to fetch product details', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    const openEdit = (product?: Product) => {
+    const openEdit = async (product?: Product) => {
         const target = product || selectedProduct;
         if (!target) return;
 
+        // If opening from row action, fetch full product details first
         if (product) {
-            openView(product).then(() => {
-                if (selectedProduct) {
-                    setFormData({ 
-                        name: selectedProduct.name, 
-                        description: selectedProduct.description || '', 
-                        isActive: selectedProduct.isActive 
-                    });
-                    setErrors({});
-                    setServerError('');
-                    setMode('edit');
-                }
-            });
+            try {
+                const fullProduct = await productsApi.getById(product.id);
+                setSelectedProduct(fullProduct);
+                setFormData({
+                    name: fullProduct.name,
+                    description: fullProduct.description || '',
+                    isActive: fullProduct.isActive
+                });
+            } catch (error) {
+                console.error(`Failed to fetch product details for product ${product.id}`, error);
+                return;
+            }
         } else {
-            setFormData({ 
-                name: target.name, 
-                description: target.description || '', 
-                isActive: target.isActive 
+            // Already have full details from view mode
+            setFormData({
+                name: target.name,
+                description: target.description || '',
+                isActive: target.isActive
             });
-            setErrors({});
-            setServerError('');
-            setMode('edit');
         }
+
+        setErrors({});
+        setServerError('');
+        setMode('edit');
     };
 
     const closePanel = () => {
@@ -123,24 +124,24 @@ export function ProductsPage() {
         setServerError('');
 
         try {
-            let savedProduct: Product;
             if (mode === 'edit' && selectedProduct) {
-                savedProduct = await productsApi.update(selectedProduct.id, { 
-                    name: formData.name, 
+                const savedProduct = await productsApi.update(selectedProduct.id, {
+                    name: formData.name,
                     description: formData.description || undefined,
-                    isActive: formData.isActive 
+                    isActive: formData.isActive
                 });
+                await fetchProducts();
+                const fullProduct = await productsApi.getById(savedProduct.id);
+                setSelectedProduct(fullProduct);
+                setMode('view');
             } else {
-                savedProduct = await productsApi.create({ 
+                await productsApi.create({
                     name: formData.name,
                     description: formData.description || undefined
                 });
+                await fetchProducts();
+                closePanel();
             }
-
-            await fetchProducts();
-            const fullProduct = await productsApi.getById(savedProduct.id);
-            setSelectedProduct(fullProduct);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };
@@ -365,14 +366,14 @@ export function ProductsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') && tabMode === 'general' ? (
                         <>
-                            <button className="btn primary" onClick={(e) => handleSubmit(e as React.FormEvent)}>Save</button>
-                            <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form="product-form">Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )
@@ -381,19 +382,19 @@ export function ProductsPage() {
                 {/* Tabs */}
                 {mode !== 'create' && selectedProduct && (
                     <div className="tabs">
-                        <button 
+                        <button
                             className={`tab ${tabMode === 'general' ? 'active' : ''}`}
                             onClick={() => setTabMode('general')}
                         >
                             General
                         </button>
-                        <button 
+                        <button
                             className={`tab ${tabMode === 'config-questions' ? 'active' : ''}`}
                             onClick={() => setTabMode('config-questions')}
                         >
                             Configuration Questions
                         </button>
-                        <button 
+                        <button
                             className={`tab ${tabMode === 'templates' ? 'active' : ''}`}
                             onClick={() => setTabMode('templates')}
                         >
@@ -431,7 +432,7 @@ export function ProductsPage() {
 
                         {/* Form Mode */}
                         {(mode === 'create' || mode === 'edit') && (
-                            <form className="panel-form" onSubmit={handleSubmit}>
+                            <form id="product-form" className="panel-form" onSubmit={handleSubmit}>
                                 <div className="form-field">
                                     <label htmlFor="productName">Name <span className="required">*</span></label>
                                     <input
@@ -554,9 +555,9 @@ export function ProductsPage() {
                                         <td>{pcq.question}</td>
                                         <td>
                                             <div className="row-actions">
-                                                <button 
-                                                    className="action-btn danger" 
-                                                    onClick={() => handleConfigQuestionDelete(pcq)} 
+                                                <button
+                                                    className="action-btn danger"
+                                                    onClick={() => handleConfigQuestionDelete(pcq)}
                                                     title="Remove"
                                                 >
                                                     <TrashIcon />
@@ -632,9 +633,9 @@ export function ProductsPage() {
                                         <td>{template.version}</td>
                                         <td>
                                             <div className="row-actions">
-                                                <button 
-                                                    className="action-btn danger" 
-                                                    onClick={() => handleTemplateDelete(template)} 
+                                                <button
+                                                    className="action-btn danger"
+                                                    onClick={() => handleTemplateDelete(template)}
                                                     title="Delete"
                                                 >
                                                     <TrashIcon />

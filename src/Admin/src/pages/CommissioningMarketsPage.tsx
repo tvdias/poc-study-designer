@@ -76,18 +76,16 @@ export function CommissioningMarketsPage() {
         setServerError('');
 
         try {
-            let savedMarket: CommissioningMarket;
             if (mode === 'edit' && selectedMarket) {
-                savedMarket = await commissioningMarketsApi.update(selectedMarket.id, { isoCode: formData.isoCode, name: formData.name, isActive: formData.isActive });
+                const savedMarket = await commissioningMarketsApi.update(selectedMarket.id, { isoCode: formData.isoCode, name: formData.name, isActive: formData.isActive });
+                await fetchMarkets();
+                setSelectedMarket(savedMarket);
+                setMode('view');
             } else {
-                savedMarket = await commissioningMarketsApi.create({ isoCode: formData.isoCode, name: formData.name });
+                await commissioningMarketsApi.create({ isoCode: formData.isoCode, name: formData.name });
+                await fetchMarkets();
+                closePanel();
             }
-
-            // Refresh list and optionally switch to view mode or close
-            await fetchMarkets();
-            // stay in view mode of the saved market
-            setSelectedMarket(savedMarket);
-            setMode('view');
 
         } catch (err: any) {
             if (err.status === 400 && err.errors) {
@@ -191,14 +189,14 @@ export function CommissioningMarketsPage() {
                 footer={
                     (mode === 'create' || mode === 'edit') ? (
                         <>
-                            <button className="btn primary" type="submit" form="commissioning-markets-form">Save</button>
-                            <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button key="save-btn" className="btn primary" type="submit" form="commissioning-markets-form">Save</button>
+                            <button key="cancel-btn" type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button key="edit-btn" type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button key="delete-btn" type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )

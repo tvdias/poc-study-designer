@@ -13,6 +13,16 @@ export interface UpdateTagRequest {
     isActive: boolean;
 }
 
+export interface MetricGroup {
+    id: string;
+    name: string;
+    isActive: boolean;
+}
+
+export interface CreateMetricGroupRequest {
+    name: string;
+}
+
 export interface CommissioningMarket {
     id: string;
     isoCode: string;
@@ -250,6 +260,35 @@ export const tagsApi = {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete tag');
+    }
+};
+
+export const metricGroupsApi = {
+    getAll: async (query?: string): Promise<MetricGroup[]> => {
+        const url = query ? `${API_BASE}/metric-groups?query=${encodeURIComponent(query)}` : `${API_BASE}/metric-groups`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch metric groups');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<MetricGroup> => {
+        const response = await fetch(`${API_BASE}/metric-groups/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch metric group');
+        return response.json();
+    },
+
+    create: async (data: CreateMetricGroupRequest): Promise<MetricGroup> => {
+        const response = await fetch(`${API_BASE}/metric-groups`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
     }
 };
 
@@ -825,7 +864,7 @@ export const productTemplatesApi = {
         if (query) params.append('query', query);
         if (productId) params.append('productId', productId);
         if (params.toString()) url += `?${params.toString()}`;
-        
+
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch product templates');
         return response.json();
@@ -942,7 +981,8 @@ export interface QuestionBankItemDetail extends QuestionBankItem {
     questionFormatDetails: string | null;
     scraperNotes: string | null;
     customNotes: string | null;
-    metricGroup: string | null;
+    metricGroupId: string | null;
+    metricGroupName: string | null;
     tableTitle: string | null;
     questionRationale: string | null;
     singleOrMulticode: string | null;
@@ -1003,7 +1043,7 @@ export interface CreateQuestionBankItemRequest {
     questionFormatDetails?: string | null;
     scraperNotes?: string | null;
     customNotes?: string | null;
-    metricGroup?: string | null;
+    metricGroupId?: string | null;
     tableTitle?: string | null;
     questionRationale?: string | null;
     singleOrMulticode?: string | null;
