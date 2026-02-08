@@ -47,7 +47,7 @@ public static class CreateQuestionBankItemEndpoint
             QuestionFormatDetails = request.QuestionFormatDetails,
             ScraperNotes = request.ScraperNotes,
             CustomNotes = request.CustomNotes,
-            MetricGroup = request.MetricGroup,
+            MetricGroupId = request.MetricGroupId,
             TableTitle = request.TableTitle,
             QuestionRationale = request.QuestionRationale,
             SingleOrMulticode = request.SingleOrMulticode,

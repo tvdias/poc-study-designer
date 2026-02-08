@@ -187,6 +187,11 @@ public class ApplicationDbContext : DbContext
                 .WithOne(a => a.QuestionBankItem)
                 .HasForeignKey(a => a.QuestionBankItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.MetricGroup)
+                .WithMany()
+                .HasForeignKey(e => e.MetricGroupId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<QuestionAnswer>(entity =>

@@ -637,8 +637,8 @@ namespace Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("MetricGroup")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("MetricGroupId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("text");
@@ -705,6 +705,8 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MetricGroupId");
 
                     b.HasIndex("ParentQuestionId");
 
@@ -830,10 +832,17 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
                 {
+                    b.HasOne("Api.Features.MetricGroups.MetricGroup", "MetricGroup")
+                        .WithMany()
+                        .HasForeignKey("MetricGroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "ParentQuestion")
                         .WithMany()
                         .HasForeignKey("ParentQuestionId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("MetricGroup");
 
                     b.Navigation("ParentQuestion");
                 });

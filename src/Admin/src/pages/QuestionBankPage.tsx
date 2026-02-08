@@ -44,6 +44,7 @@ export function QuestionBankPage() {
         scraperNotes: '',
         customNotes: '',
         metricGroup: '',
+        metricGroupId: null as string | null,
         tableTitle: '',
         questionRationale: '',
         singleOrMulticode: '',
@@ -131,12 +132,12 @@ export function QuestionBankPage() {
 
     const handleMetricGroupInputChange = (value: string) => {
         setMetricGroupSearch(value);
-        setFormData({ ...formData, metricGroup: value });
+        setFormData({ ...formData, metricGroup: value, metricGroupId: null });
         setShowMetricGroupDropdown(true);
     };
 
     const handleSelectMetricGroup = (metricGroup: MetricGroup) => {
-        setFormData({ ...formData, metricGroup: metricGroup.name });
+        setFormData({ ...formData, metricGroup: metricGroup.name, metricGroupId: metricGroup.id });
         setMetricGroupSearch(metricGroup.name);
         setShowMetricGroupDropdown(false);
     };
@@ -147,7 +148,7 @@ export function QuestionBankPage() {
         setIsCreatingMetricGroup(true);
         try {
             const newMetricGroup = await metricGroupsApi.create({ name: metricGroupSearch.trim() });
-            setFormData({ ...formData, metricGroup: newMetricGroup.name });
+            setFormData({ ...formData, metricGroup: newMetricGroup.name, metricGroupId: newMetricGroup.id });
             setMetricGroupSearch(newMetricGroup.name);
             setShowMetricGroupDropdown(false);
         } catch (error: unknown) {
@@ -183,6 +184,7 @@ export function QuestionBankPage() {
             scraperNotes: '',
             customNotes: '',
             metricGroup: '',
+            metricGroupId: null,
             tableTitle: '',
             questionRationale: '',
             singleOrMulticode: '',
@@ -249,7 +251,8 @@ export function QuestionBankPage() {
             questionFormatDetails: target.questionFormatDetails || '',
             scraperNotes: target.scraperNotes || '',
             customNotes: target.customNotes || '',
-            metricGroup: target.metricGroup || '',
+            metricGroup: target.metricGroupName || '',
+            metricGroupId: target.metricGroupId || null,
             tableTitle: target.tableTitle || '',
             questionRationale: target.questionRationale || '',
             singleOrMulticode: target.singleOrMulticode || '',
@@ -273,7 +276,7 @@ export function QuestionBankPage() {
         });
         setErrors({});
         setServerError('');
-        setMetricGroupSearch(target.metricGroup || '');
+        setMetricGroupSearch(target.metricGroupName || '');
         setMode('edit');
     };
 
@@ -290,6 +293,16 @@ export function QuestionBankPage() {
         e.preventDefault();
         setErrors({});
         setServerError('');
+
+
+        // Validate Metric Group
+        if (formData.metricGroup && !formData.metricGroup.trim()) {
+            // clean up whitespace
+            setFormData({ ...formData, metricGroup: '' });
+        } else if (formData.metricGroup && !formData.metricGroupId) {
+            setErrors({ MetricGroupId: ["Please select a valid Metric Group or leave blank."] });
+            return;
+        }
 
         try {
             const payload = {
@@ -310,7 +323,7 @@ export function QuestionBankPage() {
                 questionFormatDetails: formData.questionFormatDetails || null,
                 scraperNotes: formData.scraperNotes || null,
                 customNotes: formData.customNotes || null,
-                metricGroup: formData.metricGroup || null,
+                metricGroupId: formData.metricGroupId || null,
                 tableTitle: formData.tableTitle || null,
                 questionRationale: formData.questionRationale || null,
                 singleOrMulticode: formData.singleOrMulticode || null,
@@ -556,7 +569,7 @@ export function QuestionBankPage() {
                         </div>
                         <div className="detail-item">
                             <label>Metric Group</label>
-                            <div className="value">{selectedQuestion.metricGroup || '-'}</div>
+                            <div className="value">{selectedQuestion.metricGroupName || '-'}</div>
                         </div>
                         <div className="detail-item">
                             <label>Table Title</label>
@@ -900,6 +913,7 @@ export function QuestionBankPage() {
                                 </div>
                             )}
                         </div>
+                        {errors.MetricGroupId && <span className="field-error">{errors.MetricGroupId[0]}</span>}
                     </div>
 
                     <div className="form-field">

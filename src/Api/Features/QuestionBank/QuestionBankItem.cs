@@ -22,7 +22,8 @@ public class QuestionBankItem : AuditableEntity
     public string? QuestionFormatDetails { get; set; }
     public string? ScraperNotes { get; set; }
     public string? CustomNotes { get; set; }
-    public string? MetricGroup { get; set; }
+    public Guid? MetricGroupId { get; set; }
+    public MetricGroups.MetricGroup? MetricGroup { get; set; }
     public string? TableTitle { get; set; }
     public string? QuestionRationale { get; set; }
     public string? SingleOrMulticode { get; set; }

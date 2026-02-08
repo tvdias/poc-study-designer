@@ -782,7 +782,7 @@ export const productTemplatesApi = {
         if (query) params.append('query', query);
         if (productId) params.append('productId', productId);
         if (params.toString()) url += `?${params.toString()}`;
-        
+
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch product templates');
         return response.json();
@@ -899,7 +899,8 @@ export interface QuestionBankItemDetail extends QuestionBankItem {
     questionFormatDetails: string | null;
     scraperNotes: string | null;
     customNotes: string | null;
-    metricGroup: string | null;
+    metricGroupId: string | null;
+    metricGroupName: string | null;
     tableTitle: string | null;
     questionRationale: string | null;
     singleOrMulticode: string | null;
@@ -960,7 +961,7 @@ export interface CreateQuestionBankItemRequest {
     questionFormatDetails?: string | null;
     scraperNotes?: string | null;
     customNotes?: string | null;
-    metricGroup?: string | null;
+    metricGroupId?: string | null;
     tableTitle?: string | null;
     questionRationale?: string | null;
     singleOrMulticode?: string | null;
