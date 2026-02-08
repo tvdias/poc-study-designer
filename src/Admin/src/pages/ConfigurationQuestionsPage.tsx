@@ -136,26 +136,26 @@ export function ConfigurationQuestionsPage() {
         setServerError('');
 
         try {
-            let savedQuestion: ConfigurationQuestionDetail;
             if (mode === 'edit' && selectedQuestion) {
-                savedQuestion = await configurationQuestionsApi.update(selectedQuestion.id, {
+                const savedQuestion = await configurationQuestionsApi.update(selectedQuestion.id, {
                     question: formData.question,
                     aiPrompt: formData.aiPrompt || undefined,
                     ruleType: formData.ruleType,
                     isActive: formData.isActive
                 });
+                await fetchQuestions();
+                const fullQuestion = await configurationQuestionsApi.getById(savedQuestion.id);
+                setSelectedQuestion(fullQuestion);
+                setMode('view');
             } else {
-                savedQuestion = await configurationQuestionsApi.create({
+                await configurationQuestionsApi.create({
                     question: formData.question,
                     aiPrompt: formData.aiPrompt || undefined,
                     ruleType: formData.ruleType
                 });
+                await fetchQuestions();
+                closePanel();
             }
-
-            await fetchQuestions();
-            const fullQuestion = await configurationQuestionsApi.getById(savedQuestion.id);
-            setSelectedQuestion(fullQuestion);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };

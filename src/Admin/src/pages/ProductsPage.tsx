@@ -124,24 +124,24 @@ export function ProductsPage() {
         setServerError('');
 
         try {
-            let savedProduct: Product;
             if (mode === 'edit' && selectedProduct) {
-                savedProduct = await productsApi.update(selectedProduct.id, {
+                const savedProduct = await productsApi.update(selectedProduct.id, {
                     name: formData.name,
                     description: formData.description || undefined,
                     isActive: formData.isActive
                 });
+                await fetchProducts();
+                const fullProduct = await productsApi.getById(savedProduct.id);
+                setSelectedProduct(fullProduct);
+                setMode('view');
             } else {
-                savedProduct = await productsApi.create({
+                await productsApi.create({
                     name: formData.name,
                     description: formData.description || undefined
                 });
+                await fetchProducts();
+                closePanel();
             }
-
-            await fetchProducts();
-            const fullProduct = await productsApi.getById(savedProduct.id);
-            setSelectedProduct(fullProduct);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };

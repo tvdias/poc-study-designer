@@ -91,25 +91,25 @@ export function ProductTemplatesPage() {
         setServerError('');
 
         try {
-            let savedTemplate: ProductTemplate;
             if (mode === 'edit' && selectedTemplate) {
-                savedTemplate = await productTemplatesApi.update(selectedTemplate.id, {
+                const savedTemplate = await productTemplatesApi.update(selectedTemplate.id, {
                     name: formData.name,
                     version: formData.version,
                     productId: formData.productId,
                     isActive: formData.isActive
                 });
+                await fetchTemplates();
+                setSelectedTemplate(savedTemplate);
+                setMode('view');
             } else {
-                savedTemplate = await productTemplatesApi.create({
+                await productTemplatesApi.create({
                     name: formData.name,
                     version: formData.version,
                     productId: formData.productId
                 });
+                await fetchTemplates();
+                closePanel();
             }
-
-            await fetchTemplates();
-            setSelectedTemplate(savedTemplate);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };
