@@ -214,24 +214,35 @@ export function QuestionBankPage() {
     };
 
     const openView = async (question: QuestionBankItem) => {
-        setIsLoading(true);
         try {
+            // Optimistically show the item we have while fetching details
+            setSelectedQuestion(question as QuestionBankItemDetail);
+            setMode('view');
+
             const fullQuestion = await questionBankApi.getById(question.id);
             setSelectedQuestion(fullQuestion);
-            setActiveTab('question');
-            setMode('view');
         } catch (error) {
             console.error('Failed to fetch question details', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    const openEdit = (question?: QuestionBankItemDetail) => {
-        const target = question || selectedQuestion;
-        if (!target) return;
+    const openEdit = async (question?: QuestionBankItem | QuestionBankItemDetail) => {
+        let target = selectedQuestion;
 
-        if (question) setSelectedQuestion(question);
+        if (question) {
+            try {
+                // If we don't have the full details yet (checking a specific field like metricGroupId which is detail-only)
+                // or just always fetch to be safe and fresh
+                const fullQuestion = await questionBankApi.getById(question.id);
+                target = fullQuestion;
+                setSelectedQuestion(target);
+            } catch (error) {
+                console.error('Failed to fetch question details', error);
+                return;
+            }
+        }
+
+        if (!target) return;
 
         setFormData({
             variableName: target.variableName,
@@ -1533,7 +1544,7 @@ export function QuestionBankPage() {
                                             <button className="action-btn" onClick={(e) => { e.stopPropagation(); openView(question); }} title="View">
                                                 <EyeIcon />
                                             </button>
-                                            <button className="action-btn" onClick={(e) => { e.stopPropagation(); openEdit(); }} title="Edit" disabled>
+                                            <button className="action-btn" onClick={(e) => { e.stopPropagation(); openEdit(question); }} title="Edit">
                                                 <EditIcon />
                                             </button>
                                             <button className="action-btn danger" onClick={(e) => { e.stopPropagation(); handleDelete(question); }} title="Delete">

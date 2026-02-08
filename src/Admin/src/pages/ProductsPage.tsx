@@ -68,16 +68,14 @@ export function ProductsPage() {
     };
 
     const openView = async (product: Product) => {
-        setIsLoading(true);
         try {
+            // Fetch full details before opening
             const fullProduct = await productsApi.getById(product.id);
             setSelectedProduct(fullProduct);
             setMode('view');
             setTabMode('general');
         } catch (error) {
             console.error('Failed to fetch product details', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -87,7 +85,6 @@ export function ProductsPage() {
 
         // If opening from row action, fetch full product details first
         if (product) {
-            setIsLoading(true);
             try {
                 const fullProduct = await productsApi.getById(product.id);
                 setSelectedProduct(fullProduct);
@@ -99,8 +96,6 @@ export function ProductsPage() {
             } catch (error) {
                 console.error(`Failed to fetch product details for product ${product.id}`, error);
                 return;
-            } finally {
-                setIsLoading(false);
             }
         } else {
             // Already have full details from view mode
@@ -129,24 +124,24 @@ export function ProductsPage() {
         setServerError('');
 
         try {
-            let savedProduct: Product;
             if (mode === 'edit' && selectedProduct) {
-                savedProduct = await productsApi.update(selectedProduct.id, {
+                const savedProduct = await productsApi.update(selectedProduct.id, {
                     name: formData.name,
                     description: formData.description || undefined,
                     isActive: formData.isActive
                 });
+                await fetchProducts();
+                const fullProduct = await productsApi.getById(savedProduct.id);
+                setSelectedProduct(fullProduct);
+                setMode('view');
             } else {
-                savedProduct = await productsApi.create({
+                await productsApi.create({
                     name: formData.name,
                     description: formData.description || undefined
                 });
+                await fetchProducts();
+                closePanel();
             }
-
-            await fetchProducts();
-            const fullProduct = await productsApi.getById(savedProduct.id);
-            setSelectedProduct(fullProduct);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };
