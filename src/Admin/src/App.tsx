@@ -6,6 +6,8 @@ import { FieldworkMarketsPage } from './pages/FieldworkMarketsPage';
 import { ModulesPage } from './pages/ModulesPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { ConfigurationQuestionsPage } from './pages/ConfigurationQuestionsPage';
+import { ProductsPage } from './pages/ProductsPage';
+import { ProductTemplatesPage } from './pages/ProductTemplatesPage';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="modules" element={<ModulesPage />} />
           <Route path="clients" element={<ClientsPage />} />
           <Route path="configuration-questions" element={<ConfigurationQuestionsPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="product-templates" element={<ProductTemplatesPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

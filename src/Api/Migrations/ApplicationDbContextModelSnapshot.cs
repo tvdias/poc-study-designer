@@ -330,15 +330,6 @@ namespace Api.Migrations
                     b.Property<Guid?>("ParentModuleId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("StatusReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<string>("VariableName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -357,43 +348,11 @@ namespace Api.Migrations
                     b.ToTable("Modules");
                 });
 
-            modelBuilder.Entity("Api.Features.Modules.ModuleQuestion", b =>
+            modelBuilder.Entity("Api.Features.Products.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ModuleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("QuestionId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
-
-                    b.HasIndex("ModuleId", "QuestionId")
-                        .IsUnique();
-
-                    b.ToTable("ModuleQuestions");
-                });
-
-            modelBuilder.Entity("Api.Features.Modules.ModuleVersion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ChangeDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
@@ -401,20 +360,74 @@ namespace Api.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ModuleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
-                    b.Property<int>("VersionNumber")
-                        .HasColumnType("integer");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ModuleId");
+                    b.HasIndex("Name")
+                        .IsUnique();
 
-                    b.ToTable("ModuleVersions");
+                    b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Api.Features.Questions.Question", b =>
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ConfigurationQuestionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StatusReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfigurationQuestionId");
+
+                    b.HasIndex("ProductId", "ConfigurationQuestionId")
+                        .IsUnique();
+
+                    b.ToTable("ProductConfigQuestions");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -435,32 +448,23 @@ namespace Api.Migrations
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("QuestionSource")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<string>("QuestionText")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("QuestionType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("VariableName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("VariableName")
+                    b.HasIndex("ProductId", "Name", "Version")
                         .IsUnique();
 
-                    b.ToTable("Questions");
+                    b.ToTable("ProductTemplates");
                 });
 
             modelBuilder.Entity("Api.Features.Tags.Tag", b =>
@@ -497,55 +501,6 @@ namespace Api.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("Api.Features.Modules.Module", b =>
-                {
-                    b.HasOne("Api.Features.Modules.Module", "ParentModule")
-                        .WithMany("ChildModules")
-                        .HasForeignKey("ParentModuleId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentModule");
-                });
-
-            modelBuilder.Entity("Api.Features.Modules.ModuleQuestion", b =>
-                {
-                    b.HasOne("Api.Features.Modules.Module", "Module")
-                        .WithMany("ModuleQuestions")
-                        .HasForeignKey("ModuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Api.Features.Questions.Question", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Module");
-
-                    b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("Api.Features.Modules.ModuleVersion", b =>
-                {
-                    b.HasOne("Api.Features.Modules.Module", "Module")
-                        .WithMany("Versions")
-                        .HasForeignKey("ModuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Module");
-                });
-
-            modelBuilder.Entity("Api.Features.Modules.Module", b =>
-                {
-                    b.Navigation("ChildModules");
-
-                    b.Navigation("ModuleQuestions");
-
-                    b.Navigation("Versions");
-                });
-
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationAnswer", b =>
                 {
                     b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationQuestion", "ConfigurationQuestion")
@@ -575,9 +530,61 @@ namespace Api.Migrations
                     b.Navigation("TriggeringAnswer");
                 });
 
+            modelBuilder.Entity("Api.Features.Modules.Module", b =>
+                {
+                    b.HasOne("Api.Features.Modules.Module", "ParentModule")
+                        .WithMany("ChildModules")
+                        .HasForeignKey("ParentModuleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentModule");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
+                {
+                    b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationQuestion", "ConfigurationQuestion")
+                        .WithMany()
+                        .HasForeignKey("ConfigurationQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Products.Product", "Product")
+                        .WithMany("ProductConfigQuestions")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConfigurationQuestion");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
+                {
+                    b.HasOne("Api.Features.Products.Product", "Product")
+                        .WithMany("ProductTemplates")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationQuestion", b =>
                 {
                     b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("Api.Features.Modules.Module", b =>
+                {
+                    b.Navigation("ChildModules");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.Product", b =>
+                {
+                    b.Navigation("ProductConfigQuestions");
+
+                    b.Navigation("ProductTemplates");
                 });
 #pragma warning restore 612, 618
         }

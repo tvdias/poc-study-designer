@@ -16,5 +16,6 @@ public record CreateModuleResponse(
     string? Description,
     int VersionNumber,
     Guid? ParentModuleId,
-    string? Instructions
+    string? Instructions,
+    bool IsActive
 );

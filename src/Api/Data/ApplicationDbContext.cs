@@ -4,6 +4,7 @@ using Api.Features.FieldworkMarkets;
 using Api.Features.Modules;
 using Api.Features.Clients;
 using Api.Features.ConfigurationQuestions;
+using Api.Features.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -22,6 +23,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConfigurationQuestion> ConfigurationQuestions => Set<ConfigurationQuestion>();
     public DbSet<ConfigurationAnswer> ConfigurationAnswers => Set<ConfigurationAnswer>();
     public DbSet<DependencyRule> DependencyRules => Set<DependencyRule>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductTemplate> ProductTemplates => Set<ProductTemplate>();
+    public DbSet<ProductConfigQuestion> ProductConfigQuestions => Set<ProductConfigQuestion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -116,6 +120,46 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.TriggeringAnswerId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.HasIndex(e => e.Name).IsUnique(); // Ensure product names are unique
+            
+            entity.HasMany(e => e.ProductTemplates)
+                .WithOne(pt => pt.Product)
+                .HasForeignKey(pt => pt.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.ProductConfigQuestions)
+                .WithOne(pcq => pcq.Product)
+                .HasForeignKey(pcq => pcq.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Version).IsRequired();
+            
+            entity.HasIndex(e => new { e.ProductId, e.Name, e.Version }).IsUnique();
+        });
+
+        modelBuilder.Entity<ProductConfigQuestion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.StatusReason).HasMaxLength(200);
+            
+            entity.HasIndex(e => new { e.ProductId, e.ConfigurationQuestionId }).IsUnique();
+            
+            entity.HasOne(e => e.ConfigurationQuestion)
+                .WithMany()
+                .HasForeignKey(e => e.ConfigurationQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
     }

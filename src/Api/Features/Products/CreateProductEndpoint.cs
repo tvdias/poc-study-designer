@@ -3,22 +3,22 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 
-namespace Api.Features.Tags;
+namespace Api.Features.Products;
 
-public static class CreateTagEndpoint
+public static class CreateProductEndpoint
 {
-    public static void MapCreateTagEndpoint(this IEndpointRouteBuilder app)
+    public static void MapCreateProductEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/tags", HandleAsync)
-            .WithName("CreateTag")
-            .WithSummary("Create Tag")
-            .WithTags("Tags");
+        app.MapPost("/products", HandleAsync)
+            .WithName("CreateProduct")
+            .WithSummary("Create Product")
+            .WithTags("Products");
     }
 
-    public static async Task<Results<CreatedAtRoute<CreateTagResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
-        CreateTagRequest request,
+    public static async Task<Results<CreatedAtRoute<CreateProductResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
+        CreateProductRequest request,
         ApplicationDbContext db,
-        IValidator<CreateTagRequest> validator,
+        IValidator<CreateProductRequest> validator,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -27,15 +27,16 @@ public static class CreateTagEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var tag = new Tag
+        var product = new Product
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
+            Description = request.Description,
             CreatedOn = DateTime.UtcNow,
             CreatedBy = "System" // TODO: Replace with real user when auth is available
         };
 
-        db.Tags.Add(tag);
+        db.Products.Add(product);
 
         try
         {
@@ -43,17 +44,18 @@ public static class CreateTagEndpoint
         }
         catch (DbUpdateException ex)
         {
-            // Different database providers use different error codes for unique constraint violations.
-            // This is a generic check that looks for common keywords in the inner exception.
             if (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) == true
                 || ex.InnerException?.Message.Contains("constraint", StringComparison.OrdinalIgnoreCase) == true)
             {
-                return TypedResults.Conflict($"Tag '{request.Name}' already exists.");
+                return TypedResults.Conflict($"Product '{request.Name}' already exists.");
             }
 
             throw;
         }
 
-        return TypedResults.CreatedAtRoute(new CreateTagResponse(tag.Id, tag.Name, tag.IsActive), "GetTagById", new { id = tag.Id });
+        return TypedResults.CreatedAtRoute(
+            new CreateProductResponse(product.Id, product.Name, product.Description), 
+            "GetProductById", 
+            new { id = product.Id });
     }
 }

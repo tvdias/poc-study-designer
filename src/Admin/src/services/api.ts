@@ -101,6 +101,7 @@ export interface UpdateModuleRequest {
     versionNumber: number;
     parentModuleId?: string;
     instructions?: string;
+    isActive: boolean;
 }
 
 export interface ConfigurationQuestion {
@@ -599,5 +600,237 @@ export const dependencyRulesApi = {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete dependency rule');
+    }
+};
+
+// Product interfaces
+export interface Product {
+    id: string;
+    name: string;
+    description?: string;
+    isActive: boolean;
+}
+
+export interface ProductDetail extends Product {
+    productTemplates: ProductTemplateInfo[];
+    configurationQuestions: ProductConfigQuestionInfo[];
+}
+
+export interface ProductTemplateInfo {
+    id: string;
+    name: string;
+    version: number;
+}
+
+export interface ProductConfigQuestionInfo {
+    id: string;
+    configurationQuestionId: string;
+    question: string;
+    statusReason?: string;
+}
+
+export interface CreateProductRequest {
+    name: string;
+    description?: string;
+}
+
+export interface UpdateProductRequest {
+    name: string;
+    description?: string;
+    isActive: boolean;
+}
+
+// ProductTemplate interfaces
+export interface ProductTemplate {
+    id: string;
+    name: string;
+    version: number;
+    productId: string;
+    productName: string;
+    isActive: boolean;
+}
+
+export interface CreateProductTemplateRequest {
+    name: string;
+    version: number;
+    productId: string;
+}
+
+export interface UpdateProductTemplateRequest {
+    name: string;
+    version: number;
+    productId: string;
+    isActive: boolean;
+}
+
+// ProductConfigQuestion interfaces
+export interface ProductConfigQuestion {
+    id: string;
+    productId: string;
+    configurationQuestionId: string;
+    question: string;
+    statusReason?: string;
+    isActive: boolean;
+}
+
+export interface CreateProductConfigQuestionRequest {
+    productId: string;
+    configurationQuestionId: string;
+    statusReason?: string;
+}
+
+export interface UpdateProductConfigQuestionRequest {
+    statusReason?: string;
+    isActive: boolean;
+}
+
+// Product API client
+export const productsApi = {
+    getAll: async (query?: string): Promise<Product[]> => {
+        const url = query ? `${API_BASE}/products?query=${encodeURIComponent(query)}` : `${API_BASE}/products`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch products');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<ProductDetail> => {
+        const response = await fetch(`${API_BASE}/products/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch product');
+        return response.json();
+    },
+
+    create: async (data: CreateProductRequest): Promise<Product> => {
+        const response = await fetch(`${API_BASE}/products`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateProductRequest): Promise<Product> => {
+        const response = await fetch(`${API_BASE}/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/products/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete product');
+    }
+};
+
+// ProductTemplate API client
+export const productTemplatesApi = {
+    getAll: async (query?: string, productId?: string): Promise<ProductTemplate[]> => {
+        let url = `${API_BASE}/product-templates`;
+        const params = new URLSearchParams();
+        if (query) params.append('query', query);
+        if (productId) params.append('productId', productId);
+        if (params.toString()) url += `?${params.toString()}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch product templates');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<ProductTemplate> => {
+        const response = await fetch(`${API_BASE}/product-templates/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch product template');
+        return response.json();
+    },
+
+    create: async (data: CreateProductTemplateRequest): Promise<ProductTemplate> => {
+        const response = await fetch(`${API_BASE}/product-templates`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateProductTemplateRequest): Promise<ProductTemplate> => {
+        const response = await fetch(`${API_BASE}/product-templates/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/product-templates/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete product template');
+    }
+};
+
+// ProductConfigQuestion API client
+export const productConfigQuestionsApi = {
+    getById: async (id: string): Promise<ProductConfigQuestionInfo> => {
+        const response = await fetch(`${API_BASE}/product-config-questions/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch product config question');
+        return response.json();
+    },
+
+    create: async (data: CreateProductConfigQuestionRequest): Promise<ProductConfigQuestionInfo> => {
+        const response = await fetch(`${API_BASE}/product-config-questions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateProductConfigQuestionRequest): Promise<ProductConfigQuestion> => {
+        const response = await fetch(`${API_BASE}/product-config-questions/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/product-config-questions/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete product config question');
     }
 };

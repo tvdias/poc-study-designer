@@ -74,7 +74,8 @@ public static class CreateModuleEndpoint
             module.Description,
             module.VersionNumber,
             module.ParentModuleId,
-            module.Instructions
+            module.Instructions,
+            module.IsActive
         );
 
         return TypedResults.CreatedAtRoute(response, "GetModuleById", new { id = module.Id });
