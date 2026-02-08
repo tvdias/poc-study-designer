@@ -946,7 +946,7 @@ export interface CreateQuestionBankItemRequest {
     questionFacet?: string | null;
 }
 
-export interface UpdateQuestionBankItemRequest extends CreateQuestionBankItemRequest {}
+export type UpdateQuestionBankItemRequest = CreateQuestionBankItemRequest;
 
 export interface CreateQuestionAnswerRequest {
     answerText: string;
@@ -962,7 +962,7 @@ export interface CreateQuestionAnswerRequest {
     displayOrder?: number | null;
 }
 
-export interface UpdateQuestionAnswerRequest extends CreateQuestionAnswerRequest {}
+export type UpdateQuestionAnswerRequest = CreateQuestionAnswerRequest;
 
 // Question Bank API
 export const questionBankApi = {
