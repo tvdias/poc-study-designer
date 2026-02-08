@@ -5,6 +5,7 @@ using Api.Features.Modules;
 using Api.Features.Clients;
 using Api.Features.ConfigurationQuestions;
 using Api.Features.Products;
+using Api.Features.QuestionBank;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -26,6 +27,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductTemplate> ProductTemplates => Set<ProductTemplate>();
     public DbSet<ProductConfigQuestion> ProductConfigQuestions => Set<ProductConfigQuestion>();
+    public DbSet<QuestionBankItem> QuestionBankItems => Set<QuestionBankItem>();
+    public DbSet<QuestionAnswer> QuestionAnswers => Set<QuestionAnswer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -160,6 +163,37 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ConfigurationQuestionId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<QuestionBankItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.VariableName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.QuestionType).HasMaxLength(100);
+            entity.Property(e => e.Classification).HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.StatusReason).HasMaxLength(200);
+            entity.Property(e => e.Methodology).HasMaxLength(100);
+            
+            entity.HasIndex(e => new { e.VariableName, e.Version }).IsUnique();
+            
+            entity.HasOne(e => e.ParentQuestion)
+                .WithMany()
+                .HasForeignKey(e => e.ParentQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasMany(e => e.Answers)
+                .WithOne(a => a.QuestionBankItem)
+                .HasForeignKey(a => a.QuestionBankItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<QuestionAnswer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AnswerText).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.AnswerCode).HasMaxLength(50);
+            entity.Property(e => e.AnswerLocation).HasMaxLength(100);
         });
 
     }
