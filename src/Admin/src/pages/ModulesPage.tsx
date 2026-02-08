@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { modulesApi } from '../services/api';
-import type { Module } from '../services/api';
+import { modulesApi, moduleQuestionsApi, questionBankApi } from '../services/api';
+import type { Module, ModuleQuestion, QuestionBankItem } from '../services/api';
 import { SidePanel } from '../components/ui/SidePanel';
 import { EyeIcon, EditIcon, TrashIcon, RefreshIcon, PlusIcon } from '../components/ui/Icons';
 import './ModulesPage.css';
@@ -15,6 +15,7 @@ export function ModulesPage() {
     // Panel State
     const [mode, setMode] = useState<Mode>('list');
     const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+    const [activeTab, setActiveTab] = useState<'general' | 'questions'>('general');
     const [formData, setFormData] = useState({
         variableName: '',
         label: '',
@@ -24,6 +25,13 @@ export function ModulesPage() {
         instructions: '',
         isActive: true
     });
+
+    // Questions State
+    const [questions, setQuestions] = useState<ModuleQuestion[]>([]);
+    const [questionSearch, setQuestionSearch] = useState('');
+    const [questionSearchResults, setQuestionSearchResults] = useState<QuestionBankItem[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
 
     // Error State
     const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -65,6 +73,8 @@ export function ModulesPage() {
 
     const openView = (module: Module) => {
         setSelectedModule(module);
+        setQuestions(module.questions || []);
+        setActiveTab('general');
         setMode('view');
     };
 
@@ -146,6 +156,53 @@ export function ModulesPage() {
             fetchModules();
         } catch (error) {
             console.error('Failed to delete module', error);
+        }
+    };
+
+    const handleQuestionSearch = async (query: string) => {
+        setQuestionSearch(query);
+        if (query.length < 3) {
+            setQuestionSearchResults([]);
+            return;
+        }
+        setIsSearching(true);
+        try {
+            const results = await questionBankApi.getAll(query);
+            setQuestionSearchResults(results.slice(0, 10)); // Limit to 10 results
+        } catch (error) {
+            console.error('Failed to search questions', error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleAddQuestion = async (questionBankItemId: string) => {
+        if (!selectedModule) return;
+        try {
+            const newQuestion = await moduleQuestionsApi.create(selectedModule.id, {
+                questionBankItemId,
+                displayOrder: questions.length
+            });
+            setQuestions([...questions, newQuestion]);
+            setQuestionSearch('');
+            setQuestionSearchResults([]);
+            setSelectedQuestionId('');
+        } catch (err: any) {
+            if (err.status === 409) {
+                alert(err.detail || 'This question is already added to this module.');
+            } else {
+                alert('Failed to add question');
+            }
+        }
+    };
+
+    const handleDeleteQuestion = async (questionId: string) => {
+        if (!selectedModule || !confirm('Remove this question from the module?')) return;
+        try {
+            await moduleQuestionsApi.delete(selectedModule.id, questionId);
+            setQuestions(questions.filter(q => q.id !== questionId));
+        } catch (error) {
+            console.error('Failed to delete question', error);
         }
     };
 
@@ -242,42 +299,143 @@ export function ModulesPage() {
             >
                 {/* View Mode */}
                 {mode === 'view' && selectedModule && (
-                    <div className="view-details">
-                        <div className="detail-item">
-                            <label>Variable Name</label>
-                            <div className="value">{selectedModule.variableName}</div>
+                    <>
+                        {/* Tabs */}
+                        <div className="tabs">
+                            <button
+                                className={`tab ${activeTab === 'general' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('general')}
+                                type="button"
+                            >
+                                General
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'questions' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('questions')}
+                                type="button"
+                            >
+                                Questions
+                            </button>
                         </div>
-                        <div className="detail-item">
-                            <label>Label</label>
-                            <div className="value">{selectedModule.label}</div>
-                        </div>
-                        <div className="detail-item">
-                            <label>Description</label>
-                            <div className="value">{selectedModule.description || '—'}</div>
-                        </div>
-                        <div className="detail-item">
-                            <label>Version Number</label>
-                            <div className="value">{selectedModule.versionNumber}</div>
-                        </div>
-                        <div className="detail-item">
-                            <label>Parent Module ID</label>
-                            <div className="value monospace">{selectedModule.parentModuleId || '—'}</div>
-                        </div>
-                        <div className="detail-item">
-                            <label>Instructions</label>
-                            <div className="value">{selectedModule.instructions || '—'}</div>
-                        </div>
-                        <div className="detail-item">
-                            <label>Status</label>
-                            <div className="value">
-                                {selectedModule.isActive ? 'Active' : 'Inactive'}
+
+                        {/* General Tab */}
+                        {activeTab === 'general' && (
+                            <div className="view-details">
+                                <div className="detail-item">
+                                    <label>Variable Name</label>
+                                    <div className="value">{selectedModule.variableName}</div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>Label</label>
+                                    <div className="value">{selectedModule.label}</div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>Description</label>
+                                    <div className="value">{selectedModule.description || '—'}</div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>Version Number</label>
+                                    <div className="value">{selectedModule.versionNumber}</div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>Parent Module ID</label>
+                                    <div className="value monospace">{selectedModule.parentModuleId || '—'}</div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>Instructions</label>
+                                    <div className="value">{selectedModule.instructions || '—'}</div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>Status</label>
+                                    <div className="value">
+                                        {selectedModule.isActive ? 'Active' : 'Inactive'}
+                                    </div>
+                                </div>
+                                <div className="detail-item">
+                                    <label>ID</label>
+                                    <div className="value monospace">{selectedModule.id}</div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="detail-item">
-                            <label>ID</label>
-                            <div className="value monospace">{selectedModule.id}</div>
-                        </div>
-                    </div>
+                        )}
+
+                        {/* Questions Tab */}
+                        {activeTab === 'questions' && (
+                            <div className="tab-content">
+                                <div className="tab-header">
+                                    <h3>Questions in Module</h3>
+                                    <div className="lookup-field">
+                                        <label htmlFor="questionSearch">Add Question</label>
+                                        <input
+                                            id="questionSearch"
+                                            type="text"
+                                            placeholder="Search by variable name..."
+                                            value={questionSearch}
+                                            onChange={(e) => handleQuestionSearch(e.target.value)}
+                                        />
+                                        <small className="field-help">Enter at least 3 characters to search</small>
+                                        {questionSearchResults.length > 0 && (
+                                            <div className="lookup-results">
+                                                {questionSearchResults.map((item) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="lookup-result-item"
+                                                        onClick={() => {
+                                                            setSelectedQuestionId(item.id);
+                                                            setQuestionSearch(item.variableName);
+                                                            setQuestionSearchResults([]);
+                                                            handleAddQuestion(item.id);
+                                                        }}
+                                                    >
+                                                        <div className="result-primary">{item.variableName}</div>
+                                                        <div className="result-secondary">{item.questionText || item.questionType}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {isSearching && <div className="field-help">Searching...</div>}
+                                    </div>
+                                </div>
+                                
+                                {questions.length > 0 ? (
+                                    <table className="details-list">
+                                        <thead>
+                                            <tr>
+                                                <th>Question Variable Name</th>
+                                                <th>Question Type</th>
+                                                <th>Question Text</th>
+                                                <th>Classification</th>
+                                                <th style={{ width: '100px' }}>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {questions.map((q) => (
+                                                <tr key={q.id}>
+                                                    <td>{q.questionVariableName}</td>
+                                                    <td>{q.questionType || '—'}</td>
+                                                    <td>{q.questionText || '—'}</td>
+                                                    <td>{q.classification || '—'}</td>
+                                                    <td>
+                                                        <div className="row-actions">
+                                                            <button
+                                                                type="button"
+                                                                className="action-btn danger"
+                                                                onClick={() => handleDeleteQuestion(q.id)}
+                                                                title="Remove"
+                                                            >
+                                                                <TrashIcon />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <div className="empty-state">No questions added yet.</div>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Form Mode */}
