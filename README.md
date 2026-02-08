@@ -53,7 +53,32 @@ A comprehensive study design platform built with .NET Aspire, featuring a distri
 - **Azure CLI** and a valid subscription (required by aspire)
 - **Azure Functions Core Tools** (for local function development and testing)
 
-### Running with Aspire
+## Development Options
+
+### Option 1: Development Container (Recommended)
+
+The project includes a complete development container configuration that provides all necessary dependencies and tools.
+
+#### Using VS Code Dev Containers
+
+1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Open the project in VS Code
+3. When prompted, click "Reopen in Container" or run `Dev Containers: Reopen in Container` from the command palette
+4. Wait for the container to build and start (first time takes longer)
+5. Once ready, run the application using Aspire:
+   ```bash
+   aspire run
+   ```
+
+The devcontainer includes:
+- .NET 10.0 SDK
+- Node.js 18
+- Docker-in-Docker support
+- Azure CLI and Azure Functions Core Tools
+- PostgreSQL and Redis services
+- All required VS Code extensions
+
+### Option 2: Running with Aspire (Local)
 
 The easiest way to run the entire project locally is using Aspire:
 
@@ -66,3 +91,28 @@ This will:
 - Automatically start all configured services
 - Manage container orchestration
 - Provide logs and health monitoring
+
+### Option 3: Running with Docker Compose
+
+You can run the entire application stack using Docker Compose for production-like deployments:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+Services will be available at:
+- **Designer App**: http://localhost:3000
+- **Admin App**: http://localhost:3001
+- **API**: http://localhost:5000
+- **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379
