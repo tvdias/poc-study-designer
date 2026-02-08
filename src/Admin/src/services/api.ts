@@ -834,3 +834,221 @@ export const productConfigQuestionsApi = {
         if (!response.ok) throw new Error('Failed to delete product config question');
     }
 };
+
+// Question Bank Types
+export interface QuestionBankItem {
+    id: string;
+    variableName: string;
+    version: number;
+    questionType: string | null;
+    questionText: string | null;
+    classification: string | null;
+    isDummy: boolean;
+    questionTitle: string | null;
+    status: string | null;
+    statusReason: string | null;
+    methodology: string | null;
+    createdOn: string;
+    createdBy: string | null;
+}
+
+export interface QuestionBankItemDetail extends QuestionBankItem {
+    dataQualityTag: string | null;
+    rowSortOrder: number | null;
+    columnSortOrder: number | null;
+    answerMin: number | null;
+    answerMax: number | null;
+    questionFormatDetails: string | null;
+    scraperNotes: string | null;
+    customNotes: string | null;
+    metricGroup: string | null;
+    tableTitle: string | null;
+    questionRationale: string | null;
+    singleOrMulticode: string | null;
+    managedListReferences: string | null;
+    isTranslatable: boolean;
+    isHidden: boolean;
+    isQuestionActive: boolean;
+    isQuestionOutOfUse: boolean;
+    answerRestrictionMin: number | null;
+    answerRestrictionMax: number | null;
+    restrictionDataType: string | null;
+    restrictedToClient: string | null;
+    answerTypeCode: string | null;
+    isAnswerRequired: boolean;
+    scalePoint: string | null;
+    scaleType: string | null;
+    displayType: string | null;
+    instructionText: string | null;
+    parentQuestionId: string | null;
+    questionFacet: string | null;
+    modifiedOn: string | null;
+    modifiedBy: string | null;
+    answers: QuestionAnswer[];
+}
+
+export interface QuestionAnswer {
+    id: string;
+    answerText: string;
+    answerCode: string | null;
+    answerLocation: string | null;
+    isOpen: boolean;
+    isFixed: boolean;
+    isExclusive: boolean;
+    isActive: boolean;
+    customProperty: string | null;
+    facets: string | null;
+    version: number;
+    displayOrder: number | null;
+    createdOn: string;
+    createdBy: string | null;
+}
+
+export interface CreateQuestionBankItemRequest {
+    variableName: string;
+    version: number;
+    questionType?: string | null;
+    questionText?: string | null;
+    classification?: string | null;
+    isDummy: boolean;
+    questionTitle?: string | null;
+    status?: string | null;
+    statusReason?: string | null;
+    methodology?: string | null;
+    dataQualityTag?: string | null;
+    rowSortOrder?: number | null;
+    columnSortOrder?: number | null;
+    answerMin?: number | null;
+    answerMax?: number | null;
+    questionFormatDetails?: string | null;
+    scraperNotes?: string | null;
+    customNotes?: string | null;
+    metricGroup?: string | null;
+    tableTitle?: string | null;
+    questionRationale?: string | null;
+    singleOrMulticode?: string | null;
+    managedListReferences?: string | null;
+    isTranslatable: boolean;
+    isHidden: boolean;
+    isQuestionActive: boolean;
+    isQuestionOutOfUse: boolean;
+    answerRestrictionMin?: number | null;
+    answerRestrictionMax?: number | null;
+    restrictionDataType?: string | null;
+    restrictedToClient?: string | null;
+    answerTypeCode?: string | null;
+    isAnswerRequired: boolean;
+    scalePoint?: string | null;
+    scaleType?: string | null;
+    displayType?: string | null;
+    instructionText?: string | null;
+    parentQuestionId?: string | null;
+    questionFacet?: string | null;
+}
+
+export interface UpdateQuestionBankItemRequest extends CreateQuestionBankItemRequest {}
+
+export interface CreateQuestionAnswerRequest {
+    answerText: string;
+    answerCode?: string | null;
+    answerLocation?: string | null;
+    isOpen: boolean;
+    isFixed: boolean;
+    isExclusive: boolean;
+    isActive: boolean;
+    customProperty?: string | null;
+    facets?: string | null;
+    version: number;
+    displayOrder?: number | null;
+}
+
+export interface UpdateQuestionAnswerRequest extends CreateQuestionAnswerRequest {}
+
+// Question Bank API
+export const questionBankApi = {
+    getAll: async (query?: string): Promise<QuestionBankItem[]> => {
+        const url = query ? `${API_BASE}/question-bank?query=${encodeURIComponent(query)}` : `${API_BASE}/question-bank`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch question bank items');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<QuestionBankItemDetail> => {
+        const response = await fetch(`${API_BASE}/question-bank/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch question bank item');
+        return response.json();
+    },
+
+    create: async (data: CreateQuestionBankItemRequest): Promise<{ id: string; variableName: string; version: number }> => {
+        const response = await fetch(`${API_BASE}/question-bank`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateQuestionBankItemRequest): Promise<{ id: string; variableName: string; version: number }> => {
+        const response = await fetch(`${API_BASE}/question-bank/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/question-bank/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete question bank item');
+    }
+};
+
+// Question Answer API
+export const questionAnswerApi = {
+    create: async (questionId: string, data: CreateQuestionAnswerRequest): Promise<{ id: string; answerText: string }> => {
+        const response = await fetch(`${API_BASE}/question-bank/${questionId}/answers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (questionId: string, answerId: string, data: UpdateQuestionAnswerRequest): Promise<{ id: string; answerText: string }> => {
+        const response = await fetch(`${API_BASE}/question-bank/${questionId}/answers/${answerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (questionId: string, answerId: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/question-bank/${questionId}/answers/${answerId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete answer');
+    }
+};
