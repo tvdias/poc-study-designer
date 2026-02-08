@@ -484,7 +484,7 @@ export function QuestionBankPage() {
                             <div className="value text-content">{selectedQuestion.questionFormatDetails || '-'}</div>
                         </div>
                         <div className="detail-item">
-                            <label>Scraper Notes</label>
+                            <label>Scripter Notes</label>
                             <div className="value text-content">{selectedQuestion.scraperNotes || '-'}</div>
                         </div>
                         <div className="detail-item">
@@ -607,13 +607,13 @@ export function QuestionBankPage() {
                     </div>
 
                     <div className="form-field">
-                        <label htmlFor="classification">Classification</label>
+                        <label htmlFor="classification">Standard or Custom</label>
                         <select
                             id="classification"
                             value={formData.classification}
                             onChange={(e) => setFormData({ ...formData, classification: e.target.value })}
                         >
-                            <option value="">-- Select Classification --</option>
+                            <option value="">--Select--</option>
                             <option value="Standard">Standard</option>
                             <option value="Custom">Custom</option>
                         </select>
@@ -728,7 +728,7 @@ export function QuestionBankPage() {
                     </div>
 
                     <div className="form-field">
-                        <label htmlFor="scraperNotes">Scraper Notes</label>
+                        <label htmlFor="scraperNotes">Scripter Notes</label>
                         <textarea
                             id="scraperNotes"
                             value={formData.scraperNotes}
