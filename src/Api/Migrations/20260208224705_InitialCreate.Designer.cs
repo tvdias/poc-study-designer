@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260208103702_InitialCreate")]
+    [Migration("20260208224705_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -296,6 +296,40 @@ namespace Api.Migrations
                     b.ToTable("FieldworkMarkets");
                 });
 
+            modelBuilder.Entity("Api.Features.MetricGroups.MetricGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("MetricGroups");
+                });
+
             modelBuilder.Entity("Api.Features.Modules.Module", b =>
                 {
                     b.Property<Guid>("Id")
@@ -470,6 +504,221 @@ namespace Api.Migrations
                     b.ToTable("ProductTemplates");
                 });
 
+            modelBuilder.Entity("Api.Features.QuestionBank.QuestionAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AnswerCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("AnswerLocation")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("AnswerText")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomProperty")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Facets")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsExclusive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFixed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("QuestionBankItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionBankItemId");
+
+                    b.ToTable("QuestionAnswers");
+                });
+
+            modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("AnswerMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AnswerMin")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AnswerRestrictionMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AnswerRestrictionMin")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AnswerTypeCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Classification")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("ColumnSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomNotes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DataQualityTag")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InstructionText")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsAnswerRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDummy")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsQuestionActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsQuestionOutOfUse")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsTranslatable")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ManagedListReferences")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Methodology")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("MetricGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ParentQuestionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QuestionFacet")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionFormatDetails")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionRationale")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RestrictedToClient")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RestrictionDataType")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("RowSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ScalePoint")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ScaleType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ScraperNotes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SingleOrMulticode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TableTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VariableName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MetricGroupId");
+
+                    b.HasIndex("ParentQuestionId");
+
+                    b.HasIndex("VariableName", "Version")
+                        .IsUnique();
+
+                    b.ToTable("QuestionBankItems");
+                });
+
             modelBuilder.Entity("Api.Features.Tags.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -573,6 +822,34 @@ namespace Api.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Api.Features.QuestionBank.QuestionAnswer", b =>
+                {
+                    b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionBankItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuestionBankItem");
+                });
+
+            modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
+                {
+                    b.HasOne("Api.Features.MetricGroups.MetricGroup", "MetricGroup")
+                        .WithMany()
+                        .HasForeignKey("MetricGroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "ParentQuestion")
+                        .WithMany()
+                        .HasForeignKey("ParentQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("MetricGroup");
+
+                    b.Navigation("ParentQuestion");
+                });
+
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationQuestion", b =>
                 {
                     b.Navigation("Answers");
@@ -588,6 +865,11 @@ namespace Api.Migrations
                     b.Navigation("ProductConfigQuestions");
 
                     b.Navigation("ProductTemplates");
+                });
+
+            modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
+                {
+                    b.Navigation("Answers");
                 });
 #pragma warning restore 612, 618
         }

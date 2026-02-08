@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import {
     questionBankApi,
     questionAnswerApi,
+    metricGroupsApi,
     type QuestionBankItem,
     type QuestionBankItemDetail,
-    type QuestionAnswer
+    type QuestionAnswer,
+    type MetricGroup
 } from '../services/api';
 import { SidePanel } from '../components/ui/SidePanel';
 import { EyeIcon, EditIcon, TrashIcon, RefreshIcon, PlusIcon } from '../components/ui/Icons';
@@ -42,6 +44,7 @@ export function QuestionBankPage() {
         scraperNotes: '',
         customNotes: '',
         metricGroup: '',
+        metricGroupId: null as string | null,
         tableTitle: '',
         questionRationale: '',
         singleOrMulticode: '',
@@ -85,6 +88,12 @@ export function QuestionBankPage() {
     const [errors, setErrors] = useState<Record<string, string[]>>({});
     const [serverError, setServerError] = useState<string>('');
 
+    // Metric Group Lookup State
+    const [metricGroups, setMetricGroups] = useState<MetricGroup[]>([]);
+    const [metricGroupSearch, setMetricGroupSearch] = useState('');
+    const [showMetricGroupDropdown, setShowMetricGroupDropdown] = useState(false);
+    const [isCreatingMetricGroup, setIsCreatingMetricGroup] = useState(false);
+
     useEffect(() => {
         fetchQuestions();
     }, [search]);
@@ -98,6 +107,57 @@ export function QuestionBankPage() {
             console.error('Failed to fetch question bank items', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // --- Metric Group Handlers ---
+
+    useEffect(() => {
+        if (metricGroupSearch.length > 0) {
+            fetchMetricGroups();
+        } else {
+            setMetricGroups([]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [metricGroupSearch]);
+
+    const fetchMetricGroups = async () => {
+        try {
+            const data = await metricGroupsApi.getAll(metricGroupSearch);
+            setMetricGroups(data);
+        } catch (error) {
+            console.error('Failed to fetch metric groups', error);
+        }
+    };
+
+    const handleMetricGroupInputChange = (value: string) => {
+        setMetricGroupSearch(value);
+        setFormData({ ...formData, metricGroup: value, metricGroupId: null });
+        setShowMetricGroupDropdown(true);
+    };
+
+    const handleSelectMetricGroup = (metricGroup: MetricGroup) => {
+        setFormData({ ...formData, metricGroup: metricGroup.name, metricGroupId: metricGroup.id });
+        setMetricGroupSearch(metricGroup.name);
+        setShowMetricGroupDropdown(false);
+    };
+
+    const handleCreateMetricGroup = async () => {
+        if (!metricGroupSearch.trim()) return;
+
+        setIsCreatingMetricGroup(true);
+        try {
+            const newMetricGroup = await metricGroupsApi.create({ name: metricGroupSearch.trim() });
+            setFormData({ ...formData, metricGroup: newMetricGroup.name, metricGroupId: newMetricGroup.id });
+            setMetricGroupSearch(newMetricGroup.name);
+            setShowMetricGroupDropdown(false);
+        } catch (error: unknown) {
+            console.error('Failed to create metric group', error);
+            if (typeof error === 'object' && error !== null && 'status' in error && (error as { status: number }).status === 409) {
+                alert(`Metric Group "${metricGroupSearch}" already exists.`);
+            }
+        } finally {
+            setIsCreatingMetricGroup(false);
         }
     };
 
@@ -124,6 +184,7 @@ export function QuestionBankPage() {
             scraperNotes: '',
             customNotes: '',
             metricGroup: '',
+            metricGroupId: null,
             tableTitle: '',
             questionRationale: '',
             singleOrMulticode: '',
@@ -147,6 +208,7 @@ export function QuestionBankPage() {
         });
         setErrors({});
         setServerError('');
+        setMetricGroupSearch('');
         setActiveTab('question');
         setMode('create');
     };
@@ -189,7 +251,8 @@ export function QuestionBankPage() {
             questionFormatDetails: target.questionFormatDetails || '',
             scraperNotes: target.scraperNotes || '',
             customNotes: target.customNotes || '',
-            metricGroup: target.metricGroup || '',
+            metricGroup: target.metricGroupName || '',
+            metricGroupId: target.metricGroupId || null,
             tableTitle: target.tableTitle || '',
             questionRationale: target.questionRationale || '',
             singleOrMulticode: target.singleOrMulticode || '',
@@ -213,6 +276,7 @@ export function QuestionBankPage() {
         });
         setErrors({});
         setServerError('');
+        setMetricGroupSearch(target.metricGroupName || '');
         setMode('edit');
     };
 
@@ -220,6 +284,8 @@ export function QuestionBankPage() {
         setMode('list');
         setSelectedQuestion(null);
         setActiveTab('question');
+        setMetricGroupSearch('');
+        setShowMetricGroupDropdown(false);
         setAnswerMode('none');
     };
 
@@ -227,6 +293,16 @@ export function QuestionBankPage() {
         e.preventDefault();
         setErrors({});
         setServerError('');
+
+
+        // Validate Metric Group
+        if (formData.metricGroup && !formData.metricGroup.trim()) {
+            // clean up whitespace
+            setFormData({ ...formData, metricGroup: '' });
+        } else if (formData.metricGroup && !formData.metricGroupId) {
+            setErrors({ MetricGroupId: ["Please select a valid Metric Group or leave blank."] });
+            return;
+        }
 
         try {
             const payload = {
@@ -247,7 +323,7 @@ export function QuestionBankPage() {
                 questionFormatDetails: formData.questionFormatDetails || null,
                 scraperNotes: formData.scraperNotes || null,
                 customNotes: formData.customNotes || null,
-                metricGroup: formData.metricGroup || null,
+                metricGroupId: formData.metricGroupId || null,
                 tableTitle: formData.tableTitle || null,
                 questionRationale: formData.questionRationale || null,
                 singleOrMulticode: formData.singleOrMulticode || null,
@@ -493,7 +569,7 @@ export function QuestionBankPage() {
                         </div>
                         <div className="detail-item">
                             <label>Metric Group</label>
-                            <div className="value">{selectedQuestion.metricGroup || '-'}</div>
+                            <div className="value">{selectedQuestion.metricGroupName || '-'}</div>
                         </div>
                         <div className="detail-item">
                             <label>Table Title</label>
@@ -761,12 +837,83 @@ export function QuestionBankPage() {
 
                     <div className="form-field">
                         <label htmlFor="metricGroup">Metric Group</label>
-                        <input
-                            id="metricGroup"
-                            type="text"
-                            value={formData.metricGroup}
-                            onChange={(e) => setFormData({ ...formData, metricGroup: e.target.value })}
-                        />
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                id="metricGroup"
+                                type="text"
+                                placeholder="Type to search or press Enter to browse"
+                                value={metricGroupSearch || formData.metricGroup}
+                                onChange={(e) => handleMetricGroupInputChange(e.target.value)}
+                                onFocus={() => {
+                                    setMetricGroupSearch(formData.metricGroup);
+                                    setShowMetricGroupDropdown(true);
+                                }}
+                                onBlur={() => {
+                                    // Delay hiding to allow clicking on dropdown items
+                                    setTimeout(() => setShowMetricGroupDropdown(false), 200);
+                                }}
+                            />
+                            {showMetricGroupDropdown && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    right: 0,
+                                    backgroundColor: 'white',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    maxHeight: '200px',
+                                    overflowY: 'auto',
+                                    zIndex: 1000,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                                }}>
+                                    {metricGroupSearch.trim() && (
+                                        <div
+                                            style={{
+                                                padding: '8px 12px',
+                                                cursor: 'pointer',
+                                                backgroundColor: '#f0f0f0',
+                                                borderBottom: '1px solid #e0e0e0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px'
+                                            }}
+                                            onClick={handleCreateMetricGroup}
+                                        >
+                                            <PlusIcon />
+                                            <span>New: "{metricGroupSearch.trim()}"</span>
+                                            {isCreatingMetricGroup && <span>Creating...</span>}
+                                        </div>
+                                    )}
+                                    {metricGroups.length === 0 && metricGroupSearch.trim() === '' && (
+                                        <div style={{ padding: '8px 12px', color: '#666' }}>
+                                            Type to search for metric groups
+                                        </div>
+                                    )}
+                                    {metricGroups.length === 0 && metricGroupSearch.trim() !== '' && !isCreatingMetricGroup && (
+                                        <div style={{ padding: '8px 12px', color: '#666' }}>
+                                            No metric groups found
+                                        </div>
+                                    )}
+                                    {metricGroups.map((mg) => (
+                                        <div
+                                            key={mg.id}
+                                            style={{
+                                                padding: '8px 12px',
+                                                cursor: 'pointer',
+                                                borderBottom: '1px solid #f0f0f0'
+                                            }}
+                                            onClick={() => handleSelectMetricGroup(mg)}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                        >
+                                            {mg.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        {errors.MetricGroupId && <span className="field-error">{errors.MetricGroupId[0]}</span>}
                     </div>
 
                     <div className="form-field">
