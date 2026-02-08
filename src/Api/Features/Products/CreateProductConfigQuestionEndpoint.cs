@@ -32,7 +32,6 @@ public static class CreateProductConfigQuestionEndpoint
             Id = Guid.NewGuid(),
             ProductId = request.ProductId,
             ConfigurationQuestionId = request.ConfigurationQuestionId,
-            StatusReason = request.StatusReason,
             CreatedOn = DateTime.UtcNow,
             CreatedBy = "System" // TODO: Replace with real user when auth is available
         };
@@ -58,8 +57,7 @@ public static class CreateProductConfigQuestionEndpoint
             new CreateProductConfigQuestionResponse(
                 productConfigQuestion.Id, 
                 productConfigQuestion.ProductId, 
-                productConfigQuestion.ConfigurationQuestionId,
-                productConfigQuestion.StatusReason), 
+                productConfigQuestion.ConfigurationQuestionId), 
             "GetProductConfigQuestionById", 
             new { id = productConfigQuestion.Id });
     }

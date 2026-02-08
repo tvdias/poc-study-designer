@@ -8,7 +8,6 @@ public class ProductConfigQuestion : AuditableEntity
     public Guid Id { get; set; }
     public required Guid ProductId { get; set; }
     public required Guid ConfigurationQuestionId { get; set; }
-    public string? StatusReason { get; set; }
     public bool IsActive { get; set; } = true;
     
     // Navigation properties

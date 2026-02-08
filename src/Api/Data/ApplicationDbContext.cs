@@ -197,7 +197,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ProductConfigQuestion>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.StatusReason).HasMaxLength(200);
             
             entity.HasIndex(e => new { e.ProductId, e.ConfigurationQuestionId }).IsUnique();
             

@@ -626,7 +626,6 @@ export interface ProductConfigQuestionInfo {
     id: string;
     configurationQuestionId: string;
     question: string;
-    statusReason?: string;
 }
 
 export interface CreateProductRequest {
@@ -669,18 +668,15 @@ export interface ProductConfigQuestion {
     productId: string;
     configurationQuestionId: string;
     question: string;
-    statusReason?: string;
     isActive: boolean;
 }
 
 export interface CreateProductConfigQuestionRequest {
     productId: string;
     configurationQuestionId: string;
-    statusReason?: string;
 }
 
 export interface UpdateProductConfigQuestionRequest {
-    statusReason?: string;
     isActive: boolean;
 }
 

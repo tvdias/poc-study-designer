@@ -31,8 +31,7 @@ public static class GetProductConfigQuestionByIdEndpoint
         var response = new ProductConfigQuestionInfo(
             pcq.Id,
             pcq.ConfigurationQuestionId,
-            pcq.ConfigurationQuestion.Question,
-            pcq.StatusReason
+            pcq.ConfigurationQuestion.Question
         );
 
         return TypedResults.Ok(response);

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260208210254_InitialCreateWithAllEntities")]
-    partial class InitialCreateWithAllEntities
+    [Migration("20260208214830_InitialCreateWithAllEntitiesV2")]
+    partial class InitialCreateWithAllEntitiesV2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -455,10 +455,6 @@ namespace Api.Migrations
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("StatusReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
