@@ -682,11 +682,11 @@ export function QuestionBankPage() {
                                 onChange={(e) => setFormData({ ...formData, rowSortOrder: e.target.value ? parseInt(e.target.value) : null })}
                             >
                                 <option value="">---</option>
-                                <option value="1">Ascending</option>
-                                <option value="2">Descending</option>
-                                <option value="3">Random</option>
-                                <option value="4">As Shown</option>
-                                <option value="5">Custom</option>
+                                <option value="1">Alphabetical</option>
+                                <option value="2">Random</option>
+                                <option value="3">Shared Random</option>
+                                <option value="4">Normal</option>
+                                <option value="5">Rotated</option>
                             </select>
                         </div>
 
@@ -698,11 +698,11 @@ export function QuestionBankPage() {
                                 onChange={(e) => setFormData({ ...formData, columnSortOrder: e.target.value ? parseInt(e.target.value) : null })}
                             >
                                 <option value="">---</option>
-                                <option value="1">Ascending</option>
-                                <option value="2">Descending</option>
-                                <option value="3">Random</option>
-                                <option value="4">As Shown</option>
-                                <option value="5">Custom</option>
+                                <option value="1">Alphabetical</option>
+                                <option value="2">Random</option>
+                                <option value="3">Shared Random</option>
+                                <option value="4">Normal</option>
+                                <option value="5">Rotated</option>
                             </select>
                         </div>
                     </div>
