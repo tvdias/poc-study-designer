@@ -7,6 +7,7 @@ using Api.Features.Clients;
 using Api.Features.ConfigurationQuestions;
 using Api.Features.Products;
 using Api.Features.ProductTemplates;
+using Api.Features.QuestionBank;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -105,6 +106,14 @@ api.MapCreateProductConfigQuestionEndpoint();
 api.MapGetProductConfigQuestionByIdEndpoint();
 api.MapUpdateProductConfigQuestionEndpoint();
 api.MapDeleteProductConfigQuestionEndpoint();
+api.MapCreateQuestionBankItemEndpoint();
+api.MapGetQuestionBankItemsEndpoint();
+api.MapGetQuestionBankItemByIdEndpoint();
+api.MapUpdateQuestionBankItemEndpoint();
+api.MapDeleteQuestionBankItemEndpoint();
+api.MapCreateQuestionAnswerEndpoint();
+api.MapUpdateQuestionAnswerEndpoint();
+api.MapDeleteQuestionAnswerEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
