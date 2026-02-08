@@ -681,13 +681,12 @@ export function QuestionBankPage() {
                                 value={formData.rowSortOrder ?? ''}
                                 onChange={(e) => setFormData({ ...formData, rowSortOrder: e.target.value ? parseInt(e.target.value) : null })}
                             >
-                                <option value="">-- Select Row Sort Order --</option>
-                                <option value="1">None</option>
-                                <option value="2">Ascending</option>
-                                <option value="3">Descending</option>
-                                <option value="4">Random</option>
-                                <option value="5">As Shown</option>
-                                <option value="6">Custom</option>
+                                <option value="">---</option>
+                                <option value="1">Ascending</option>
+                                <option value="2">Descending</option>
+                                <option value="3">Random</option>
+                                <option value="4">As Shown</option>
+                                <option value="5">Custom</option>
                             </select>
                         </div>
 
@@ -698,13 +697,12 @@ export function QuestionBankPage() {
                                 value={formData.columnSortOrder ?? ''}
                                 onChange={(e) => setFormData({ ...formData, columnSortOrder: e.target.value ? parseInt(e.target.value) : null })}
                             >
-                                <option value="">-- Select Column Sort Order --</option>
-                                <option value="1">None</option>
-                                <option value="2">Ascending</option>
-                                <option value="3">Descending</option>
-                                <option value="4">Random</option>
-                                <option value="5">As Shown</option>
-                                <option value="6">Custom</option>
+                                <option value="">---</option>
+                                <option value="1">Ascending</option>
+                                <option value="2">Descending</option>
+                                <option value="3">Random</option>
+                                <option value="4">As Shown</option>
+                                <option value="5">Custom</option>
                             </select>
                         </div>
                     </div>
