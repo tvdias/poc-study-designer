@@ -382,6 +382,43 @@ namespace Api.Migrations
                     b.ToTable("Modules");
                 });
 
+            modelBuilder.Entity("Api.Features.Modules.ModuleQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("QuestionBankItemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionBankItemId");
+
+                    b.HasIndex("ModuleId", "QuestionBankItemId")
+                        .IsUnique();
+
+                    b.ToTable("ModuleQuestions");
+                });
+
             modelBuilder.Entity("Api.Features.Products.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -789,6 +826,25 @@ namespace Api.Migrations
                     b.Navigation("ParentModule");
                 });
 
+            modelBuilder.Entity("Api.Features.Modules.ModuleQuestion", b =>
+                {
+                    b.HasOne("Api.Features.Modules.Module", "Module")
+                        .WithMany("ModuleQuestions")
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Module");
+
+                    b.Navigation("QuestionBankItem");
+                });
+
             modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
                 {
                     b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationQuestion", "ConfigurationQuestion")
@@ -855,6 +911,8 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Features.Modules.Module", b =>
                 {
                     b.Navigation("ChildModules");
+
+                    b.Navigation("ModuleQuestions");
                 });
 
             modelBuilder.Entity("Api.Features.Products.Product", b =>

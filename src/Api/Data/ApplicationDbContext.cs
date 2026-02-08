@@ -21,6 +21,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CommissioningMarket> CommissioningMarkets => Set<CommissioningMarket>();
     public DbSet<FieldworkMarket> FieldworkMarkets => Set<FieldworkMarket>();
     public DbSet<Module> Modules => Set<Module>();
+    public DbSet<ModuleQuestion> ModuleQuestions => Set<ModuleQuestion>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<ConfigurationQuestion> ConfigurationQuestions => Set<ConfigurationQuestion>();
     public DbSet<ConfigurationAnswer> ConfigurationAnswers => Set<ConfigurationAnswer>();
@@ -71,6 +72,22 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.ParentModule)
                 .WithMany(e => e.ChildModules)
                 .HasForeignKey(e => e.ParentModuleId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasMany(e => e.ModuleQuestions)
+                .WithOne(mq => mq.Module)
+                .HasForeignKey(mq => mq.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ModuleQuestion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ModuleId, e.QuestionBankItemId }).IsUnique();
+            
+            entity.HasOne(e => e.QuestionBankItem)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionBankItemId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

@@ -351,6 +351,36 @@ namespace Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ModuleQuestions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ModuleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuestionBankItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ModuleQuestions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ModuleQuestions_Modules_ModuleId",
+                        column: x => x.ModuleId,
+                        principalTable: "Modules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ModuleQuestions_QuestionBankItems_QuestionBankItemId",
+                        column: x => x.QuestionBankItemId,
+                        principalTable: "QuestionBankItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "QuestionAnswers",
                 columns: table => new
                 {
@@ -421,6 +451,17 @@ namespace Api.Migrations
                 table: "MetricGroups",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ModuleQuestions_ModuleId_QuestionBankItemId",
+                table: "ModuleQuestions",
+                columns: new[] { "ModuleId", "QuestionBankItemId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ModuleQuestions_QuestionBankItemId",
+                table: "ModuleQuestions",
+                column: "QuestionBankItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Modules_ParentModuleId",
@@ -500,7 +541,7 @@ namespace Api.Migrations
                 name: "FieldworkMarkets");
 
             migrationBuilder.DropTable(
-                name: "Modules");
+                name: "ModuleQuestions");
 
             migrationBuilder.DropTable(
                 name: "ProductConfigQuestions");
@@ -516,6 +557,9 @@ namespace Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "ConfigurationAnswers");
+
+            migrationBuilder.DropTable(
+                name: "Modules");
 
             migrationBuilder.DropTable(
                 name: "Products");
