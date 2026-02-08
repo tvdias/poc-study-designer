@@ -192,13 +192,13 @@ export function FieldworkMarketsPage() {
                     (mode === 'create' || mode === 'edit') ? (
                         <>
                             <button className="btn primary" type="submit" form="fieldwork-markets-form">Save</button>
-                            <button className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
+                            <button type="button" className="btn" onClick={mode === 'edit' ? () => setMode('view') : closePanel}>Cancel</button>
                         </>
                     ) : (
                         mode === 'view' && (
                             <>
-                                <button className="btn primary" onClick={() => openEdit()}>Edit</button>
-                                <button className="btn danger" onClick={() => handleDelete()}>Delete</button>
+                                <button type="button" className="btn primary" onClick={() => openEdit()}>Edit</button>
+                                <button type="button" className="btn danger" onClick={() => handleDelete()}>Delete</button>
                             </>
                         )
                     )
