@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateWithAllEntitiesV2 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -88,6 +88,23 @@ namespace Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MetricGroups",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MetricGroups", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Modules",
                 columns: table => new
                 {
@@ -134,65 +151,6 @@ namespace Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "QuestionBankItems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    VariableName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
-                    QuestionType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    QuestionText = table.Column<string>(type: "text", nullable: true),
-                    Classification = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    IsDummy = table.Column<bool>(type: "boolean", nullable: false),
-                    QuestionTitle = table.Column<string>(type: "text", nullable: true),
-                    Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    Methodology = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    DataQualityTag = table.Column<string>(type: "text", nullable: true),
-                    RowSortOrder = table.Column<int>(type: "integer", nullable: true),
-                    ColumnSortOrder = table.Column<int>(type: "integer", nullable: true),
-                    AnswerMin = table.Column<int>(type: "integer", nullable: true),
-                    AnswerMax = table.Column<int>(type: "integer", nullable: true),
-                    QuestionFormatDetails = table.Column<string>(type: "text", nullable: true),
-                    ScraperNotes = table.Column<string>(type: "text", nullable: true),
-                    CustomNotes = table.Column<string>(type: "text", nullable: true),
-                    MetricGroup = table.Column<string>(type: "text", nullable: true),
-                    TableTitle = table.Column<string>(type: "text", nullable: true),
-                    QuestionRationale = table.Column<string>(type: "text", nullable: true),
-                    SingleOrMulticode = table.Column<string>(type: "text", nullable: true),
-                    ManagedListReferences = table.Column<string>(type: "text", nullable: true),
-                    IsTranslatable = table.Column<bool>(type: "boolean", nullable: false),
-                    IsHidden = table.Column<bool>(type: "boolean", nullable: false),
-                    IsQuestionActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsQuestionOutOfUse = table.Column<bool>(type: "boolean", nullable: false),
-                    AnswerRestrictionMin = table.Column<int>(type: "integer", nullable: true),
-                    AnswerRestrictionMax = table.Column<int>(type: "integer", nullable: true),
-                    RestrictionDataType = table.Column<string>(type: "text", nullable: true),
-                    RestrictedToClient = table.Column<string>(type: "text", nullable: true),
-                    AnswerTypeCode = table.Column<string>(type: "text", nullable: true),
-                    IsAnswerRequired = table.Column<bool>(type: "boolean", nullable: false),
-                    ScalePoint = table.Column<string>(type: "text", nullable: true),
-                    ScaleType = table.Column<string>(type: "text", nullable: true),
-                    DisplayType = table.Column<string>(type: "text", nullable: true),
-                    InstructionText = table.Column<string>(type: "text", nullable: true),
-                    ParentQuestionId = table.Column<Guid>(type: "uuid", nullable: true),
-                    QuestionFacet = table.Column<string>(type: "text", nullable: true),
-                    CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_QuestionBankItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_QuestionBankItems_QuestionBankItems_ParentQuestionId",
-                        column: x => x.ParentQuestionId,
-                        principalTable: "QuestionBankItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
@@ -231,6 +189,71 @@ namespace Api.Migrations
                         principalTable: "ConfigurationQuestions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "QuestionBankItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    VariableName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Version = table.Column<int>(type: "integer", nullable: false),
+                    QuestionType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    QuestionText = table.Column<string>(type: "text", nullable: true),
+                    Classification = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    IsDummy = table.Column<bool>(type: "boolean", nullable: false),
+                    QuestionTitle = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Methodology = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    DataQualityTag = table.Column<string>(type: "text", nullable: true),
+                    RowSortOrder = table.Column<int>(type: "integer", nullable: true),
+                    ColumnSortOrder = table.Column<int>(type: "integer", nullable: true),
+                    AnswerMin = table.Column<int>(type: "integer", nullable: true),
+                    AnswerMax = table.Column<int>(type: "integer", nullable: true),
+                    QuestionFormatDetails = table.Column<string>(type: "text", nullable: true),
+                    ScraperNotes = table.Column<string>(type: "text", nullable: true),
+                    CustomNotes = table.Column<string>(type: "text", nullable: true),
+                    MetricGroupId = table.Column<Guid>(type: "uuid", nullable: true),
+                    TableTitle = table.Column<string>(type: "text", nullable: true),
+                    QuestionRationale = table.Column<string>(type: "text", nullable: true),
+                    SingleOrMulticode = table.Column<string>(type: "text", nullable: true),
+                    ManagedListReferences = table.Column<string>(type: "text", nullable: true),
+                    IsTranslatable = table.Column<bool>(type: "boolean", nullable: false),
+                    IsHidden = table.Column<bool>(type: "boolean", nullable: false),
+                    IsQuestionActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsQuestionOutOfUse = table.Column<bool>(type: "boolean", nullable: false),
+                    AnswerRestrictionMin = table.Column<int>(type: "integer", nullable: true),
+                    AnswerRestrictionMax = table.Column<int>(type: "integer", nullable: true),
+                    RestrictionDataType = table.Column<string>(type: "text", nullable: true),
+                    RestrictedToClient = table.Column<string>(type: "text", nullable: true),
+                    AnswerTypeCode = table.Column<string>(type: "text", nullable: true),
+                    IsAnswerRequired = table.Column<bool>(type: "boolean", nullable: false),
+                    ScalePoint = table.Column<string>(type: "text", nullable: true),
+                    ScaleType = table.Column<string>(type: "text", nullable: true),
+                    DisplayType = table.Column<string>(type: "text", nullable: true),
+                    InstructionText = table.Column<string>(type: "text", nullable: true),
+                    ParentQuestionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    QuestionFacet = table.Column<string>(type: "text", nullable: true),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuestionBankItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_QuestionBankItems_MetricGroups_MetricGroupId",
+                        column: x => x.MetricGroupId,
+                        principalTable: "MetricGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_QuestionBankItems_QuestionBankItems_ParentQuestionId",
+                        column: x => x.ParentQuestionId,
+                        principalTable: "QuestionBankItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -286,6 +309,44 @@ namespace Api.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DependencyRules",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    ConfigurationQuestionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TriggeringAnswerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Classification = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ContentType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Module = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    QuestionBank = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Tag = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    StatusReason = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DependencyRules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DependencyRules_ConfigurationAnswers_TriggeringAnswerId",
+                        column: x => x.TriggeringAnswerId,
+                        principalTable: "ConfigurationAnswers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_DependencyRules_ConfigurationQuestions_ConfigurationQuestio~",
+                        column: x => x.ConfigurationQuestionId,
+                        principalTable: "ConfigurationQuestions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -350,44 +411,6 @@ namespace Api.Migrations
                         principalTable: "QuestionBankItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DependencyRules",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    ConfigurationQuestionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TriggeringAnswerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Classification = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    ContentType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Module = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    QuestionBank = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Tag = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    StatusReason = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DependencyRules", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DependencyRules_ConfigurationAnswers_TriggeringAnswerId",
-                        column: x => x.TriggeringAnswerId,
-                        principalTable: "ConfigurationAnswers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_DependencyRules_ConfigurationQuestions_ConfigurationQuestio~",
-                        column: x => x.ConfigurationQuestionId,
-                        principalTable: "ConfigurationQuestions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -503,6 +526,12 @@ namespace Api.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_MetricGroups_Name",
+                table: "MetricGroups",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ModuleQuestions_ModuleId_QuestionBankItemId",
                 table: "ModuleQuestions",
                 columns: new[] { "ModuleId", "QuestionBankItemId" },
@@ -583,6 +612,11 @@ namespace Api.Migrations
                 column: "QuestionBankItemId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_QuestionBankItems_MetricGroupId",
+                table: "QuestionBankItems",
+                column: "MetricGroupId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_QuestionBankItems_ParentQuestionId",
                 table: "QuestionBankItems",
                 column: "ParentQuestionId");
@@ -650,6 +684,9 @@ namespace Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "MetricGroups");
         }
     }
 }
