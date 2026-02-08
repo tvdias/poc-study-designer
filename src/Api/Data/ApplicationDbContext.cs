@@ -172,7 +172,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.QuestionType).HasMaxLength(100);
             entity.Property(e => e.Classification).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.StatusReason).HasMaxLength(200);
             entity.Property(e => e.Methodology).HasMaxLength(100);
             
             entity.HasIndex(e => new { e.VariableName, e.Version }).IsUnique();

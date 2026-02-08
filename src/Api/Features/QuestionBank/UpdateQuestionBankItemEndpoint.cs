@@ -42,7 +42,6 @@ public static class UpdateQuestionBankItemEndpoint
         question.IsDummy = request.IsDummy;
         question.QuestionTitle = request.QuestionTitle;
         question.Status = request.Status;
-        question.StatusReason = request.StatusReason;
         question.Methodology = request.Methodology;
         question.DataQualityTag = request.DataQualityTag;
         question.RowSortOrder = request.RowSortOrder;

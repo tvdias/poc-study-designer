@@ -41,7 +41,6 @@ public static class GetQuestionBankItemsEndpoint
                 q.IsDummy,
                 q.QuestionTitle,
                 q.Status,
-                q.StatusReason,
                 q.Methodology,
                 q.CreatedOn,
                 q.CreatedBy

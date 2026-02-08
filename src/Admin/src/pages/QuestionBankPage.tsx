@@ -32,7 +32,6 @@ export function QuestionBankPage() {
         isDummy: false,
         questionTitle: '',
         status: '',
-        statusReason: '',
         methodology: '',
         dataQualityTag: '',
         rowSortOrder: null as number | null,
@@ -115,7 +114,6 @@ export function QuestionBankPage() {
             isDummy: false,
             questionTitle: '',
             status: '',
-            statusReason: '',
             methodology: '',
             dataQualityTag: '',
             rowSortOrder: null,
@@ -182,7 +180,6 @@ export function QuestionBankPage() {
             isDummy: target.isDummy,
             questionTitle: target.questionTitle || '',
             status: target.status || '',
-            statusReason: target.statusReason || '',
             methodology: target.methodology || '',
             dataQualityTag: target.dataQualityTag || '',
             rowSortOrder: target.rowSortOrder,
@@ -241,7 +238,6 @@ export function QuestionBankPage() {
                 isDummy: formData.isDummy,
                 questionTitle: formData.questionTitle || null,
                 status: formData.status || null,
-                statusReason: formData.statusReason || null,
                 methodology: formData.methodology || null,
                 dataQualityTag: formData.dataQualityTag || null,
                 rowSortOrder: formData.rowSortOrder,
@@ -428,10 +424,6 @@ export function QuestionBankPage() {
                             <div className="value">{selectedQuestion.status || '-'}</div>
                         </div>
                         <div className="detail-item">
-                            <label>Status Reason</label>
-                            <div className="value">{selectedQuestion.statusReason || '-'}</div>
-                        </div>
-                        <div className="detail-item">
                             <label>Question Type</label>
                             <div className="value">{selectedQuestion.questionType || '-'}</div>
                         </div>
@@ -590,16 +582,6 @@ export function QuestionBankPage() {
                             <option value="Inactive">Inactive</option>
                             <option value="Archived">Archived</option>
                         </select>
-                    </div>
-
-                    <div className="form-field">
-                        <label htmlFor="statusReason">Status Reason</label>
-                        <input
-                            id="statusReason"
-                            type="text"
-                            value={formData.statusReason}
-                            onChange={(e) => setFormData({ ...formData, statusReason: e.target.value })}
-                        />
                     </div>
 
                     <div className="form-field">
@@ -1342,7 +1324,6 @@ export function QuestionBankPage() {
                                 <th style={{ width: '80px' }}>Dummy</th>
                                 <th>Title</th>
                                 <th style={{ width: '100px' }}>Status</th>
-                                <th>Status Reason</th>
                                 <th>Created By</th>
                                 <th style={{ width: '150px' }}>Created On</th>
                                 <th>Methodology</th>
@@ -1364,7 +1345,6 @@ export function QuestionBankPage() {
                                             {question.status || '-'}
                                         </span>
                                     </td>
-                                    <td>{question.statusReason || '-'}</td>
                                     <td>{question.createdBy || '-'}</td>
                                     <td>{new Date(question.createdOn).toLocaleString()}</td>
                                     <td>{question.methodology || '-'}</td>
@@ -1384,7 +1364,7 @@ export function QuestionBankPage() {
                                 </tr>
                             ))}
                             {questions.length === 0 && (
-                                <tr><td colSpan={13} className="empty-state">No questions found.</td></tr>
+                                <tr><td colSpan={12} className="empty-state">No questions found.</td></tr>
                             )}
                         </tbody>
                     </table>

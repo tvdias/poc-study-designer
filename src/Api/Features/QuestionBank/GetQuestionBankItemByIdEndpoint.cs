@@ -32,7 +32,6 @@ public static class GetQuestionBankItemByIdEndpoint
                 q.IsDummy,
                 q.QuestionTitle,
                 q.Status,
-                q.StatusReason,
                 q.Methodology,
                 q.DataQualityTag,
                 q.RowSortOrder,
