@@ -1236,10 +1236,12 @@ export function QuestionBankPage() {
                             value={formData.scaleType}
                             onChange={(e) => setFormData({ ...formData, scaleType: e.target.value })}
                         >
-                            <option value="">-- Select Scale Type --</option>
-                            <option value="Likert">Likert</option>
-                            <option value="Numeric">Numeric</option>
-                            <option value="Semantic">Semantic</option>
+                            <option value="">---</option>
+                            <option value="Categorical">Categorical</option>
+                            <option value="Ordinal">Ordinal</option>
+                            <option value="Interval">Interval</option>
+                            <option value="Ratio">Ratio</option>
+                            <option value="Nominal">Nominal</option>
                         </select>
                     </div>
 
@@ -1250,12 +1252,15 @@ export function QuestionBankPage() {
                             value={formData.displayType}
                             onChange={(e) => setFormData({ ...formData, displayType: e.target.value })}
                         >
-                            <option value="">-- Select Display Type --</option>
-                            <option value="Radio">Radio</option>
-                            <option value="Checkbox">Checkbox</option>
+                            <option value="">---</option>
+                            <option value="Radio buttons">Radio buttons</option>
                             <option value="Dropdown">Dropdown</option>
+                            <option value="Checkboxes">Checkboxes</option>
+                            <option value="Text input">Text input</option>
+                            <option value="Numeric input">Numeric input</option>
                             <option value="Slider">Slider</option>
-                            <option value="Text">Text</option>
+                            <option value="Grid">Grid</option>
+                            <option value="Matrix">Matrix</option>
                         </select>
                     </div>
 
