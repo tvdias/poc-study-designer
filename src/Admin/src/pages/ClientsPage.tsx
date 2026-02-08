@@ -165,9 +165,10 @@ export function ClientsPage() {
                         <thead>
                             <tr>
                                 <th>Account Name</th>
-                                <th>Company Number</th>
                                 <th>Customer Number</th>
+                                <th>Company Number</th>
                                 <th>Company Code</th>
+                                <th>Created On</th>
                                 <th style={{ width: '100px' }}>Status</th>
                                 <th style={{ width: '150px' }}>Actions</th>
                             </tr>
@@ -176,9 +177,10 @@ export function ClientsPage() {
                             {clients.map((client) => (
                                 <tr key={client.id} onClick={() => openView(client)} className="clickable-row">
                                     <td>{client.accountName}</td>
-                                    <td>{client.companyNumber || '-'}</td>
                                     <td>{client.customerNumber || '-'}</td>
+                                    <td>{client.companyNumber || '-'}</td>
                                     <td>{client.companyCode || '-'}</td>
+                                    <td>{new Date(client.createdOn).toLocaleDateString()}</td>
                                     <td>
                                         <span className={`status-text ${client.isActive ? 'active' : 'inactive'}`}>
                                             {client.isActive ? 'Active' : 'Inactive'}
@@ -200,7 +202,7 @@ export function ClientsPage() {
                                 </tr>
                             ))}
                             {clients.length === 0 && (
-                                <tr><td colSpan={6} className="empty-state">No clients found.</td></tr>
+                                <tr><td colSpan={7} className="empty-state">No clients found.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -248,6 +250,10 @@ export function ClientsPage() {
                             <div className="value">{selectedClient.companyCode || 'N/A'}</div>
                         </div>
                         <div className="detail-item">
+                            <label>Created On</label>
+                            <div className="value">{new Date(selectedClient.createdOn).toLocaleString()}</div>
+                        </div>
+                        <div className="detail-item">
                             <label>Status</label>
                             <div className="value">
                                 {selectedClient.isActive ? 'Active' : 'Inactive'}
@@ -290,14 +296,14 @@ export function ClientsPage() {
                         </div>
 
                         <div className="form-field">
-                            <label htmlFor="customerNumber">Customer Number</label>
+                            <label htmlFor="customerNumber">Customer Number *</label>
                             <input
                                 id="customerNumber"
                                 type="text"
                                 value={formData.customerNumber}
                                 onChange={(e) => setFormData({ ...formData, customerNumber: e.target.value })}
                                 className={errors.CustomerNumber ? 'error' : ''}
-                                placeholder="Enter customer number (optional)"
+                                placeholder="Enter customer number"
                             />
                             {errors.CustomerNumber && <span className="field-error">{errors.CustomerNumber[0]}</span>}
                         </div>
@@ -314,6 +320,20 @@ export function ClientsPage() {
                             />
                             {errors.CompanyCode && <span className="field-error">{errors.CompanyCode[0]}</span>}
                         </div>
+
+                        {mode === 'edit' && selectedClient && (
+                            <div className="form-field">
+                                <label htmlFor="createdOn">Created On</label>
+                                <input
+                                    id="createdOn"
+                                    type="text"
+                                    value={new Date(selectedClient.createdOn).toLocaleString()}
+                                    readOnly
+                                    disabled
+                                    className="readonly-field"
+                                />
+                            </div>
+                        )}
 
                         {mode === 'edit' && (
                             <div className="form-field checkbox">

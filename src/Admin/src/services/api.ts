@@ -56,6 +56,7 @@ export interface Client {
     customerNumber: string | null;
     companyCode: string | null;
     isActive: boolean;
+    createdOn: string;
 }
 
 export interface CreateClientRequest {

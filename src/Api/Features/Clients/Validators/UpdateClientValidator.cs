@@ -15,8 +15,8 @@ public class UpdateClientValidator : AbstractValidator<UpdateClientRequest>
             .When(x => !string.IsNullOrEmpty(x.CompanyNumber));
 
         RuleFor(x => x.CustomerNumber)
-            .MaximumLength(50).WithMessage("Customer number must not exceed 50 characters.")
-            .When(x => !string.IsNullOrEmpty(x.CustomerNumber));
+            .NotEmpty().WithMessage("Customer number is required.")
+            .MaximumLength(50).WithMessage("Customer number must not exceed 50 characters.");
 
         RuleFor(x => x.CompanyCode)
             .MaximumLength(50).WithMessage("Company code must not exceed 50 characters.")
