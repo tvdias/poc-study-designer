@@ -1325,8 +1325,8 @@ export const moduleQuestionsApi = {
         return response.json();
     },
 
-    delete: async (id: string): Promise<void> => {
-        const response = await fetch(`${API_BASE}/module-questions/${id}`, {
+    delete: async (moduleId: string, id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions/${id}`, {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete module question');
