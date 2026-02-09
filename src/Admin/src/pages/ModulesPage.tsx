@@ -56,6 +56,7 @@ export function ModulesPage() {
 
     const openCreate = () => {
         setSelectedModule(null);
+        setQuestions([]);
         setFormData({
             variableName: '',
             label: '',
@@ -70,36 +71,54 @@ export function ModulesPage() {
         setMode('create');
     };
 
-    const openView = (module: Module) => {
-        setSelectedModule(module);
-        setQuestions(module.questions || []);
-        setActiveTab('general');
-        setMode('view');
+    const openView = async (module: Module) => {
+        setIsLoading(true);
+        try {
+            const fullModule = await modulesApi.getById(module.id);
+            setSelectedModule(fullModule);
+            setQuestions(fullModule.questions || []);
+            setActiveTab('general');
+            setMode('view');
+        } catch (error) {
+            console.error('Failed to fetch module details', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const openEdit = (module?: Module) => {
-        const target = module || selectedModule;
-        if (!target) return;
+    const openEdit = async (module?: Module) => {
+        const targetId = module?.id || selectedModule?.id;
+        if (!targetId) return;
 
-        if (module) setSelectedModule(module);
+        setIsLoading(true);
+        try {
+            const target = await modulesApi.getById(targetId);
+            setSelectedModule(target);
+            setQuestions(target.questions || []);
 
-        setFormData({
-            variableName: target.variableName,
-            label: target.label,
-            description: target.description || '',
-            versionNumber: target.versionNumber,
-            parentModuleId: target.parentModuleId || '',
-            instructions: target.instructions || '',
-            isActive: target.isActive
-        });
-        setErrors({});
-        setServerError('');
-        setMode('edit');
+            setFormData({
+                variableName: target.variableName,
+                label: target.label,
+                description: target.description || '',
+                versionNumber: target.versionNumber,
+                parentModuleId: target.parentModuleId || '',
+                instructions: target.instructions || '',
+                isActive: target.isActive
+            });
+            setErrors({});
+            setServerError('');
+            setMode('edit');
+        } catch (error) {
+            console.error('Failed to fetch module details', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const closePanel = () => {
         setMode('list');
         setSelectedModule(null);
+        setQuestions([]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +186,11 @@ export function ModulesPage() {
         setIsSearching(true);
         try {
             const results = await questionBankApi.getAll(query);
-            setQuestionSearchResults(results.slice(0, 10)); // Limit to 10 results
+            // Filter out questions that are already in the module
+            const filteredResults = results.filter(
+                (item) => !questions.some((q) => q.questionBankItemId === item.id)
+            );
+            setQuestionSearchResults(filteredResults.slice(0, 10)); // Limit to 10 results
         } catch (error) {
             console.error('Failed to search questions', error);
         } finally {
@@ -359,40 +382,43 @@ export function ModulesPage() {
                         {/* Questions Tab */}
                         {activeTab === 'questions' && (
                             <div className="tab-content">
-                                <div className="tab-header">
-                                    <h3>Questions in Module</h3>
-                                    <div className="lookup-field">
+                                <div className="add-question-section">
+                                    <div className="form-field">
                                         <label htmlFor="questionSearch">Add Question</label>
-                                        <input
-                                            id="questionSearch"
-                                            type="text"
-                                            placeholder="Search by variable name..."
-                                            value={questionSearch}
-                                            onChange={(e) => handleQuestionSearch(e.target.value)}
-                                        />
+                                        <div className="search-input-wrapper">
+                                            <input
+                                                id="questionSearch"
+                                                type="text"
+                                                placeholder="Search by variable name..."
+                                                value={questionSearch}
+                                                onChange={(e) => handleQuestionSearch(e.target.value)}
+                                                autoComplete="off"
+                                            />
+                                            {isSearching && <div className="searching-indicator">Searching...</div>}
+
+                                            {questionSearchResults.length > 0 && (
+                                                <div className="lookup-results">
+                                                    {questionSearchResults.map((item) => (
+                                                        <div
+                                                            key={item.id}
+                                                            className="lookup-result-item"
+                                                            onClick={() => {
+                                                                setQuestionSearch('');
+                                                                setQuestionSearchResults([]);
+                                                                handleAddQuestion(item.id);
+                                                            }}
+                                                        >
+                                                            <div className="result-primary">{item.variableName}</div>
+                                                            <div className="result-secondary">{item.questionText || item.questionType}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                         <small className="field-help">Enter at least 3 characters to search</small>
-                                        {questionSearchResults.length > 0 && (
-                                            <div className="lookup-results">
-                                                {questionSearchResults.map((item) => (
-                                                    <div
-                                                        key={item.id}
-                                                        className="lookup-result-item"
-                                                        onClick={() => {
-                                                            setQuestionSearch(item.variableName);
-                                                            setQuestionSearchResults([]);
-                                                            handleAddQuestion(item.id);
-                                                        }}
-                                                    >
-                                                        <div className="result-primary">{item.variableName}</div>
-                                                        <div className="result-secondary">{item.questionText || item.questionType}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {isSearching && <div className="field-help">Searching...</div>}
                                     </div>
                                 </div>
-                                
+
                                 {questions.length > 0 ? (
                                     <table className="details-list">
                                         <thead>

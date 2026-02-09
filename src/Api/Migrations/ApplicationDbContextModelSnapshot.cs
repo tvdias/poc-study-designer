@@ -747,6 +747,10 @@ namespace Api.Migrations
 
                     b.HasIndex("ParentQuestionId");
 
+                    b.HasIndex("QuestionText");
+
+                    b.HasIndex("QuestionTitle");
+
                     b.HasIndex("VariableName", "Version")
                         .IsUnique();
 
@@ -835,7 +839,7 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
-                        .WithMany()
+                        .WithMany("ModuleQuestions")
                         .HasForeignKey("QuestionBankItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -925,6 +929,8 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
                 {
                     b.Navigation("Answers");
+
+                    b.Navigation("ModuleQuestions");
                 });
 #pragma warning restore 612, 618
         }

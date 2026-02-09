@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitializeAdmin : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -511,6 +511,16 @@ namespace Api.Migrations
                 name: "IX_QuestionBankItems_ParentQuestionId",
                 table: "QuestionBankItems",
                 column: "ParentQuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionBankItems_QuestionText",
+                table: "QuestionBankItems",
+                column: "QuestionText");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionBankItems_QuestionTitle",
+                table: "QuestionBankItems",
+                column: "QuestionTitle");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuestionBankItems_VariableName_Version",

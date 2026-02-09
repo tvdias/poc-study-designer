@@ -86,7 +86,7 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.ModuleId, e.QuestionBankItemId }).IsUnique();
             
             entity.HasOne(e => e.QuestionBankItem)
-                .WithMany()
+                .WithMany(e => e.ModuleQuestions)
                 .HasForeignKey(e => e.QuestionBankItemId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
@@ -209,6 +209,9 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.MetricGroupId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.QuestionText);
+            entity.HasIndex(e => e.QuestionTitle);
         });
 
         modelBuilder.Entity<QuestionAnswer>(entity =>
