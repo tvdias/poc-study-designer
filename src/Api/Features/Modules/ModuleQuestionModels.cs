@@ -1,25 +1,41 @@
 namespace Api.Features.Modules;
 
 public record CreateModuleQuestionRequest(
-    Guid ModuleId,
     Guid QuestionBankItemId,
-    int SortOrder);
+    int DisplayOrder
+);
 
 public record CreateModuleQuestionResponse(
     Guid Id,
     Guid ModuleId,
     Guid QuestionBankItemId,
-    int SortOrder);
+    string QuestionVariableName,
+    string? QuestionType,
+    string? QuestionText,
+    string? Classification,
+    int DisplayOrder
+);
+
+public record ModuleQuestionDto(
+    Guid Id,
+    Guid ModuleId,
+    Guid QuestionBankItemId,
+    string QuestionVariableName,
+    string? QuestionType,
+    string? QuestionText,
+    string? Classification,
+    int DisplayOrder
+);
 
 public record UpdateModuleQuestionRequest(
-    int SortOrder,
+    int DisplayOrder,
     bool IsActive);
 
 public record ModuleQuestionInfo(
     Guid Id,
     Guid ModuleId,
     Guid QuestionBankItemId,
-    int SortOrder,
+    int DisplayOrder,
     bool IsActive,
     DateTime CreatedOn,
     string? QuestionVariableName,

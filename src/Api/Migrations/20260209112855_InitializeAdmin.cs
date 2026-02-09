@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitializeAdmin : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -356,7 +356,7 @@ namespace Api.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ModuleId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuestionBankItemId = table.Column<Guid>(type: "uuid", nullable: false),
-                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -622,6 +622,16 @@ namespace Api.Migrations
                 column: "ParentQuestionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_QuestionBankItems_QuestionText",
+                table: "QuestionBankItems",
+                column: "QuestionText");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionBankItems_QuestionTitle",
+                table: "QuestionBankItems",
+                column: "QuestionTitle");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_QuestionBankItems_VariableName_Version",
                 table: "QuestionBankItems",
                 columns: new[] { "VariableName", "Version" },
@@ -669,7 +679,7 @@ namespace Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductConfigQuestions");
-
+                
             migrationBuilder.DropTable(
                 name: "Modules");
 

@@ -20,6 +20,8 @@ public static class GetModuleByIdEndpoint
         CancellationToken cancellationToken)
     {
         var module = await db.Modules
+            .Include(m => m.ModuleQuestions)
+                .ThenInclude(mq => mq.QuestionBankItem)
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
@@ -27,6 +29,20 @@ public static class GetModuleByIdEndpoint
         {
             return TypedResults.NotFound();
         }
+
+        var questions = module.ModuleQuestions
+            .OrderBy(mq => mq.DisplayOrder)
+            .Select(mq => new ModuleQuestionDto(
+                mq.Id,
+                mq.ModuleId,
+                mq.QuestionBankItemId,
+                mq.QuestionBankItem.VariableName,
+                mq.QuestionBankItem.QuestionType,
+                mq.QuestionBankItem.QuestionText,
+                mq.QuestionBankItem.Classification,
+                mq.DisplayOrder
+            ))
+            .ToList();
 
         var response = new GetModuleByIdResponse(
             module.Id,
@@ -36,7 +52,8 @@ public static class GetModuleByIdEndpoint
             module.VersionNumber,
             module.ParentModuleId,
             module.Instructions,
-            module.IsActive
+            module.IsActive,
+            questions
         );
 
         return TypedResults.Ok(response);
@@ -51,5 +68,6 @@ public record GetModuleByIdResponse(
     int VersionNumber,
     Guid? ParentModuleId,
     string? Instructions,
-    bool IsActive
+    bool IsActive,
+    List<ModuleQuestionDto> Questions
 );

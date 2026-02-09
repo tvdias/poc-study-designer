@@ -93,6 +93,23 @@ export interface Module {
     parentModuleId?: string;
     instructions?: string;
     isActive: boolean;
+    questions?: ModuleQuestion[];
+}
+
+export interface ModuleQuestion {
+    id: string;
+    moduleId: string;
+    questionBankItemId: string;
+    questionVariableName: string;
+    questionType?: string;
+    questionText?: string;
+    classification?: string;
+    displayOrder: number;
+}
+
+export interface CreateModuleQuestionRequest {
+    questionBankItemId: string;
+    displayOrder: number;
 }
 
 export interface CreateModuleRequest {
@@ -489,6 +506,29 @@ export const modulesApi = {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete module');
+    }
+};
+
+export const moduleQuestionsApi = {
+    create: async (moduleId: string, data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
+        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (moduleId: string, id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete module question');
     }
 };
 

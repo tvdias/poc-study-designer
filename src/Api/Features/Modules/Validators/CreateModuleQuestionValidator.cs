@@ -6,16 +6,12 @@ public class CreateModuleQuestionValidator : AbstractValidator<CreateModuleQuest
 {
     public CreateModuleQuestionValidator()
     {
-        RuleFor(x => x.ModuleId)
-            .NotEmpty()
-            .WithMessage("Module ID is required");
-
         RuleFor(x => x.QuestionBankItemId)
             .NotEmpty()
-            .WithMessage("Question Bank Item ID is required");
-
-        RuleFor(x => x.SortOrder)
+            .WithMessage("Question Bank Item is required.");
+        
+        RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Sort order must be greater than or equal to 0");
+            .WithMessage("Display order must be 0 or greater.");
     }
 }

@@ -1,4 +1,5 @@
 using Api.Features.Shared;
+using Api.Features.Modules;
 
 namespace Api.Features.QuestionBank;
 
@@ -51,5 +52,6 @@ public class QuestionBankItem : AuditableEntity
     
     // Navigation properties
     public QuestionBankItem? ParentQuestion { get; set; }
+    public ICollection<ModuleQuestion> ModuleQuestions { get; set; } = new List<ModuleQuestion>();
     public ICollection<QuestionAnswer> Answers { get; set; } = new List<QuestionAnswer>();
 }

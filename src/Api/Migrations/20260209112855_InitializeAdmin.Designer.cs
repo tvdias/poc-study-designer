@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260208231213_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260209112855_InitializeAdmin")]
+    partial class InitializeAdmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -397,24 +397,11 @@ namespace Api.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ModuleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("QuestionBankItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("SortOrder")
+                    b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
                     b.HasKey("Id");
 
                     b.HasIndex("QuestionBankItemId");
@@ -852,6 +839,10 @@ namespace Api.Migrations
 
                     b.HasIndex("ParentQuestionId");
 
+                    b.HasIndex("QuestionText");
+
+                    b.HasIndex("QuestionTitle");
+
                     b.HasIndex("VariableName", "Version")
                         .IsUnique();
 
@@ -940,7 +931,7 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
-                        .WithMany()
+                        .WithMany("ModuleQuestions")
                         .HasForeignKey("QuestionBankItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1091,6 +1082,8 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
                 {
                     b.Navigation("Answers");
+
+                    b.Navigation("ModuleQuestions");
                 });
 #pragma warning restore 612, 618
         }

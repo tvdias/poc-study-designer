@@ -26,7 +26,7 @@ public static class GetModuleQuestionByIdEndpoint
                 mq.Id,
                 mq.ModuleId,
                 mq.QuestionBankItemId,
-                mq.SortOrder,
+                mq.DisplayOrder,
                 mq.IsActive,
                 mq.CreatedOn,
                 mq.QuestionBankItem != null ? mq.QuestionBankItem.VariableName : null,
