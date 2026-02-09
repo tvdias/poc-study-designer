@@ -175,7 +175,7 @@ export function ProductsPage() {
             setAvailableQuestions([]);
             return;
         }
-        
+
         try {
             const questions = await configurationQuestionsApi.getAll(searchTerm);
             setAvailableQuestions(questions);
@@ -478,7 +478,7 @@ export function ProductsPage() {
                 )}
 
                 {/* Configuration Questions Tab */}
-                {tabMode === 'config-questions' && mode === 'view' && selectedProduct && (
+                {tabMode === 'config-questions' && (mode === 'view' || mode === 'edit') && selectedProduct && (
                     <div className="tab-content">
                         <div className="tab-header">
                             <button className="btn primary" onClick={openConfigQuestionCreate}>
@@ -575,7 +575,7 @@ export function ProductsPage() {
                 )}
 
                 {/* Product Templates Tab */}
-                {tabMode === 'templates' && mode === 'view' && selectedProduct && (
+                {tabMode === 'templates' && (mode === 'view' || mode === 'edit') && selectedProduct && (
                     <div className="tab-content">
                         <div className="tab-header">
                             <button className="btn primary" onClick={openTemplateCreate}>
