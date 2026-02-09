@@ -71,7 +71,7 @@ public class CreateClientValidatorTests
     {
         // Arrange
         var longName = new string('a', 201);
-        var request = new CreateClientRequest(longName, null, null, null);
+        var request = new CreateClientRequest(longName, null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -87,7 +87,7 @@ public class CreateClientValidatorTests
     {
         // Arrange
         var maxLengthName = new string('a', 200);
-        var request = new CreateClientRequest(maxLengthName, null, null, null);
+        var request = new CreateClientRequest(maxLengthName, null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

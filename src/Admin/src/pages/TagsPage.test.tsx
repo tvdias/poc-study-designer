@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TagsPage } from './TagsPage';
 import { tagsApi } from '../services/api';
@@ -67,7 +68,7 @@ describe('TagsPage', () => {
         expect(screen.getByLabelText('Name')).toHaveValue('');
     });
 
-    it('creates a tag and refreshes list', async () => {
+    it('creates a tag and closes panel', async () => {
         (tagsApi.getAll as any).mockResolvedValue([]);
         (tagsApi.create as any).mockResolvedValue({ id: '3', name: 'New Tag', isActive: true });
 
@@ -89,11 +90,11 @@ describe('TagsPage', () => {
             expect(tagsApi.create).toHaveBeenCalledWith({ name: 'New Tag' });
         });
 
-        // Should switch to view mode (Title becomes the tag name)
+        // Should close the panel and return to list
         await waitFor(() => {
-            expect(screen.getByRole('heading', { name: 'New Tag' })).toBeInTheDocument();
-            // Ensure 'Edit' button is present (marks view mode)
-            expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'New Tag' })).not.toBeInTheDocument();
+            // The creation button (New) should be visible (meaning we are back to list)
+            expect(screen.getByRole('button', { name: /new/i })).toBeInTheDocument();
         });
 
         // Check list refresh
