@@ -34,7 +34,6 @@ public static class UpdateProductConfigQuestionEndpoint
             return TypedResults.NotFound();
         }
 
-        pcq.StatusReason = request.StatusReason;
         pcq.IsActive = request.IsActive;
         pcq.ModifiedOn = DateTime.UtcNow;
         pcq.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
@@ -45,7 +44,6 @@ public static class UpdateProductConfigQuestionEndpoint
             pcq.Id, 
             pcq.ProductId, 
             pcq.ConfigurationQuestionId, 
-            pcq.StatusReason, 
             pcq.IsActive));
     }
 }

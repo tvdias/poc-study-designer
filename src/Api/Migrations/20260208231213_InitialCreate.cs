@@ -263,7 +263,6 @@ namespace Api.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: false),
                     ConfigurationQuestionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StatusReason = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -351,6 +350,37 @@ namespace Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ModuleQuestions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ModuleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuestionBankItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ModuleQuestions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ModuleQuestions_Modules_ModuleId",
+                        column: x => x.ModuleId,
+                        principalTable: "Modules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ModuleQuestions_QuestionBankItems_QuestionBankItemId",
+                        column: x => x.QuestionBankItemId,
+                        principalTable: "QuestionBankItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "QuestionAnswers",
                 columns: table => new
                 {
@@ -381,6 +411,85 @@ namespace Api.Migrations
                         principalTable: "QuestionBankItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductConfigQuestionDisplayRules",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductConfigQuestionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TriggeringConfigurationQuestionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TriggeringAnswerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DisplayCondition = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductConfigQuestionDisplayRules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductConfigQuestionDisplayRules_ConfigurationAnswers_Trig~",
+                        column: x => x.TriggeringAnswerId,
+                        principalTable: "ConfigurationAnswers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_ProductConfigQuestionDisplayRules_ConfigurationQuestions_Tr~",
+                        column: x => x.TriggeringConfigurationQuestionId,
+                        principalTable: "ConfigurationQuestions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductConfigQuestionDisplayRules_ProductConfigQuestions_Pr~",
+                        column: x => x.ProductConfigQuestionId,
+                        principalTable: "ProductConfigQuestions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductTemplateLines",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IncludeByDefault = table.Column<bool>(type: "boolean", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    ModuleId = table.Column<Guid>(type: "uuid", nullable: true),
+                    QuestionBankItemId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductTemplateLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductTemplateLines_Modules_ModuleId",
+                        column: x => x.ModuleId,
+                        principalTable: "Modules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductTemplateLines_ProductTemplates_ProductTemplateId",
+                        column: x => x.ProductTemplateId,
+                        principalTable: "ProductTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductTemplateLines_QuestionBankItems_QuestionBankItemId",
+                        column: x => x.QuestionBankItemId,
+                        principalTable: "QuestionBankItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -423,6 +532,17 @@ namespace Api.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ModuleQuestions_ModuleId_QuestionBankItemId",
+                table: "ModuleQuestions",
+                columns: new[] { "ModuleId", "QuestionBankItemId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ModuleQuestions_QuestionBankItemId",
+                table: "ModuleQuestions",
+                column: "QuestionBankItemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Modules_ParentModuleId",
                 table: "Modules",
                 column: "ParentModuleId");
@@ -432,6 +552,21 @@ namespace Api.Migrations
                 table: "Modules",
                 column: "VariableName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductConfigQuestionDisplayRules_ProductConfigQuestionId",
+                table: "ProductConfigQuestionDisplayRules",
+                column: "ProductConfigQuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductConfigQuestionDisplayRules_TriggeringAnswerId",
+                table: "ProductConfigQuestionDisplayRules",
+                column: "TriggeringAnswerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductConfigQuestionDisplayRules_TriggeringConfigurationQu~",
+                table: "ProductConfigQuestionDisplayRules",
+                column: "TriggeringConfigurationQuestionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductConfigQuestions_ConfigurationQuestionId",
@@ -449,6 +584,21 @@ namespace Api.Migrations
                 table: "Products",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductTemplateLines_ModuleId",
+                table: "ProductTemplateLines",
+                column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductTemplateLines_ProductTemplateId",
+                table: "ProductTemplateLines",
+                column: "ProductTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductTemplateLines_QuestionBankItemId",
+                table: "ProductTemplateLines",
+                column: "QuestionBankItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductTemplates_ProductId_Name_Version",
@@ -500,13 +650,13 @@ namespace Api.Migrations
                 name: "FieldworkMarkets");
 
             migrationBuilder.DropTable(
-                name: "Modules");
+                name: "ModuleQuestions");
 
             migrationBuilder.DropTable(
-                name: "ProductConfigQuestions");
+                name: "ProductConfigQuestionDisplayRules");
 
             migrationBuilder.DropTable(
-                name: "ProductTemplates");
+                name: "ProductTemplateLines");
 
             migrationBuilder.DropTable(
                 name: "QuestionAnswers");
@@ -518,13 +668,22 @@ namespace Api.Migrations
                 name: "ConfigurationAnswers");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "ProductConfigQuestions");
+
+            migrationBuilder.DropTable(
+                name: "Modules");
+
+            migrationBuilder.DropTable(
+                name: "ProductTemplates");
 
             migrationBuilder.DropTable(
                 name: "QuestionBankItems");
 
             migrationBuilder.DropTable(
                 name: "ConfigurationQuestions");
+
+            migrationBuilder.DropTable(
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "MetricGroups");

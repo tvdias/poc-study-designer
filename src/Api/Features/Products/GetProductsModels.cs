@@ -13,4 +13,4 @@ public record GetProductDetailResponse(
 
 public record ProductTemplateInfo(Guid Id, string Name, int Version);
 
-public record ProductConfigQuestionInfo(Guid Id, Guid ConfigurationQuestionId, string Question, string? StatusReason);
+public record ProductConfigQuestionInfo(Guid Id, Guid ConfigurationQuestionId, string Question);

@@ -12,4 +12,5 @@ public class ProductTemplate : AuditableEntity
     
     // Navigation properties
     public Product? Product { get; set; }
+    public ICollection<ProductTemplateLine> ProductTemplateLines { get; set; } = new List<ProductTemplateLine>();
 }
