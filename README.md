@@ -127,7 +127,29 @@ Services will be available at:
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 
+## Testing
+
+The project includes comprehensive testing for both frontend and backend components:
+
+- **Frontend Tests**: Component tests using Vitest and React Testing Library
+- **Backend Tests**: Unit and integration tests using xUnit
+
+To run tests:
+
+```bash
+# Frontend (Admin app)
+cd src/Admin
+npm test
+
+# Backend (API)
+dotnet test src/Api.Tests/
+dotnet test src/Api.IntegrationTests/
+```
+
+For detailed testing guidelines, best practices, and examples, see **[TESTING.md](TESTING.md)**.
+
 ## Additional Resources
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for all development options
 - **[CONTAINERS.md](CONTAINERS.md)** - Comprehensive container documentation
+- **[TESTING.md](TESTING.md)** - Comprehensive testing documentation and guidelines
