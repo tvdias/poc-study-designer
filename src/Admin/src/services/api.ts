@@ -509,29 +509,6 @@ export const modulesApi = {
     }
 };
 
-export const moduleQuestionsApi = {
-    create: async (moduleId: string, data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
-        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw { status: response.status, ...errorData };
-        }
-        return response.json();
-    },
-
-    delete: async (moduleId: string, id: string): Promise<void> => {
-        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions/${id}`, {
-            method: 'DELETE',
-        });
-        if (!response.ok) throw new Error('Failed to delete module question');
-    }
-};
-
 export const configurationQuestionsApi = {
     getAll: async (query?: string): Promise<ConfigurationQuestionDetail[]> => {
         const url = query ? `${API_BASE}/configuration-questions?query=${encodeURIComponent(query)}` : `${API_BASE}/configuration-questions`;
@@ -1218,7 +1195,7 @@ export const productTemplateLinesApi = {
     getAll: async (productTemplateId?: string): Promise<ProductTemplateLine[]> => {
         let url = `${API_BASE}/product-template-lines`;
         if (productTemplateId) url += `?productTemplateId=${productTemplateId}`;
-        
+
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch product template lines');
         return response.json();
@@ -1271,7 +1248,7 @@ export const productConfigQuestionDisplayRulesApi = {
     getAll: async (productConfigQuestionId?: string): Promise<ProductConfigQuestionDisplayRule[]> => {
         let url = `${API_BASE}/product-config-question-display-rules`;
         if (productConfigQuestionId) url += `?productConfigQuestionId=${productConfigQuestionId}`;
-        
+
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch product config question display rules');
         return response.json();
@@ -1324,7 +1301,7 @@ export const moduleQuestionsApi = {
     getAll: async (moduleId?: string): Promise<ModuleQuestion[]> => {
         let url = `${API_BASE}/module-questions`;
         if (moduleId) url += `?moduleId=${moduleId}`;
-        
+
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch module questions');
         return response.json();
