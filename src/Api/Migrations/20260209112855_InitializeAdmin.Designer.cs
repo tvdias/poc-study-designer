@@ -12,13 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
     [Migration("20260209112855_InitializeAdmin")]
     partial class InitializeAdmin
-========
-    [Migration("20260208231213_InitialCreate")]
-    partial class InitialCreate
->>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -402,32 +397,11 @@ namespace Api.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
-<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
-========
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
->>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
-
-                    b.Property<string>("ModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ModuleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("QuestionBankItemId")
-                        .HasColumnType("uuid");
-
-<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
-========
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
->>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
                     b.HasKey("Id");
 
                     b.HasIndex("QuestionBankItemId");
@@ -957,11 +931,7 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
-<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
                         .WithMany("ModuleQuestions")
-========
-                        .WithMany()
->>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
                         .HasForeignKey("QuestionBankItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

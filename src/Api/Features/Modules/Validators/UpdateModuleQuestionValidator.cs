@@ -6,8 +6,8 @@ public class UpdateModuleQuestionValidator : AbstractValidator<UpdateModuleQuest
 {
     public UpdateModuleQuestionValidator()
     {
-        RuleFor(x => x.SortOrder)
+        RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Sort order must be greater than or equal to 0");
+            .WithMessage("Display order must be greater than or equal to 0");
     }
 }

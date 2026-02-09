@@ -29,12 +29,12 @@ public static class GetModuleQuestionsEndpoint
         }
 
         var moduleQuestions = await query
-            .OrderBy(mq => mq.SortOrder)
+            .OrderBy(mq => mq.DisplayOrder)
             .Select(mq => new ModuleQuestionInfo(
                 mq.Id,
                 mq.ModuleId,
                 mq.QuestionBankItemId,
-                mq.SortOrder,
+                mq.DisplayOrder,
                 mq.IsActive,
                 mq.CreatedOn,
                 mq.QuestionBankItem != null ? mq.QuestionBankItem.VariableName : null,

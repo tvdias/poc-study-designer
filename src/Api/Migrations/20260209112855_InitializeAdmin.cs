@@ -356,12 +356,8 @@ namespace Api.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ModuleId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuestionBankItemId = table.Column<Guid>(type: "uuid", nullable: false),
-<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.cs
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-========
-                    SortOrder = table.Column<int>(type: "integer", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
->>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.cs
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedBy = table.Column<string>(type: "text", nullable: true),
@@ -682,20 +678,13 @@ namespace Api.Migrations
                 name: "ConfigurationAnswers");
 
             migrationBuilder.DropTable(
-<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.cs
-                name: "Modules");
-
-            migrationBuilder.DropTable(
-                name: "Products");
-========
                 name: "ProductConfigQuestions");
-
+                
             migrationBuilder.DropTable(
                 name: "Modules");
 
             migrationBuilder.DropTable(
                 name: "ProductTemplates");
->>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.cs
 
             migrationBuilder.DropTable(
                 name: "QuestionBankItems");

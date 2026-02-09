@@ -28,14 +28,14 @@ public record ModuleQuestionDto(
 );
 
 public record UpdateModuleQuestionRequest(
-    int SortOrder,
+    int DisplayOrder,
     bool IsActive);
 
 public record ModuleQuestionInfo(
     Guid Id,
     Guid ModuleId,
     Guid QuestionBankItemId,
-    int SortOrder,
+    int DisplayOrder,
     bool IsActive,
     DateTime CreatedOn,
     string? QuestionVariableName,

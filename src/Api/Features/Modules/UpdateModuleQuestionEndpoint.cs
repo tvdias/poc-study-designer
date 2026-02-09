@@ -34,7 +34,7 @@ public static class UpdateModuleQuestionEndpoint
             return TypedResults.NotFound();
         }
 
-        moduleQuestion.SortOrder = request.SortOrder;
+        moduleQuestion.DisplayOrder = request.DisplayOrder;
         moduleQuestion.IsActive = request.IsActive;
 
         await db.SaveChangesAsync(cancellationToken);
@@ -46,7 +46,7 @@ public static class UpdateModuleQuestionEndpoint
                 mq.Id,
                 mq.ModuleId,
                 mq.QuestionBankItemId,
-                mq.SortOrder,
+                mq.DisplayOrder,
                 mq.IsActive,
                 mq.CreatedOn,
                 mq.QuestionBankItem != null ? mq.QuestionBankItem.VariableName : null,
