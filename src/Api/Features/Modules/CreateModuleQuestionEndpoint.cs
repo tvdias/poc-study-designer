@@ -12,7 +12,7 @@ public static class CreateModuleQuestionEndpoint
         app.MapPost("/modules/{moduleId:guid}/questions", HandleAsync)
             .WithName("CreateModuleQuestion")
             .WithSummary("Add a question to a module")
-            .WithTags("Modules");
+            .WithTags("ModuleQuestions");
     }
 
     public static async Task<Results<CreatedAtRoute<CreateModuleQuestionResponse>, ValidationProblem, NotFound, Conflict<string>>> HandleAsync(
