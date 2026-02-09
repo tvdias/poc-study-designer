@@ -1313,8 +1313,8 @@ export const moduleQuestionsApi = {
         return response.json();
     },
 
-    create: async (data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
-        const response = await fetch(`${API_BASE}/module-questions`, {
+    create: async (moduleId: string, data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
+        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
