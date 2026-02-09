@@ -12,13 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-<<<<<<<< HEAD:src/Api/Migrations/20260209144330_InitialCreate.Designer.cs
-    [Migration("20260209144330_InitialCreate")]
+    [Migration("20260209194643_InitialCreate")]
     partial class InitialCreate
-========
-    [Migration("20260209112855_InitializeAdmin")]
-    partial class InitializeAdmin
->>>>>>>> origin/main:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -407,7 +402,6 @@ namespace Api.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
-<<<<<<<< HEAD:src/Api/Migrations/20260209144330_InitialCreate.Designer.cs
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("text");
@@ -421,8 +415,6 @@ namespace Api.Migrations
                     b.Property<Guid>("QuestionBankItemId")
                         .HasColumnType("uuid");
 
-========
->>>>>>>> origin/main:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
                     b.HasKey("Id");
 
                     b.HasIndex("QuestionBankItemId");
