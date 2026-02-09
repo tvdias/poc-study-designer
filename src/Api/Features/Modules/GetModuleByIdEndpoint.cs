@@ -31,6 +31,7 @@ public static class GetModuleByIdEndpoint
         }
 
         var questions = module.ModuleQuestions
+            .Where(mq => mq.IsActive)
             .OrderBy(mq => mq.DisplayOrder)
             .Select(mq => new ModuleQuestionDto(
                 mq.Id,
