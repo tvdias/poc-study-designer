@@ -6,7 +6,8 @@ using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class TagTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+[Collection("IntegrationTests")]
+public class TagTests(BoxedAppHostFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetTags_WorksCorrectly()
@@ -63,22 +64,4 @@ public class TagTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostF
     }
 }
 
-public class BoxedAppHostFixture : IAsyncLifetime
-{
-    public DistributedApplication App { get; private set; } = null!;
 
-    public async ValueTask InitializeAsync()
-    {
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<AppHostAssembly::Program>();
-        App = await appHost.BuildAsync();
-        await App.StartAsync();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (App != null)
-        {
-            await App.DisposeAsync();
-        }
-    }
-}

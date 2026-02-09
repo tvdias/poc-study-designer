@@ -6,7 +6,8 @@ using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class ClientTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+[Collection("IntegrationTests")]
+public class ClientTests(BoxedAppHostFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetClients_WorksCorrectly()

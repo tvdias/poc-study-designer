@@ -6,7 +6,8 @@ using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class MetricGroupTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+[Collection("IntegrationTests")]
+public class MetricGroupTests(BoxedAppHostFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetMetricGroups_WorksCorrectly()

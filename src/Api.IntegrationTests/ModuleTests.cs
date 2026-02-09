@@ -6,7 +6,8 @@ using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class ModuleTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+[Collection("IntegrationTests")]
+public class ModuleTests(BoxedAppHostFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetModules_WorksCorrectly()
