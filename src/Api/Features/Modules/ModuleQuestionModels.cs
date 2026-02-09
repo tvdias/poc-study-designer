@@ -26,3 +26,17 @@ public record ModuleQuestionDto(
     string? Classification,
     int DisplayOrder
 );
+
+public record UpdateModuleQuestionRequest(
+    int SortOrder,
+    bool IsActive);
+
+public record ModuleQuestionInfo(
+    Guid Id,
+    Guid ModuleId,
+    Guid QuestionBankItemId,
+    int SortOrder,
+    bool IsActive,
+    DateTime CreatedOn,
+    string? QuestionVariableName,
+    string? QuestionText);

@@ -24,9 +24,9 @@ export function ProductsPage() {
     // Config Question State
     const [configQuestionMode, setConfigQuestionMode] = useState<ConfigQuestionMode>('none');
     const [availableQuestions, setAvailableQuestions] = useState<ConfigurationQuestion[]>([]);
+    const [configQuestionSearch, setConfigQuestionSearch] = useState('');
     const [configQuestionFormData, setConfigQuestionFormData] = useState({
-        configurationQuestionId: '',
-        statusReason: ''
+        configurationQuestionId: ''
     });
 
     // Template State
@@ -68,16 +68,14 @@ export function ProductsPage() {
     };
 
     const openView = async (product: Product) => {
-        setIsLoading(true);
         try {
+            // Fetch full details before opening
             const fullProduct = await productsApi.getById(product.id);
             setSelectedProduct(fullProduct);
             setMode('view');
             setTabMode('general');
         } catch (error) {
             console.error('Failed to fetch product details', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -87,7 +85,6 @@ export function ProductsPage() {
 
         // If opening from row action, fetch full product details first
         if (product) {
-            setIsLoading(true);
             try {
                 const fullProduct = await productsApi.getById(product.id);
                 setSelectedProduct(fullProduct);
@@ -99,8 +96,6 @@ export function ProductsPage() {
             } catch (error) {
                 console.error(`Failed to fetch product details for product ${product.id}`, error);
                 return;
-            } finally {
-                setIsLoading(false);
             }
         } else {
             // Already have full details from view mode
@@ -129,24 +124,24 @@ export function ProductsPage() {
         setServerError('');
 
         try {
-            let savedProduct: Product;
             if (mode === 'edit' && selectedProduct) {
-                savedProduct = await productsApi.update(selectedProduct.id, {
+                const savedProduct = await productsApi.update(selectedProduct.id, {
                     name: formData.name,
                     description: formData.description || undefined,
                     isActive: formData.isActive
                 });
+                await fetchProducts();
+                const fullProduct = await productsApi.getById(savedProduct.id);
+                setSelectedProduct(fullProduct);
+                setMode('view');
             } else {
-                savedProduct = await productsApi.create({
+                await productsApi.create({
                     name: formData.name,
                     description: formData.description || undefined
                 });
+                await fetchProducts();
+                closePanel();
             }
-
-            await fetchProducts();
-            const fullProduct = await productsApi.getById(savedProduct.id);
-            setSelectedProduct(fullProduct);
-            setMode('view');
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]>; detail?: string };
@@ -175,18 +170,27 @@ export function ProductsPage() {
 
     // --- Config Question Actions ---
 
-    const openConfigQuestionCreate = async () => {
-        try {
-            const questions = await configurationQuestionsApi.getAll();
-            setAvailableQuestions(questions);
-            setConfigQuestionFormData({
-                configurationQuestionId: '',
-                statusReason: ''
-            });
-            setConfigQuestionMode('create');
-        } catch (error) {
-            console.error('Failed to fetch configuration questions', error);
+    const searchConfigurationQuestions = async (searchTerm: string) => {
+        if (searchTerm.length < 3) {
+            setAvailableQuestions([]);
+            return;
         }
+
+        try {
+            const questions = await configurationQuestionsApi.getAll(searchTerm);
+            setAvailableQuestions(questions);
+        } catch (error) {
+            console.error('Failed to search configuration questions', error);
+        }
+    };
+
+    const openConfigQuestionCreate = async () => {
+        setConfigQuestionFormData({
+            configurationQuestionId: ''
+        });
+        setConfigQuestionSearch('');
+        setAvailableQuestions([]);
+        setConfigQuestionMode('create');
     };
 
     const handleConfigQuestionSubmit = async (e: React.FormEvent) => {
@@ -199,13 +203,14 @@ export function ProductsPage() {
         try {
             await productConfigQuestionsApi.create({
                 productId: selectedProduct.id,
-                configurationQuestionId: configQuestionFormData.configurationQuestionId,
-                statusReason: configQuestionFormData.statusReason || undefined
+                configurationQuestionId: configQuestionFormData.configurationQuestionId
             });
 
             const updatedProduct = await productsApi.getById(selectedProduct.id);
             setSelectedProduct(updatedProduct);
             setConfigQuestionMode('none');
+            setConfigQuestionSearch('');
+            setAvailableQuestions([]);
 
         } catch (err: unknown) {
             const error = err as { status?: number; errors?: Record<string, string[]> };
@@ -473,7 +478,7 @@ export function ProductsPage() {
                 )}
 
                 {/* Configuration Questions Tab */}
-                {tabMode === 'config-questions' && mode === 'view' && selectedProduct && (
+                {tabMode === 'config-questions' && (mode === 'view' || mode === 'edit') && selectedProduct && (
                     <div className="tab-content">
                         <div className="tab-header">
                             <button className="btn primary" onClick={openConfigQuestionCreate}>
@@ -485,34 +490,54 @@ export function ProductsPage() {
                             <form className="panel-form" onSubmit={handleConfigQuestionSubmit} style={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
                                 <h4>Add Configuration Question</h4>
                                 <div className="form-field">
-                                    <label htmlFor="configQuestionId">Configuration Question <span className="required">*</span></label>
-                                    <select
-                                        id="configQuestionId"
-                                        value={configQuestionFormData.configurationQuestionId}
-                                        onChange={(e) => setConfigQuestionFormData({ ...configQuestionFormData, configurationQuestionId: e.target.value })}
-                                        className={errors.ConfigurationQuestionId ? 'error' : ''}
-                                    >
-                                        <option value="">-- Select Question --</option>
-                                        {availableQuestions.map(q => (
-                                            <option key={q.id} value={q.id}>{q.question}</option>
-                                        ))}
-                                    </select>
-                                    {errors.ConfigurationQuestionId && <span className="field-error">{errors.ConfigurationQuestionId[0]}</span>}
-                                </div>
-
-                                <div className="form-field">
-                                    <label htmlFor="statusReason">Status Reason</label>
+                                    <label htmlFor="configQuestionSearch">Search Configuration Question <span className="required">*</span></label>
                                     <input
-                                        id="statusReason"
+                                        id="configQuestionSearch"
                                         type="text"
-                                        value={configQuestionFormData.statusReason}
-                                        onChange={(e) => setConfigQuestionFormData({ ...configQuestionFormData, statusReason: e.target.value })}
+                                        placeholder="Type at least 3 characters to search..."
+                                        value={configQuestionSearch}
+                                        onChange={(e) => {
+                                            setConfigQuestionSearch(e.target.value);
+                                            searchConfigurationQuestions(e.target.value);
+                                        }}
+                                        className={errors.ConfigurationQuestionId ? 'error' : ''}
                                     />
+                                    {errors.ConfigurationQuestionId && <span className="field-error">{errors.ConfigurationQuestionId[0]}</span>}
+                                    {configQuestionSearch.length > 0 && configQuestionSearch.length < 3 && (
+                                        <small style={{ color: '#666' }}>Type at least 3 characters to search</small>
+                                    )}
+                                    {availableQuestions.length > 0 && (
+                                        <div style={{ marginTop: '0.5rem', border: '1px solid #ddd', borderRadius: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                                            {availableQuestions.map(q => (
+                                                <div
+                                                    key={q.id}
+                                                    onClick={() => {
+                                                        setConfigQuestionFormData({ configurationQuestionId: q.id });
+                                                        setConfigQuestionSearch(q.question);
+                                                        setAvailableQuestions([]);
+                                                    }}
+                                                    style={{
+                                                        padding: '0.5rem',
+                                                        cursor: 'pointer',
+                                                        borderBottom: '1px solid #eee',
+                                                        backgroundColor: configQuestionFormData.configurationQuestionId === q.id ? '#e3f2fd' : 'transparent'
+                                                    }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = configQuestionFormData.configurationQuestionId === q.id ? '#e3f2fd' : 'transparent'}
+                                                >
+                                                    {q.question}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {configQuestionSearch.length >= 3 && availableQuestions.length === 0 && (
+                                        <small style={{ color: '#666' }}>No questions found</small>
+                                    )}
                                 </div>
 
                                 <div style={{ marginTop: '1rem' }}>
-                                    <button type="submit" className="btn primary">Add</button>
-                                    <button type="button" className="btn" onClick={() => setConfigQuestionMode('none')}>Cancel</button>
+                                    <button type="submit" className="btn primary" disabled={!configQuestionFormData.configurationQuestionId}>Add</button>
+                                    <button type="button" className="btn" onClick={() => { setConfigQuestionMode('none'); setConfigQuestionSearch(''); setAvailableQuestions([]); }}>Cancel</button>
                                 </div>
                             </form>
                         )}
@@ -521,7 +546,6 @@ export function ProductsPage() {
                             <thead>
                                 <tr>
                                     <th>Question</th>
-                                    <th>Status Reason</th>
                                     <th style={{ width: '100px' }}>Actions</th>
                                 </tr>
                             </thead>
@@ -529,7 +553,6 @@ export function ProductsPage() {
                                 {selectedProduct.configurationQuestions.map((pcq) => (
                                     <tr key={pcq.id}>
                                         <td>{pcq.question}</td>
-                                        <td>{pcq.statusReason || '-'}</td>
                                         <td>
                                             <div className="row-actions">
                                                 <button
@@ -544,7 +567,7 @@ export function ProductsPage() {
                                     </tr>
                                 ))}
                                 {selectedProduct.configurationQuestions.length === 0 && (
-                                    <tr><td colSpan={3} className="empty-state">No configuration questions.</td></tr>
+                                    <tr><td colSpan={2} className="empty-state">No configuration questions.</td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -552,7 +575,7 @@ export function ProductsPage() {
                 )}
 
                 {/* Product Templates Tab */}
-                {tabMode === 'templates' && mode === 'view' && selectedProduct && (
+                {tabMode === 'templates' && (mode === 'view' || mode === 'edit') && selectedProduct && (
                     <div className="tab-content">
                         <div className="tab-header">
                             <button className="btn primary" onClick={openTemplateCreate}>

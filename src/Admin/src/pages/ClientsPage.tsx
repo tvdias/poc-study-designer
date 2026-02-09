@@ -88,7 +88,7 @@ export function ClientsPage() {
         setServerError('');
 
         try {
-            let savedClient: Client;
+
             const requestData = {
                 accountName: formData.accountName,
                 companyNumber: formData.companyNumber || null,
@@ -98,16 +98,15 @@ export function ClientsPage() {
             };
 
             if (mode === 'edit' && selectedClient) {
-                savedClient = await clientsApi.update(selectedClient.id, requestData);
+                const savedClient = await clientsApi.update(selectedClient.id, requestData);
+                await fetchClients();
+                setSelectedClient(savedClient);
+                setMode('view');
             } else {
-                savedClient = await clientsApi.create(requestData);
+                await clientsApi.create(requestData);
+                await fetchClients();
+                closePanel();
             }
-
-            // Refresh list and optionally switch to view mode or close
-            await fetchClients();
-            // stay in view mode of the saved client
-            setSelectedClient(savedClient);
-            setMode('view');
 
         } catch (err: any) {
             if (err.status === 400 && err.errors) {

@@ -12,8 +12,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
+<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
     [Migration("20260209112855_InitializeAdmin")]
     partial class InitializeAdmin
+========
+    [Migration("20260208231213_InitialCreate")]
+    partial class InitialCreate
+>>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -397,8 +402,13 @@ namespace Api.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
+<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
+========
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+>>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("text");
@@ -412,6 +422,12 @@ namespace Api.Migrations
                     b.Property<Guid>("QuestionBankItemId")
                         .HasColumnType("uuid");
 
+<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
+========
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+>>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
                     b.HasKey("Id");
 
                     b.HasIndex("QuestionBankItemId");
@@ -487,10 +503,6 @@ namespace Api.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("StatusReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ConfigurationQuestionId");
@@ -499,6 +511,52 @@ namespace Api.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductConfigQuestions");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestionDisplayRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayCondition")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProductConfigQuestionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TriggeringAnswerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TriggeringConfigurationQuestionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductConfigQuestionId");
+
+                    b.HasIndex("TriggeringAnswerId");
+
+                    b.HasIndex("TriggeringConfigurationQuestionId");
+
+                    b.ToTable("ProductConfigQuestionDisplayRules");
                 });
 
             modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
@@ -539,6 +597,63 @@ namespace Api.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductTemplates");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplateLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IncludeByDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModuleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("ProductTemplateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("QuestionBankItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModuleId");
+
+                    b.HasIndex("ProductTemplateId");
+
+                    b.HasIndex("QuestionBankItemId");
+
+                    b.ToTable("ProductTemplateLines");
                 });
 
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionAnswer", b =>
@@ -842,7 +957,11 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
+<<<<<<<< HEAD:src/Api/Migrations/20260209112855_InitializeAdmin.Designer.cs
                         .WithMany("ModuleQuestions")
+========
+                        .WithMany()
+>>>>>>>> origin/main:src/Api/Migrations/20260208231213_InitialCreate.Designer.cs
                         .HasForeignKey("QuestionBankItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -871,6 +990,32 @@ namespace Api.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestionDisplayRule", b =>
+                {
+                    b.HasOne("Api.Features.Products.ProductConfigQuestion", "ProductConfigQuestion")
+                        .WithMany("DisplayRules")
+                        .HasForeignKey("ProductConfigQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationAnswer", "TriggeringAnswer")
+                        .WithMany()
+                        .HasForeignKey("TriggeringAnswerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Api.Features.ConfigurationQuestions.ConfigurationQuestion", "TriggeringConfigurationQuestion")
+                        .WithMany()
+                        .HasForeignKey("TriggeringConfigurationQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductConfigQuestion");
+
+                    b.Navigation("TriggeringAnswer");
+
+                    b.Navigation("TriggeringConfigurationQuestion");
+                });
+
             modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
                 {
                     b.HasOne("Api.Features.Products.Product", "Product")
@@ -880,6 +1025,31 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplateLine", b =>
+                {
+                    b.HasOne("Api.Features.Modules.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Api.Features.Products.ProductTemplate", "ProductTemplate")
+                        .WithMany("ProductTemplateLines")
+                        .HasForeignKey("ProductTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Module");
+
+                    b.Navigation("ProductTemplate");
+
+                    b.Navigation("QuestionBankItem");
                 });
 
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionAnswer", b =>
@@ -927,6 +1097,16 @@ namespace Api.Migrations
                     b.Navigation("ProductConfigQuestions");
 
                     b.Navigation("ProductTemplates");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductConfigQuestion", b =>
+                {
+                    b.Navigation("DisplayRules");
+                });
+
+            modelBuilder.Entity("Api.Features.Products.ProductTemplate", b =>
+                {
+                    b.Navigation("ProductTemplateLines");
                 });
 
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>

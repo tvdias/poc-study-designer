@@ -76,18 +76,16 @@ export function TagsPage() {
         setServerError('');
 
         try {
-            let savedTag: Tag;
             if (mode === 'edit' && selectedTag) {
-                savedTag = await tagsApi.update(selectedTag.id, { name: formData.name, isActive: formData.isActive });
+                const savedTag = await tagsApi.update(selectedTag.id, { name: formData.name, isActive: formData.isActive });
+                await fetchTags();
+                setSelectedTag(savedTag);
+                setMode('view');
             } else {
-                savedTag = await tagsApi.create({ name: formData.name });
+                await tagsApi.create({ name: formData.name });
+                await fetchTags();
+                closePanel();
             }
-
-            // Refresh list and optionally switch to view mode or close
-            await fetchTags();
-            // stay in view mode of the saved tag
-            setSelectedTag(savedTag);
-            setMode('view');
 
         } catch (err: any) {
             if (err.status === 400 && err.errors) {

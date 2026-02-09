@@ -127,9 +127,8 @@ export function ModulesPage() {
         setServerError('');
 
         try {
-            let savedModule: Module;
             if (mode === 'edit' && selectedModule) {
-                savedModule = await modulesApi.update(selectedModule.id, {
+                const savedModule = await modulesApi.update(selectedModule.id, {
                     variableName: formData.variableName,
                     label: formData.label,
                     description: formData.description,
@@ -138,8 +137,11 @@ export function ModulesPage() {
                     instructions: formData.instructions,
                     isActive: formData.isActive
                 });
+                await fetchModules();
+                setSelectedModule(savedModule);
+                setMode('view');
             } else {
-                savedModule = await modulesApi.create({
+                await modulesApi.create({
                     variableName: formData.variableName,
                     label: formData.label,
                     description: formData.description,
@@ -147,11 +149,9 @@ export function ModulesPage() {
                     parentModuleId: formData.parentModuleId || undefined,
                     instructions: formData.instructions
                 });
+                await fetchModules();
+                closePanel();
             }
-
-            await fetchModules();
-            setSelectedModule(savedModule);
-            setMode('view');
 
         } catch (err: any) {
             if (err.status === 400 && err.errors) {

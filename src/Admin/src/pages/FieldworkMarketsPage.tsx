@@ -76,18 +76,16 @@ export function FieldworkMarketsPage() {
         setServerError('');
 
         try {
-            let savedMarket: FieldworkMarket;
             if (mode === 'edit' && selectedMarket) {
-                savedMarket = await fieldworkMarketsApi.update(selectedMarket.id, { isoCode: formData.isoCode, name: formData.name, isActive: formData.isActive });
+                const savedMarket = await fieldworkMarketsApi.update(selectedMarket.id, { isoCode: formData.isoCode, name: formData.name, isActive: formData.isActive });
+                await fetchMarkets();
+                setSelectedMarket(savedMarket);
+                setMode('view');
             } else {
-                savedMarket = await fieldworkMarketsApi.create({ isoCode: formData.isoCode, name: formData.name });
+                await fieldworkMarketsApi.create({ isoCode: formData.isoCode, name: formData.name });
+                await fetchMarkets();
+                closePanel();
             }
-
-            // Refresh list and optionally switch to view mode or close
-            await fetchMarkets();
-            // stay in view mode of the saved market
-            setSelectedMarket(savedMarket);
-            setMode('view');
 
         } catch (err: any) {
             if (err.status === 400 && err.errors) {

@@ -43,8 +43,7 @@ public static class GetProductByIdEndpoint
                 .Select(pcq => new ProductConfigQuestionInfo(
                     pcq.Id, 
                     pcq.ConfigurationQuestionId, 
-                    pcq.ConfigurationQuestion!.Question,
-                    pcq.StatusReason))
+                    pcq.ConfigurationQuestion!.Question))
                 .ToList()
         );
 

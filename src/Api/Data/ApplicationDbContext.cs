@@ -28,7 +28,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<DependencyRule> DependencyRules => Set<DependencyRule>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductTemplate> ProductTemplates => Set<ProductTemplate>();
+    public DbSet<ProductTemplateLine> ProductTemplateLines => Set<ProductTemplateLine>();
     public DbSet<ProductConfigQuestion> ProductConfigQuestions => Set<ProductConfigQuestion>();
+    public DbSet<ProductConfigQuestionDisplayRule> ProductConfigQuestionDisplayRules => Set<ProductConfigQuestionDisplayRule>();
     public DbSet<QuestionBankItem> QuestionBankItems => Set<QuestionBankItem>();
     public DbSet<QuestionAnswer> QuestionAnswers => Set<QuestionAnswer>();
     public DbSet<MetricGroup> MetricGroups => Set<MetricGroup>();
@@ -169,12 +171,33 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Version).IsRequired();
             
             entity.HasIndex(e => new { e.ProductId, e.Name, e.Version }).IsUnique();
+            
+            entity.HasMany(e => e.ProductTemplateLines)
+                .WithOne(ptl => ptl.ProductTemplate)
+                .HasForeignKey(ptl => ptl.ProductTemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductTemplateLine>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Type).IsRequired().HasMaxLength(50);
+            
+            entity.HasOne(e => e.Module)
+                .WithMany()
+                .HasForeignKey(e => e.ModuleId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.QuestionBankItem)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionBankItemId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ProductConfigQuestion>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.StatusReason).HasMaxLength(200);
             
             entity.HasIndex(e => new { e.ProductId, e.ConfigurationQuestionId }).IsUnique();
             
@@ -182,6 +205,27 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ConfigurationQuestionId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasMany(e => e.DisplayRules)
+                .WithOne(dr => dr.ProductConfigQuestion)
+                .HasForeignKey(dr => dr.ProductConfigQuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductConfigQuestionDisplayRule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DisplayCondition).IsRequired().HasMaxLength(50);
+            
+            entity.HasOne(e => e.TriggeringConfigurationQuestion)
+                .WithMany()
+                .HasForeignKey(e => e.TriggeringConfigurationQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.TriggeringAnswer)
+                .WithMany()
+                .HasForeignKey(e => e.TriggeringAnswerId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<QuestionBankItem>(entity =>
