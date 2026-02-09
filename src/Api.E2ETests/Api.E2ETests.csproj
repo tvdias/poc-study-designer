@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <EnableMSTestingRunner>true</EnableMSTestingRunner>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.1.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.50.0" />
+    <PackageReference Include="Microsoft.Playwright.TestAdapter" Version="1.50.0" />
+    <PackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="1.5.1" />
+    <PackageReference Include="xunit.v3" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Api\Api.csproj" />
+    <ProjectReference Include="..\AppHost\AppHost.csproj">
+      <Aliases>AppHostAssembly</Aliases>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
