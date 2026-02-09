@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ClientsPage } from './ClientsPage';
 import { clientsApi } from '../services/api';
@@ -81,7 +82,7 @@ describe('ClientsPage', () => {
         expect(screen.getByLabelText(/Customer Number/i)).toHaveValue('');
     });
 
-    it('creates a client and switches to view mode', async () => {
+    it('creates a client and closes panel', async () => {
         (clientsApi.getAll as any).mockResolvedValue([]);
         (clientsApi.create as any).mockResolvedValue({
             id: '3',
@@ -116,10 +117,11 @@ describe('ClientsPage', () => {
             );
         });
 
-        // Should switch to view mode
+        // Should close the panel and return to list
         await waitFor(() => {
-            expect(screen.getByRole('heading', { name: 'New Client' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'New Client' })).not.toBeInTheDocument();
+            // The creation button (New) should be visible (meaning we are back to list)
+            expect(screen.getByRole('button', { name: /new/i })).toBeInTheDocument();
         });
 
         // Check list refresh
