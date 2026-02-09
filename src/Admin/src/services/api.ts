@@ -510,9 +510,38 @@ export const modulesApi = {
 };
 
 export const moduleQuestionsApi = {
+    getAll: async (moduleId?: string): Promise<ModuleQuestion[]> => {
+        let url = `${API_BASE}/module-questions`;
+        if (moduleId) url += `?moduleId=${moduleId}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch module questions');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<ModuleQuestion> => {
+        const response = await fetch(`${API_BASE}/module-questions/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch module question');
+        return response.json();
+    },
+
     create: async (moduleId: string, data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
         const response = await fetch(`${API_BASE}/modules/${moduleId}/questions`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateModuleQuestionRequest): Promise<ModuleQuestion> => {
+        const response = await fetch(`${API_BASE}/module-questions/${id}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
@@ -1319,55 +1348,4 @@ export const productConfigQuestionDisplayRulesApi = {
     }
 };
 
-// ModuleQuestion API client
-export const moduleQuestionsApi = {
-    getAll: async (moduleId?: string): Promise<ModuleQuestion[]> => {
-        let url = `${API_BASE}/module-questions`;
-        if (moduleId) url += `?moduleId=${moduleId}`;
-        
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch module questions');
-        return response.json();
-    },
 
-    getById: async (id: string): Promise<ModuleQuestion> => {
-        const response = await fetch(`${API_BASE}/module-questions/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch module question');
-        return response.json();
-    },
-
-    create: async (data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
-        const response = await fetch(`${API_BASE}/module-questions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw { status: response.status, ...errorData };
-        }
-        return response.json();
-    },
-
-    update: async (id: string, data: UpdateModuleQuestionRequest): Promise<ModuleQuestion> => {
-        const response = await fetch(`${API_BASE}/module-questions/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw { status: response.status, ...errorData };
-        }
-        return response.json();
-    },
-
-    delete: async (id: string): Promise<void> => {
-        const response = await fetch(`${API_BASE}/module-questions/${id}`, {
-            method: 'DELETE',
-        });
-        if (!response.ok) throw new Error('Failed to delete module question');
-    }
-};
