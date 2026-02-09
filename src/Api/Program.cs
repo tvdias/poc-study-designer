@@ -76,8 +76,7 @@ api.MapGetModulesEndpoint();
 api.MapGetModuleByIdEndpoint();
 api.MapUpdateModuleEndpoint();
 api.MapDeleteModuleEndpoint();
-api.MapCreateModuleQuestionEndpoint();
-api.MapDeleteModuleQuestionEndpoint();
+
 api.MapCreateClientEndpoint();
 api.MapGetClientsEndpoint();
 api.MapGetClientByIdEndpoint();

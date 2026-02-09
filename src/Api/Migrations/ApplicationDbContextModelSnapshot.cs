@@ -394,6 +394,9 @@ namespace Api.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -408,9 +411,6 @@ namespace Api.Migrations
 
                     b.Property<Guid>("QuestionBankItemId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -849,6 +849,10 @@ namespace Api.Migrations
 
                     b.HasIndex("ParentQuestionId");
 
+                    b.HasIndex("QuestionText");
+
+                    b.HasIndex("QuestionTitle");
+
                     b.HasIndex("VariableName", "Version")
                         .IsUnique();
 
@@ -937,7 +941,7 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
-                        .WithMany()
+                        .WithMany("ModuleQuestions")
                         .HasForeignKey("QuestionBankItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1088,6 +1092,8 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Features.QuestionBank.QuestionBankItem", b =>
                 {
                     b.Navigation("Answers");
+
+                    b.Navigation("ModuleQuestions");
                 });
 #pragma warning restore 612, 618
         }
