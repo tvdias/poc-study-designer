@@ -112,6 +112,11 @@ export interface CreateModuleQuestionRequest {
     displayOrder: number;
 }
 
+export interface UpdateModuleQuestionRequest {
+    displayOrder: number;
+    isActive: boolean;
+}
+
 export interface CreateModuleRequest {
     variableName: string;
     label: string;
@@ -509,28 +514,6 @@ export const modulesApi = {
     }
 };
 
-export const moduleQuestionsApi = {
-    create: async (moduleId: string, data: CreateModuleQuestionRequest): Promise<ModuleQuestion> => {
-        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw { status: response.status, ...errorData };
-        }
-        return response.json();
-    },
-
-    delete: async (moduleId: string, id: string): Promise<void> => {
-        const response = await fetch(`${API_BASE}/modules/${moduleId}/questions/${id}`, {
-            method: 'DELETE',
-        });
-        if (!response.ok) throw new Error('Failed to delete module question');
-    }
-};
 
 export const configurationQuestionsApi = {
     getAll: async (query?: string): Promise<ConfigurationQuestionDetail[]> => {
@@ -822,28 +805,6 @@ export interface UpdateProductConfigQuestionDisplayRuleRequest {
     isActive: boolean;
 }
 
-// ModuleQuestion interfaces
-export interface ModuleQuestion {
-    id: string;
-    moduleId: string;
-    questionBankItemId: string;
-    sortOrder: number;
-    isActive: boolean;
-    createdOn: string;
-    questionVariableName?: string;
-    questionText?: string;
-}
-
-export interface CreateModuleQuestionRequest {
-    moduleId: string;
-    questionBankItemId: string;
-    sortOrder: number;
-}
-
-export interface UpdateModuleQuestionRequest {
-    sortOrder: number;
-    isActive: boolean;
-}
 
 // Product API client
 export const productsApi = {
