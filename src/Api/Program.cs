@@ -53,88 +53,119 @@ app.UseOutputCache();
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 var api = app.MapGroup("/api");
-api.MapCreateTagEndpoint();
-api.MapGetTagsEndpoint();
-api.MapGetTagByIdEndpoint();
-api.MapUpdateTagEndpoint();
-api.MapDeleteTagEndpoint();
-api.MapCreateMetricGroupEndpoint();
-api.MapGetMetricGroupsEndpoint();
-api.MapGetMetricGroupByIdEndpoint();
-api.MapCreateCommissioningMarketEndpoint();
-api.MapGetCommissioningMarketsEndpoint();
-api.MapGetCommissioningMarketByIdEndpoint();
-api.MapUpdateCommissioningMarketEndpoint();
-api.MapDeleteCommissioningMarketEndpoint();
-api.MapCreateFieldworkMarketEndpoint();
-api.MapGetFieldworkMarketsEndpoint();
-api.MapGetFieldworkMarketByIdEndpoint();
-api.MapUpdateFieldworkMarketEndpoint();
-api.MapDeleteFieldworkMarketEndpoint();
-api.MapCreateModuleEndpoint();
-api.MapGetModulesEndpoint();
-api.MapGetModuleByIdEndpoint();
-api.MapUpdateModuleEndpoint();
-api.MapDeleteModuleEndpoint();
-api.MapCreateModuleQuestionEndpoint();
-api.MapDeleteModuleQuestionEndpoint();
+// Clients
 api.MapCreateClientEndpoint();
 api.MapGetClientsEndpoint();
 api.MapGetClientByIdEndpoint();
 api.MapUpdateClientEndpoint();
 api.MapDeleteClientEndpoint();
-api.MapCreateConfigurationQuestionEndpoint();
-api.MapGetConfigurationQuestionsEndpoint();
-api.MapGetConfigurationQuestionByIdEndpoint();
-api.MapUpdateConfigurationQuestionEndpoint();
-api.MapDeleteConfigurationQuestionEndpoint();
+
+// Commissioning Markets
+api.MapCreateCommissioningMarketEndpoint();
+api.MapGetCommissioningMarketsEndpoint();
+api.MapGetCommissioningMarketByIdEndpoint();
+api.MapUpdateCommissioningMarketEndpoint();
+api.MapDeleteCommissioningMarketEndpoint();
+
+// Configuration Answers
 api.MapCreateConfigurationAnswerEndpoint();
 api.MapGetConfigurationAnswersEndpoint();
 api.MapGetConfigurationAnswerByIdEndpoint();
 api.MapUpdateConfigurationAnswerEndpoint();
 api.MapDeleteConfigurationAnswerEndpoint();
+
+// Configuration Questions
+api.MapCreateConfigurationQuestionEndpoint();
+api.MapGetConfigurationQuestionsEndpoint();
+api.MapGetConfigurationQuestionByIdEndpoint();
+api.MapUpdateConfigurationQuestionEndpoint();
+api.MapDeleteConfigurationQuestionEndpoint();
+
+// Dependency Rules
 api.MapCreateDependencyRuleEndpoint();
 api.MapGetDependencyRulesEndpoint();
 api.MapGetDependencyRuleByIdEndpoint();
 api.MapUpdateDependencyRuleEndpoint();
 api.MapDeleteDependencyRuleEndpoint();
-api.MapCreateProductEndpoint();
-api.MapGetProductsEndpoint();
-api.MapGetProductByIdEndpoint();
-api.MapUpdateProductEndpoint();
-api.MapDeleteProductEndpoint();
-api.MapCreateProductTemplateEndpoint();
-api.MapGetProductTemplatesEndpoint();
-api.MapGetProductTemplateByIdEndpoint();
-api.MapUpdateProductTemplateEndpoint();
-api.MapDeleteProductTemplateEndpoint();
-api.MapCreateProductConfigQuestionEndpoint();
-api.MapGetProductConfigQuestionByIdEndpoint();
-api.MapUpdateProductConfigQuestionEndpoint();
-api.MapDeleteProductConfigQuestionEndpoint();
-api.MapCreateProductTemplateLineEndpoint();
-api.MapGetProductTemplateLinesEndpoint();
-api.MapGetProductTemplateLineByIdEndpoint();
-api.MapUpdateProductTemplateLineEndpoint();
-api.MapDeleteProductTemplateLineEndpoint();
-api.MapCreateProductConfigQuestionDisplayRuleEndpoint();
-api.MapGetProductConfigQuestionDisplayRulesEndpoint();
-api.MapGetProductConfigQuestionDisplayRuleByIdEndpoint();
-api.MapUpdateProductConfigQuestionDisplayRuleEndpoint();
-api.MapDeleteProductConfigQuestionDisplayRuleEndpoint();
+
+// Fieldwork Markets
+api.MapCreateFieldworkMarketEndpoint();
+api.MapGetFieldworkMarketsEndpoint();
+api.MapGetFieldworkMarketByIdEndpoint();
+api.MapUpdateFieldworkMarketEndpoint();
+api.MapDeleteFieldworkMarketEndpoint();
+
+// Metric Groups
+api.MapCreateMetricGroupEndpoint();
+api.MapGetMetricGroupsEndpoint();
+api.MapGetMetricGroupByIdEndpoint();
+
+// Modules
+api.MapCreateModuleEndpoint();
+api.MapGetModulesEndpoint();
+api.MapGetModuleByIdEndpoint();
+api.MapUpdateModuleEndpoint();
+api.MapDeleteModuleEndpoint();
+
+// Module Questions
 api.MapCreateModuleQuestionEndpoint();
 api.MapGetModuleQuestionsEndpoint();
 api.MapGetModuleQuestionByIdEndpoint();
 api.MapUpdateModuleQuestionEndpoint();
 api.MapDeleteModuleQuestionEndpoint();
+
+// Products
+api.MapCreateProductEndpoint();
+api.MapGetProductsEndpoint();
+api.MapGetProductByIdEndpoint();
+api.MapUpdateProductEndpoint();
+api.MapDeleteProductEndpoint();
+
+// Product Config Questions
+api.MapCreateProductConfigQuestionEndpoint();
+api.MapGetProductConfigQuestionByIdEndpoint();
+api.MapUpdateProductConfigQuestionEndpoint();
+api.MapDeleteProductConfigQuestionEndpoint();
+
+// Product Config Question Display Rules
+api.MapCreateProductConfigQuestionDisplayRuleEndpoint();
+api.MapGetProductConfigQuestionDisplayRulesEndpoint();
+api.MapGetProductConfigQuestionDisplayRuleByIdEndpoint();
+api.MapUpdateProductConfigQuestionDisplayRuleEndpoint();
+api.MapDeleteProductConfigQuestionDisplayRuleEndpoint();
+
+// Product Templates
+api.MapCreateProductTemplateEndpoint();
+api.MapGetProductTemplatesEndpoint();
+api.MapGetProductTemplateByIdEndpoint();
+api.MapUpdateProductTemplateEndpoint();
+api.MapDeleteProductTemplateEndpoint();
+
+// Product Template Lines
+api.MapCreateProductTemplateLineEndpoint();
+api.MapGetProductTemplateLinesEndpoint();
+api.MapGetProductTemplateLineByIdEndpoint();
+api.MapUpdateProductTemplateLineEndpoint();
+api.MapDeleteProductTemplateLineEndpoint();
+
+// Question Answers
+api.MapCreateQuestionAnswerEndpoint();
+api.MapUpdateQuestionAnswerEndpoint();
+api.MapDeleteQuestionAnswerEndpoint();
+
+// Question Bank Items
 api.MapCreateQuestionBankItemEndpoint();
 api.MapGetQuestionBankItemsEndpoint();
 api.MapGetQuestionBankItemByIdEndpoint();
 api.MapUpdateQuestionBankItemEndpoint();
 api.MapDeleteQuestionBankItemEndpoint();
-api.MapCreateQuestionAnswerEndpoint();
-api.MapUpdateQuestionAnswerEndpoint();
-api.MapDeleteQuestionAnswerEndpoint();
+
+// Tags
+api.MapCreateTagEndpoint();
+api.MapGetTagsEndpoint();
+api.MapGetTagByIdEndpoint();
+api.MapUpdateTagEndpoint();
+api.MapDeleteTagEndpoint();
 api.MapGet("weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>

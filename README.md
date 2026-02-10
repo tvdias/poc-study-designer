@@ -127,7 +127,16 @@ Services will be available at:
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 
+## Testing
+
+The project includes comprehensive unit and integration tests. See **[TESTING.md](TESTING.md)** for:
+- How to run tests
+- Test architecture and patterns
+- Current test coverage
+- Best practices for writing tests
+
 ## Additional Resources
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for all development options
 - **[CONTAINERS.md](CONTAINERS.md)** - Comprehensive container documentation
+- **[TESTING.md](TESTING.md)** - Complete testing guide

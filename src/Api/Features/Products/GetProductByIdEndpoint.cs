@@ -36,10 +36,11 @@ public static class GetProductByIdEndpoint
             product.Description,
             product.IsActive,
             product.ProductTemplates
+                .Where(pt => pt.IsActive)
                 .Select(pt => new ProductTemplateInfo(pt.Id, pt.Name, pt.Version))
                 .ToList(),
             product.ProductConfigQuestions
-                .Where(pcq => pcq.ConfigurationQuestion != null)
+                .Where(pcq => pcq.IsActive && pcq.ConfigurationQuestion != null)
                 .Select(pcq => new ProductConfigQuestionInfo(
                     pcq.Id, 
                     pcq.ConfigurationQuestionId, 
