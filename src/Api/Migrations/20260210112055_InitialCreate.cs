@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitializeAdmin : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -679,7 +679,7 @@ namespace Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductConfigQuestions");
-                
+
             migrationBuilder.DropTable(
                 name: "Modules");
 
