@@ -178,7 +178,10 @@ export function ProductsPage() {
 
         try {
             const questions = await configurationQuestionsApi.getAll(searchTerm);
-            setAvailableQuestions(questions);
+            // Filter out questions that are already associated with this product
+            const existingQuestionIds = selectedProduct?.configurationQuestions.map(pcq => pcq.configurationQuestionId) || [];
+            const filteredQuestions = questions.filter(q => !existingQuestionIds.includes(q.id));
+            setAvailableQuestions(filteredQuestions);
         } catch (error) {
             console.error('Failed to search configuration questions', error);
         }
