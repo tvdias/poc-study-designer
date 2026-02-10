@@ -1,19 +1,15 @@
-extern alias AppHostAssembly;
 using Api.Features.Tags;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class TagTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+public class TagTests(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetTags_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
 
         // Act - Create
         var newTag = new CreateTagRequest("Integration Test Tag");
@@ -42,8 +38,7 @@ public class TagTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostF
     public async Task GetTagById_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newTag = new CreateTagRequest("GetById Tag");
         var createResponse = await client.PostAsJsonAsync("/api/tags", newTag, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -63,22 +58,4 @@ public class TagTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostF
     }
 }
 
-public class BoxedAppHostFixture : IAsyncLifetime
-{
-    public DistributedApplication App { get; private set; } = null!;
 
-    public async ValueTask InitializeAsync()
-    {
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<AppHostAssembly::Program>();
-        App = await appHost.BuildAsync();
-        await App.StartAsync();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (App != null)
-        {
-            await App.DisposeAsync();
-        }
-    }
-}

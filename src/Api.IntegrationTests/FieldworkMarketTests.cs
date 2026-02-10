@@ -1,19 +1,15 @@
-extern alias AppHostAssembly;
 using Api.Features.FieldworkMarkets;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class FieldworkMarketTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+public class FieldworkMarketTests(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetFieldworkMarkets_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
 
         // Act - Create
         var newMarket = new CreateFieldworkMarketRequest("GB", "United Kingdom");
@@ -43,8 +39,7 @@ public class FieldworkMarketTests(BoxedAppHostFixture fixture) : IClassFixture<B
     public async Task GetFieldworkMarketById_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newMarket = new CreateFieldworkMarketRequest("AU", "Australia");
         var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -68,8 +63,7 @@ public class FieldworkMarketTests(BoxedAppHostFixture fixture) : IClassFixture<B
     public async Task UpdateFieldworkMarket_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newMarket = new CreateFieldworkMarketRequest("NZ", "New Zealand");
         var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -92,8 +86,7 @@ public class FieldworkMarketTests(BoxedAppHostFixture fixture) : IClassFixture<B
     public async Task DeleteFieldworkMarket_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newMarket = new CreateFieldworkMarketRequest("JP", "Japan");
         var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -111,8 +104,7 @@ public class FieldworkMarketTests(BoxedAppHostFixture fixture) : IClassFixture<B
     public async Task SearchFieldworkMarkets_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var market1 = new CreateFieldworkMarketRequest("IT", "Italy");
         var market2 = new CreateFieldworkMarketRequest("ES", "Spain");
         await client.PostAsJsonAsync("/api/fieldwork-markets", market1, cancellationToken: TestContext.Current.CancellationToken);
