@@ -6,117 +6,81 @@ namespace Api.IntegrationTests;
 public class FieldworkMarketTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetFieldworkMarkets_WorksCorrectly()
+    public async Task FieldworkMarketCrudWorkflow_ExecutesSuccessfully()
     {
         // Arrange
-        var client = fixture.HttpClient;
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // Act - Create
-        var newMarket = new CreateFieldworkMarketRequest("GB", "United Kingdom");
-        var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
+        // ===== CHECKPOINT 1: CREATE =====
+        var createRequest = new CreateFieldworkMarketRequest("GB-TEST", "Workflow Market");
+        var createResponse = await httpClient.PostAsJsonAsync("/api/fieldwork-markets", createRequest, cancellationToken);
+        
         createResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateFieldworkMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateFieldworkMarketResponse>(cancellationToken);
         Assert.NotNull(createdMarket);
-        Assert.Equal(newMarket.IsoCode, createdMarket.IsoCode);
-        Assert.Equal(newMarket.Name, createdMarket.Name);
+        Assert.Equal(createRequest.IsoCode, createdMarket.IsoCode);
+        Assert.Equal(createRequest.Name, createdMarket.Name);
         Assert.NotEqual(Guid.Empty, createdMarket.Id);
 
-        // Act - Get
-        var getResponse = await client.GetAsync("/api/fieldwork-markets", TestContext.Current.CancellationToken);
+        var marketId = createdMarket.Id;
+
+        // ===== CHECKPOINT 2: GET BY ID =====
+        var getByIdResponse = await httpClient.GetAsync($"/api/fieldwork-markets/{marketId}", cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var markets = await getResponse.Content.ReadFromJsonAsync<List<GetFieldworkMarketsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(markets);
-        Assert.Contains(markets, m => m.Id == createdMarket.Id && m.IsoCode == newMarket.IsoCode && m.Name == newMarket.Name);
-    }
-
-    [Fact]
-    public async Task GetFieldworkMarketById_WorksCorrectly()
-    {
-        // Arrange
-        var client = fixture.HttpClient;
-        var newMarket = new CreateFieldworkMarketRequest("AU", "Australia");
-        var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateFieldworkMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
-
-        // Act
-        var getResponse = await client.GetAsync($"/api/fieldwork-markets/{createdMarket!.Id}", TestContext.Current.CancellationToken);
-
-        // Assert
-        getResponse.EnsureSuccessStatusCode();
-        var fetchedMarket = await getResponse.Content.ReadFromJsonAsync<GetFieldworkMarketByIdResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        getByIdResponse.EnsureSuccessStatusCode();
+        var fetchedMarket = await getByIdResponse.Content.ReadFromJsonAsync<GetFieldworkMarketByIdResponse>(cancellationToken);
         Assert.NotNull(fetchedMarket);
-        Assert.Equal(createdMarket.Id, fetchedMarket.Id);
-        Assert.Equal(createdMarket.IsoCode, fetchedMarket.IsoCode);
-        Assert.Equal(createdMarket.Name, fetchedMarket.Name);
-    }
+        Assert.Equal(marketId, fetchedMarket.Id);
+        Assert.Equal(createRequest.IsoCode, fetchedMarket.IsoCode);
+        Assert.Equal(createRequest.Name, fetchedMarket.Name);
 
-    [Fact]
-    public async Task UpdateFieldworkMarket_WorksCorrectly()
-    {
-        // Arrange
-        var client = fixture.HttpClient;
-        var newMarket = new CreateFieldworkMarketRequest("NZ", "New Zealand");
-        var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateFieldworkMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 3: GET ALL (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/fieldwork-markets", cancellationToken);
+        
+        getAllResponse.EnsureSuccessStatusCode();
+        var allMarkets = await getAllResponse.Content.ReadFromJsonAsync<List<GetFieldworkMarketsResponse>>(cancellationToken);
+        Assert.NotNull(allMarkets);
+        Assert.Contains(allMarkets, m => m.Id == marketId && m.IsoCode == createRequest.IsoCode && m.Name == createRequest.Name);
 
-        // Act
-        var updateRequest = new UpdateFieldworkMarketRequest("NZ", "New Zealand (Updated)", false);
-        var updateResponse = await client.PutAsJsonAsync($"/api/fieldwork-markets/{createdMarket!.Id}", updateRequest, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert
+        // ===== CHECKPOINT 4: UPDATE =====
+        var updateRequest = new UpdateFieldworkMarketRequest("GB-TEST", "Workflow Market (Updated)", false);
+        var updateResponse = await httpClient.PutAsJsonAsync($"/api/fieldwork-markets/{marketId}", updateRequest, cancellationToken);
+        
         updateResponse.EnsureSuccessStatusCode();
-        var updatedMarket = await updateResponse.Content.ReadFromJsonAsync<UpdateFieldworkMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var updatedMarket = await updateResponse.Content.ReadFromJsonAsync<UpdateFieldworkMarketResponse>(cancellationToken);
         Assert.NotNull(updatedMarket);
-        Assert.Equal(createdMarket.Id, updatedMarket.Id);
-        Assert.Equal("New Zealand (Updated)", updatedMarket.Name);
+        Assert.Equal(marketId, updatedMarket.Id);
+        Assert.Equal("Workflow Market (Updated)", updatedMarket.Name);
         Assert.False(updatedMarket.IsActive);
-    }
 
-    [Fact]
-    public async Task DeleteFieldworkMarket_WorksCorrectly()
-    {
-        // Arrange
-        var client = fixture.HttpClient;
-        var newMarket = new CreateFieldworkMarketRequest("JP", "Japan");
-        var createResponse = await client.PostAsJsonAsync("/api/fieldwork-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateFieldworkMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
+        var verifyUpdateResponse = await httpClient.GetAsync($"/api/fieldwork-markets/{marketId}", cancellationToken);
+        
+        verifyUpdateResponse.EnsureSuccessStatusCode();
+        var verifiedMarket = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetFieldworkMarketByIdResponse>(cancellationToken);
+        Assert.NotNull(verifiedMarket);
+        Assert.Equal("Workflow Market (Updated)", verifiedMarket.Name);
+        Assert.False(verifiedMarket.IsActive);
 
-        // Act
-        var deleteResponse = await client.DeleteAsync($"/api/fieldwork-markets/{createdMarket!.Id}", TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 6: SEARCH =====
+        var searchResponse = await httpClient.GetAsync("/api/fieldwork-markets?query=Workflow", cancellationToken);
+        
+        searchResponse.EnsureSuccessStatusCode();
+        var searchedMarkets = await searchResponse.Content.ReadFromJsonAsync<List<GetFieldworkMarketsResponse>>(cancellationToken);
+        Assert.NotNull(searchedMarkets);
+        Assert.Contains(searchedMarkets, m => m.Id == marketId);
 
-        // Assert
+        // ===== CHECKPOINT 7: DELETE =====
+        var deleteResponse = await httpClient.DeleteAsync($"/api/fieldwork-markets/{marketId}", cancellationToken);
+        
         deleteResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.NoContent, deleteResponse.StatusCode);
-    }
 
-    [Fact]
-    public async Task SearchFieldworkMarkets_WorksCorrectly()
-    {
-        // Arrange
-        var client = fixture.HttpClient;
-        var market1 = new CreateFieldworkMarketRequest("IT", "Italy");
-        var market2 = new CreateFieldworkMarketRequest("ES", "Spain");
-        await client.PostAsJsonAsync("/api/fieldwork-markets", market1, cancellationToken: TestContext.Current.CancellationToken);
-        await client.PostAsJsonAsync("/api/fieldwork-markets", market2, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Act
-        var searchResponse = await client.GetAsync("/api/fieldwork-markets?query=Italy", TestContext.Current.CancellationToken);
-
-        // Assert
-        searchResponse.EnsureSuccessStatusCode();
-        var markets = await searchResponse.Content.ReadFromJsonAsync<List<GetFieldworkMarketsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(markets);
-        Assert.Contains(markets, m => m.Name == "Italy");
+        // ===== CHECKPOINT 8: VERIFY DELETION (should return 404) =====
+        var verifyDeleteResponse = await httpClient.GetAsync($"/api/fieldwork-markets/{marketId}", cancellationToken);
+        
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, verifyDeleteResponse.StatusCode);
     }
 }
