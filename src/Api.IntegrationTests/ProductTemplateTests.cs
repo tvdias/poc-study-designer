@@ -1,47 +1,49 @@
-extern alias AppHostAssembly;
 using Api.Features.Products;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
+using Api.Features.ProductTemplates;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-[Collection("IntegrationTests")]
-public class ProductTemplateTests(BoxedAppHostFixture fixture)
+public class ProductTemplateTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetProductTemplates_WorksCorrectly()
+    public async Task ProductTemplateWorkflow_CreateWithProductDependency_ExecutesSuccessfully()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // 1. Create Product
-        var newProduct = new CreateProductRequest("Template Test Product", "Desc");
-        var productResponse = await client.PostAsJsonAsync("/api/products", newProduct, cancellationToken: TestContext.Current.CancellationToken);
-        productResponse.EnsureSuccessStatusCode();
-        var createdProduct = await productResponse.Content.ReadFromJsonAsync<CreateProductResponse>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(createdProduct);
-
-        // Act - Create Template
-        var newTemplate = new CreateProductTemplateRequest("Test Template", 1, createdProduct.Id);
-        var createResponse = await client.PostAsJsonAsync("/api/product-templates", newTemplate, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
-        createResponse.EnsureSuccessStatusCode();
-        Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        var createdTemplate = await createResponse.Content.ReadFromJsonAsync<CreateProductTemplateResponse>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(createdTemplate);
-        Assert.Equal(newTemplate.Name, createdTemplate.Name);
-        Assert.Equal(newTemplate.ProductId, createdTemplate.ProductId);
-
-        // Act - Get
-        var getResponse = await client.GetAsync($"/api/product-templates", TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 1: CREATE PRODUCT (dependency) =====
+        var productRequest = new CreateProductRequest("Template Workflow Product", "Product for template testing");
+        var productResponse = await httpClient.PostAsJsonAsync("/api/products", productRequest, cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var templates = await getResponse.Content.ReadFromJsonAsync<List<GetProductTemplatesResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(templates);
-        Assert.Contains(templates, t => t.Id == createdTemplate.Id && t.Name == newTemplate.Name);
+        productResponse.EnsureSuccessStatusCode();
+        var createdProduct = await productResponse.Content.ReadFromJsonAsync<CreateProductResponse>(cancellationToken);
+        Assert.NotNull(createdProduct);
+        Assert.NotEqual(Guid.Empty, createdProduct.Id);
+
+        var productId = createdProduct.Id;
+
+        // ===== CHECKPOINT 2: CREATE TEMPLATE =====
+        var templateRequest = new CreateProductTemplateRequest("Workflow Template v1", 1, productId);
+        var templateResponse = await httpClient.PostAsJsonAsync("/api/product-templates", templateRequest, cancellationToken);
+        
+        templateResponse.EnsureSuccessStatusCode();
+        Assert.Equal(System.Net.HttpStatusCode.Created, templateResponse.StatusCode);
+        var createdTemplate = await templateResponse.Content.ReadFromJsonAsync<CreateProductTemplateResponse>(cancellationToken);
+        Assert.NotNull(createdTemplate);
+        Assert.Equal(templateRequest.Name, createdTemplate.Name);
+        Assert.Equal(templateRequest.ProductId, createdTemplate.ProductId);
+        Assert.NotEqual(Guid.Empty, createdTemplate.Id);
+
+        var templateId = createdTemplate.Id;
+
+        // ===== CHECKPOINT 3: GET ALL TEMPLATES (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/product-templates", cancellationToken);
+        
+        getAllResponse.EnsureSuccessStatusCode();
+        var allTemplates = await getAllResponse.Content.ReadFromJsonAsync<List<GetProductTemplatesResponse>>(cancellationToken);
+        Assert.NotNull(allTemplates);
+        Assert.Contains(allTemplates, t => t.Id == templateId && t.Name == templateRequest.Name && t.ProductId == productId);
     }
 }

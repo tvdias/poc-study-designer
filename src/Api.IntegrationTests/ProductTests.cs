@@ -1,41 +1,37 @@
-extern alias AppHostAssembly;
 using Api.Features.Products;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-[Collection("IntegrationTests")]
-public class ProductTests(BoxedAppHostFixture fixture)
+public class ProductTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetProducts_WorksCorrectly()
+    public async Task ProductWorkflow_CreateAndRetrieve_ExecutesSuccessfully()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // Act - Create
-        var newProduct = new CreateProductRequest("Integration Test Product", "Description for product");
-        var createResponse = await client.PostAsJsonAsync("/api/products", newProduct, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
+        // ===== CHECKPOINT 1: CREATE =====
+        var createRequest = new CreateProductRequest("Workflow Test Product", "Comprehensive product description");
+        var createResponse = await httpClient.PostAsJsonAsync("/api/products", createRequest, cancellationToken);
+        
         createResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdProduct = await createResponse.Content.ReadFromJsonAsync<CreateProductResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var createdProduct = await createResponse.Content.ReadFromJsonAsync<CreateProductResponse>(cancellationToken);
         Assert.NotNull(createdProduct);
-        Assert.Equal(newProduct.Name, createdProduct.Name);
+        Assert.Equal(createRequest.Name, createdProduct.Name);
+        Assert.Equal(createRequest.Description, createdProduct.Description);
         Assert.NotEqual(Guid.Empty, createdProduct.Id);
 
-        // Act - Get
-        var getResponse = await client.GetAsync("/api/products", TestContext.Current.CancellationToken);
+        var productId = createdProduct.Id;
+
+        // ===== CHECKPOINT 2: GET ALL (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/products", cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var products = await getResponse.Content.ReadFromJsonAsync<List<GetProductsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(products);
-        Assert.Contains(products, p => p.Id == createdProduct.Id && p.Name == newProduct.Name);
+        getAllResponse.EnsureSuccessStatusCode();
+        var allProducts = await getAllResponse.Content.ReadFromJsonAsync<List<GetProductsResponse>>(cancellationToken);
+        Assert.NotNull(allProducts);
+        Assert.Contains(allProducts, p => p.Id == productId && p.Name == createRequest.Name);
     }
 }

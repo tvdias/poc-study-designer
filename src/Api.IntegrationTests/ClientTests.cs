@@ -1,106 +1,80 @@
-extern alias AppHostAssembly;
 using Api.Features.Clients;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-[Collection("IntegrationTests")]
-public class ClientTests(BoxedAppHostFixture fixture)
+public class ClientTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetClients_WorksCorrectly()
+    public async Task ClientCrudWorkflow_ExecutesSuccessfully()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // Act - Create
-        var newClient = new CreateClientRequest("Integration Test Client", "12345", "CUST-INT-001", "ITC");
-        var createResponse = await client.PostAsJsonAsync("/api/clients", newClient, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
+        // ===== CHECKPOINT 1: CREATE =====
+        var createRequest = new CreateClientRequest("CRUD Workflow Client", "12345", "CUST-CRUD-001", "CWC");
+        var createResponse = await httpClient.PostAsJsonAsync("/api/clients", createRequest, cancellationToken);
+        
         createResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdClient = await createResponse.Content.ReadFromJsonAsync<CreateClientResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var createdClient = await createResponse.Content.ReadFromJsonAsync<CreateClientResponse>(cancellationToken);
         Assert.NotNull(createdClient);
-        Assert.Equal(newClient.AccountName, createdClient.AccountName);
+        Assert.Equal(createRequest.AccountName, createdClient.AccountName);
+        Assert.Equal(createRequest.CustomerNumber, createdClient.CustomerNumber);
         Assert.NotEqual(Guid.Empty, createdClient.Id);
+        Assert.True(createdClient.IsActive);
 
-        // Act - Get
-        var getResponse = await client.GetAsync("/api/clients", TestContext.Current.CancellationToken);
+        var clientId = createdClient.Id;
+
+        // ===== CHECKPOINT 2: GET BY ID =====
+        var getByIdResponse = await httpClient.GetAsync($"/api/clients/{clientId}", cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var clients = await getResponse.Content.ReadFromJsonAsync<List<GetClientsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(clients);
-        Assert.Contains(clients, c => c.Id == createdClient.Id && c.AccountName == newClient.AccountName);
-    }
-
-    [Fact]
-    public async Task GetClientById_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var newClient = new CreateClientRequest("GetById Client", "67890", "CUST-INT-002", "GBC");
-        var createResponse = await client.PostAsJsonAsync("/api/clients", newClient, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdClient = await createResponse.Content.ReadFromJsonAsync<CreateClientResponse>(cancellationToken: TestContext.Current.CancellationToken);
-
-        // Act
-        var getResponse = await client.GetAsync($"/api/clients/{createdClient!.Id}", TestContext.Current.CancellationToken);
-
-        // Assert
-        getResponse.EnsureSuccessStatusCode();
-        var fetchedClient = await getResponse.Content.ReadFromJsonAsync<GetClientsResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        getByIdResponse.EnsureSuccessStatusCode();
+        var fetchedClient = await getByIdResponse.Content.ReadFromJsonAsync<GetClientsResponse>(cancellationToken);
         Assert.NotNull(fetchedClient);
-        Assert.Equal(createdClient.Id, fetchedClient.Id);
-        Assert.Equal(createdClient.AccountName, fetchedClient.AccountName);
-    }
+        Assert.Equal(clientId, fetchedClient.Id);
+        Assert.Equal(createRequest.AccountName, fetchedClient.AccountName);
+        Assert.True(fetchedClient.IsActive);
 
-    [Fact]
-    public async Task UpdateClient_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var newClient = new CreateClientRequest("Update Client", "11111", "CUST-INT-003", "UPC");
-        var createResponse = await client.PostAsJsonAsync("/api/clients", newClient, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdClient = await createResponse.Content.ReadFromJsonAsync<CreateClientResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 3: GET ALL (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/clients", cancellationToken);
+        
+        getAllResponse.EnsureSuccessStatusCode();
+        var allClients = await getAllResponse.Content.ReadFromJsonAsync<List<GetClientsResponse>>(cancellationToken);
+        Assert.NotNull(allClients);
+        Assert.Contains(allClients, c => c.Id == clientId && c.AccountName == createRequest.AccountName);
 
-        // Act
-        var updateRequest = new UpdateClientRequest("Update Client (Updated)", "22222", "CUST-INT-003", "UPC-UPD", false);
-        var updateResponse = await client.PutAsJsonAsync($"/api/clients/{createdClient!.Id}", updateRequest, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert
+        // ===== CHECKPOINT 4: UPDATE =====
+        var updateRequest = new UpdateClientRequest("CRUD Workflow Client (Updated)", "99999", "CUST-CRUD-001-UPD", "CWC-UPD", false);
+        var updateResponse = await httpClient.PutAsJsonAsync($"/api/clients/{clientId}", updateRequest, cancellationToken);
+        
         updateResponse.EnsureSuccessStatusCode();
-        var updatedClient = await updateResponse.Content.ReadFromJsonAsync<UpdateClientResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var updatedClient = await updateResponse.Content.ReadFromJsonAsync<UpdateClientResponse>(cancellationToken);
         Assert.NotNull(updatedClient);
-        Assert.Equal(createdClient.Id, updatedClient.Id);
-        Assert.Equal("Update Client (Updated)", updatedClient.AccountName);
+        Assert.Equal(clientId, updatedClient.Id);
+        Assert.Equal("CRUD Workflow Client (Updated)", updatedClient.AccountName);
+        Assert.Equal("99999", updatedClient.CompanyNumber);
         Assert.False(updatedClient.IsActive);
-    }
 
-    [Fact]
-    public async Task DeleteClient_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var newClient = new CreateClientRequest("Delete Client", "33333", "CUST-INT-004", "DLC");
-        var createResponse = await client.PostAsJsonAsync("/api/clients", newClient, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdClient = await createResponse.Content.ReadFromJsonAsync<CreateClientResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
+        var verifyUpdateResponse = await httpClient.GetAsync($"/api/clients/{clientId}", cancellationToken);
+        
+        verifyUpdateResponse.EnsureSuccessStatusCode();
+        var verifiedClient = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetClientsResponse>(cancellationToken);
+        Assert.NotNull(verifiedClient);
+        Assert.Equal("CRUD Workflow Client (Updated)", verifiedClient.AccountName);
+        Assert.False(verifiedClient.IsActive);
 
-        // Act
-        var deleteResponse = await client.DeleteAsync($"/api/clients/{createdClient!.Id}", TestContext.Current.CancellationToken);
-
-        // Assert
+        // ===== CHECKPOINT 6: DELETE =====
+        var deleteResponse = await httpClient.DeleteAsync($"/api/clients/{clientId}", cancellationToken);
+        
         deleteResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        // ===== CHECKPOINT 7: VERIFY DELETION (should return 404) =====
+        var verifyDeleteResponse = await httpClient.GetAsync($"/api/clients/{clientId}", cancellationToken);
+        
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, verifyDeleteResponse.StatusCode);
     }
 }

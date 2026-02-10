@@ -1,20 +1,15 @@
-extern alias AppHostAssembly;
 using Api.Features.CommissioningMarkets;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-[Collection("IntegrationTests")]
-public class CommissioningMarketTests(BoxedAppHostFixture fixture)
+public class CommissioningMarketTests(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task CreateAndGetCommissioningMarkets_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
 
         // Act - Create
         var newMarket = new CreateCommissioningMarketRequest("US", "United States");
@@ -44,8 +39,7 @@ public class CommissioningMarketTests(BoxedAppHostFixture fixture)
     public async Task GetCommissioningMarketById_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newMarket = new CreateCommissioningMarketRequest("CA", "Canada");
         var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -69,8 +63,7 @@ public class CommissioningMarketTests(BoxedAppHostFixture fixture)
     public async Task UpdateCommissioningMarket_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newMarket = new CreateCommissioningMarketRequest("MX", "Mexico");
         var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -93,8 +86,7 @@ public class CommissioningMarketTests(BoxedAppHostFixture fixture)
     public async Task DeleteCommissioningMarket_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var newMarket = new CreateCommissioningMarketRequest("BR", "Brazil");
         var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
@@ -112,8 +104,7 @@ public class CommissioningMarketTests(BoxedAppHostFixture fixture)
     public async Task SearchCommissioningMarkets_WorksCorrectly()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var client = fixture.HttpClient;
         var market1 = new CreateCommissioningMarketRequest("FR", "France");
         var market2 = new CreateCommissioningMarketRequest("DE", "Germany");
         await client.PostAsJsonAsync("/api/commissioning-markets", market1, cancellationToken: TestContext.Current.CancellationToken);

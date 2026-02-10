@@ -1,41 +1,38 @@
-extern alias AppHostAssembly;
 using Api.Features.ConfigurationQuestions;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-[Collection("IntegrationTests")]
-public class ConfigurationQuestionTests(BoxedAppHostFixture fixture)
+public class ConfigurationQuestionTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetConfigurationQuestions_WorksCorrectly()
+    public async Task ConfigurationQuestionWorkflow_CreateAndRetrieve_ExecutesSuccessfully()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // Act - Create
-        var newQuestion = new CreateConfigurationQuestionRequest("Test Config Question", "Test Prompt", RuleType.SingleCoded);
-        var createResponse = await client.PostAsJsonAsync("/api/configuration-questions", newQuestion, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
+        // ===== CHECKPOINT 1: CREATE =====
+        var createRequest = new CreateConfigurationQuestionRequest("Workflow Config Question", "AI prompt for workflow", RuleType.MultiCoded);
+        var createResponse = await httpClient.PostAsJsonAsync("/api/configuration-questions", createRequest, cancellationToken);
+        
         createResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        var createdQuestion = await createResponse.Content.ReadFromJsonAsync<CreateConfigurationQuestionResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var createdQuestion = await createResponse.Content.ReadFromJsonAsync<CreateConfigurationQuestionResponse>(fixture.JsonOptions, cancellationToken);
         Assert.NotNull(createdQuestion);
-        Assert.Equal(newQuestion.Question, createdQuestion.Question);
-        Assert.Equal(newQuestion.RuleType, createdQuestion.RuleType);
+        Assert.Equal(createRequest.Question, createdQuestion.Question);
+        Assert.Equal(createRequest.RuleType, createdQuestion.RuleType);
         Assert.NotEqual(Guid.Empty, createdQuestion.Id);
+        Assert.True(createdQuestion.IsActive);
 
-        // Act - Get
-        var getResponse = await client.GetAsync("/api/configuration-questions", TestContext.Current.CancellationToken);
+        var questionId = createdQuestion.Id;
+
+        // ===== CHECKPOINT 2: GET ALL (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/configuration-questions", cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var questions = await getResponse.Content.ReadFromJsonAsync<List<GetConfigurationQuestionsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(questions);
-        Assert.Contains(questions, q => q.Id == createdQuestion.Id && q.Question == newQuestion.Question);
+        getAllResponse.EnsureSuccessStatusCode();
+        var allQuestions = await getAllResponse.Content.ReadFromJsonAsync<List<GetConfigurationQuestionsResponse>>(fixture.JsonOptions, cancellationToken);
+        Assert.NotNull(allQuestions);
+        Assert.Contains(allQuestions, q => q.Id == questionId && q.Question == createRequest.Question);
     }
 }

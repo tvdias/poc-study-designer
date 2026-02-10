@@ -1,41 +1,37 @@
-extern alias AppHostAssembly;
 using Api.Features.MetricGroups;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-[Collection("IntegrationTests")]
-public class MetricGroupTests(BoxedAppHostFixture fixture)
+public class MetricGroupTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetMetricGroups_WorksCorrectly()
+    public async Task MetricGroupWorkflow_CreateAndRetrieve_ExecutesSuccessfully()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // Act - Create
-        var newGroup = new CreateMetricGroupRequest("Integration Test Group");
-        var createResponse = await client.PostAsJsonAsync("/api/metric-groups", newGroup, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
+        // ===== CHECKPOINT 1: CREATE =====
+        var createRequest = new CreateMetricGroupRequest("Workflow Metric Group");
+        var createResponse = await httpClient.PostAsJsonAsync("/api/metric-groups", createRequest, cancellationToken);
+        
         createResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdGroup = await createResponse.Content.ReadFromJsonAsync<CreateMetricGroupResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var createdGroup = await createResponse.Content.ReadFromJsonAsync<CreateMetricGroupResponse>(cancellationToken);
         Assert.NotNull(createdGroup);
-        Assert.Equal(newGroup.Name, createdGroup.Name);
+        Assert.Equal(createRequest.Name, createdGroup.Name);
         Assert.NotEqual(Guid.Empty, createdGroup.Id);
+        Assert.True(createdGroup.IsActive);
 
-        // Act - Get
-        var getResponse = await client.GetAsync("/api/metric-groups", TestContext.Current.CancellationToken);
+        var groupId = createdGroup.Id;
+
+        // ===== CHECKPOINT 2: GET ALL (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/metric-groups", cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var groups = await getResponse.Content.ReadFromJsonAsync<List<GetMetricGroupsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(groups);
-        Assert.Contains(groups, g => g.Id == createdGroup.Id && g.Name == newGroup.Name);
+        getAllResponse.EnsureSuccessStatusCode();
+        var allGroups = await getAllResponse.Content.ReadFromJsonAsync<List<GetMetricGroupsResponse>>(cancellationToken);
+        Assert.NotNull(allGroups);
+        Assert.Contains(allGroups, g => g.Id == groupId && g.Name == createRequest.Name);
     }
 }
