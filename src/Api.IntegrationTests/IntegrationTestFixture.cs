@@ -29,20 +29,16 @@ public class IntegrationTestFixture : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         // Start PostgreSQL container
-        _postgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:17-alpine")
+        _postgresContainer = new PostgreSqlBuilder("postgres:17-alpine")
             .WithDatabase("testdb")
             .WithUsername("testuser")
             .WithPassword("testpass")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .Build();
 
         await _postgresContainer.StartAsync();
 
         // Start Redis container
-        _redisContainer = new RedisBuilder()
-            .WithImage("redis:7-alpine")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(6379))
+        _redisContainer = new RedisBuilder("redis:7-alpine")
             .Build();
 
         await _redisContainer.StartAsync();
