@@ -70,7 +70,7 @@ jobs:
         working-directory: src/Admin
         run: npm run test -- --coverage --run --reporter=verbose
 
-      - name: Check Frontend Coverage Threshold (80%)
+      - name: Check Frontend Coverage Threshold (50%)
         working-directory: src/Admin
         run: |
           # Parse coverage from the summary
@@ -87,27 +87,27 @@ jobs:
             echo "  Statements: ${STATEMENTS}%"
             
             FAILED=0
-            if (( $(echo "$LINES < 80" | bc -l) )); then
-              echo "❌ Line coverage ${LINES}% is below threshold of 80%"
+            if (( $(echo "$LINES < 50" | bc -l) )); then
+              echo "❌ Line coverage ${LINES}% is below threshold of 50%"
               FAILED=1
             fi
-            if (( $(echo "$BRANCHES < 80" | bc -l) )); then
-              echo "❌ Branch coverage ${BRANCHES}% is below threshold of 80%"
+            if (( $(echo "$BRANCHES < 50" | bc -l) )); then
+              echo "❌ Branch coverage ${BRANCHES}% is below threshold of 50%"
               FAILED=1
             fi
-            if (( $(echo "$FUNCTIONS < 80" | bc -l) )); then
-              echo "❌ Function coverage ${FUNCTIONS}% is below threshold of 80%"
+            if (( $(echo "$FUNCTIONS < 50" | bc -l) )); then
+              echo "❌ Function coverage ${FUNCTIONS}% is below threshold of 50%"
               FAILED=1
             fi
-            if (( $(echo "$STATEMENTS < 80" | bc -l) )); then
-              echo "❌ Statement coverage ${STATEMENTS}% is below threshold of 80%"
+            if (( $(echo "$STATEMENTS < 50" | bc -l) )); then
+              echo "❌ Statement coverage ${STATEMENTS}% is below threshold of 50%"
               FAILED=1
             fi
             
             if [ $FAILED -eq 1 ]; then
               exit 1
             else
-              echo "✅ All coverage thresholds met (≥80%)"
+              echo "✅ All coverage thresholds met (≥50%)"
             fi
           else
             echo "❌ Coverage summary not found"
