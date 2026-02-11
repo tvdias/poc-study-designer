@@ -7,12 +7,6 @@ on:
       - 'src/Designer/**'
       - 'src/Admin/**'
       - '.github/workflows/frontend-ci.yml'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'src/Designer/**'
-      - 'src/Admin/**'
-      - '.github/workflows/frontend-ci.yml'
 
 jobs:
   designer:

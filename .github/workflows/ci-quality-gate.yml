@@ -1,5 +1,11 @@
 name: CI Quality Gate
 
+# This workflow runs comprehensive checks on pull requests including:
+# - Backend unit and integration tests
+# - Frontend tests with coverage enforcement (80% threshold)
+# Separate from backend-ci.yml and frontend-ci.yml which run on push for quick feedback.
+# This prevents duplicate test execution: PRs use this workflow, pushes use the CI workflows.
+
 on:
   pull_request:
     branches: [ main, develop ]
@@ -29,6 +35,11 @@ jobs:
         # Backend code coverage collection requires additional Microsoft Testing Platform configuration
         # and will be implemented in a follow-up task
         run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
+
+      - name: Run integration tests
+        # Integration tests use .NET Aspire Testing with DistributedApplication
+        # These tests start the full application stack including PostgreSQL and Redis via Testcontainers
+        run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
 
   frontend-coverage:
     runs-on: ubuntu-latest

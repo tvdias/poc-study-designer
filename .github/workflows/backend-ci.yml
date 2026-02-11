@@ -8,13 +8,6 @@ on:
       - 'src/**/*.csproj'
       - 'src/**/*.slnx'
       - '.github/workflows/backend-ci.yml'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'src/**/*.cs'
-      - 'src/**/*.csproj'
-      - 'src/**/*.slnx'
-      - '.github/workflows/backend-ci.yml'
 
 jobs:
   build-and-test:
@@ -42,8 +35,14 @@ jobs:
       # See: https://aka.ms/dotnet-test-mtp-error
       run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
 
+    - name: Run integration tests
+      # Integration tests use .NET Aspire Testing with DistributedApplication
+      # These tests start the full application stack including PostgreSQL and Redis via Testcontainers
+      run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
+
     - name: Display test summary
       if: always()
       run: |
         echo "Backend build and test workflow completed"
         echo "Unit tests: Api.Tests"
+        echo "Integration tests: Api.IntegrationTests"
