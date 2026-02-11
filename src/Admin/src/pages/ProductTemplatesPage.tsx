@@ -501,7 +501,7 @@ export function ProductTemplatesPage() {
                                                                 key={m.id}
                                                                 onClick={() => {
                                                                     setTemplateLineFormData({ ...templateLineFormData, moduleId: m.id });
-                                                                    setModuleSearch(m.name);
+                                                                    setModuleSearch(m.label);
                                                                     setAvailableModules([]);
                                                                 }}
                                                                 style={{
@@ -513,7 +513,7 @@ export function ProductTemplatesPage() {
                                                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
                                                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = templateLineFormData.moduleId === m.id ? '#e3f2fd' : 'transparent'}
                                                             >
-                                                                {m.name}
+                                                                {m.label}
                                                             </div>
                                                         ))}
                                                     </div>
