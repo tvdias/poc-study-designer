@@ -28,7 +28,10 @@ public static class UpdateConfigurationQuestionEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var question = await db.ConfigurationQuestions.FindAsync([id], cancellationToken);
+        var question = await db.ConfigurationQuestions
+            .Where(q => q.IsActive)
+            .Where(q => q.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (question == null)
         {
@@ -38,7 +41,6 @@ public static class UpdateConfigurationQuestionEndpoint
         question.Question = request.Question;
         question.AiPrompt = request.AiPrompt;
         question.RuleType = request.RuleType;
-        question.IsActive = request.IsActive;
         question.ModifiedOn = DateTime.UtcNow;
         question.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
         question.Version += 1;
@@ -50,7 +52,6 @@ public static class UpdateConfigurationQuestionEndpoint
             question.Question,
             question.AiPrompt,
             question.RuleType,
-            question.IsActive,
             question.Version
         );
 

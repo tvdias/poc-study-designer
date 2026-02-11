@@ -145,7 +145,7 @@ public class UpdateProductTemplateValidatorTests
     public async Task ValidProductTemplate_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateProductTemplateRequest("Updated Template", 2, Guid.NewGuid(), true);
+        var request = new UpdateProductTemplateRequest("Updated Template", 2, Guid.NewGuid());
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -159,7 +159,7 @@ public class UpdateProductTemplateValidatorTests
     public async Task EmptyName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateProductTemplateRequest("", 1, Guid.NewGuid(), true);
+        var request = new UpdateProductTemplateRequest("", 1, Guid.NewGuid());
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -173,7 +173,7 @@ public class UpdateProductTemplateValidatorTests
     public async Task NullName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateProductTemplateRequest(null!, 1, Guid.NewGuid(), false);
+        var request = new UpdateProductTemplateRequest(null!, 1, Guid.NewGuid());
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -188,7 +188,7 @@ public class UpdateProductTemplateValidatorTests
     {
         // Arrange
         var longName = new string('a', 201);
-        var request = new UpdateProductTemplateRequest(longName, 1, Guid.NewGuid(), true);
+        var request = new UpdateProductTemplateRequest(longName, 1, Guid.NewGuid());
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -202,7 +202,7 @@ public class UpdateProductTemplateValidatorTests
     public async Task VersionZero_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateProductTemplateRequest("Valid Name", 0, Guid.NewGuid(), true);
+        var request = new UpdateProductTemplateRequest("Valid Name", 0, Guid.NewGuid());
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -216,7 +216,7 @@ public class UpdateProductTemplateValidatorTests
     public async Task EmptyProductId_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateProductTemplateRequest("Valid Name", 1, Guid.Empty, false);
+        var request = new UpdateProductTemplateRequest("Valid Name", 1, Guid.Empty);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

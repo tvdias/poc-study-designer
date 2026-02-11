@@ -30,7 +30,7 @@ public class ProductTests(IntegrationTestFixture fixture)
         var getByIdResponse = await httpClient.GetAsync($"/api/products/{productId}", cancellationToken);
         
         getByIdResponse.EnsureSuccessStatusCode();
-        var fetchedProduct = await getByIdResponse.Content.ReadFromJsonAsync<GetProductByIdResponse>(cancellationToken);
+        var fetchedProduct = await getByIdResponse.Content.ReadFromJsonAsync<GetProductDetailResponse>(cancellationToken);
         Assert.NotNull(fetchedProduct);
         Assert.Equal(productId, fetchedProduct.Id);
         Assert.Equal(createRequest.Name, fetchedProduct.Name);
@@ -45,7 +45,7 @@ public class ProductTests(IntegrationTestFixture fixture)
         Assert.Contains(allProducts, p => p.Id == productId && p.Name == createRequest.Name);
 
         // ===== CHECKPOINT 4: UPDATE =====
-        var updateRequest = new UpdateProductRequest("Workflow Test Product (Updated)", "Updated description", false);
+        var updateRequest = new UpdateProductRequest("Workflow Test Product (Updated)", "Updated description");
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/products/{productId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();
@@ -53,16 +53,14 @@ public class ProductTests(IntegrationTestFixture fixture)
         Assert.NotNull(updatedProduct);
         Assert.Equal(productId, updatedProduct.Id);
         Assert.Equal("Workflow Test Product (Updated)", updatedProduct.Name);
-        Assert.False(updatedProduct.IsActive);
 
         // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/products/{productId}", cancellationToken);
         
         verifyUpdateResponse.EnsureSuccessStatusCode();
-        var verifiedProduct = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductByIdResponse>(cancellationToken);
+        var verifiedProduct = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductDetailResponse>(cancellationToken);
         Assert.NotNull(verifiedProduct);
         Assert.Equal("Workflow Test Product (Updated)", verifiedProduct.Name);
-        Assert.False(verifiedProduct.IsActive);
 
         // ===== CHECKPOINT 6: DELETE =====
         var deleteResponse = await httpClient.DeleteAsync($"/api/products/{productId}", cancellationToken);

@@ -159,7 +159,7 @@ public class UpdateProductValidatorTests
     public async Task ValidProduct_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateProductRequest("Updated Product", "Updated Description", true);
+        var request = new UpdateProductRequest("Updated Product", "Updated Description");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -173,7 +173,7 @@ public class UpdateProductValidatorTests
     public async Task ValidProductWithoutDescription_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateProductRequest("Valid Product", null, false);
+        var request = new UpdateProductRequest("Valid Product", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -187,7 +187,7 @@ public class UpdateProductValidatorTests
     public async Task EmptyName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateProductRequest("", null, true);
+        var request = new UpdateProductRequest("", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -201,7 +201,7 @@ public class UpdateProductValidatorTests
     public async Task NullName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateProductRequest(null!, null, false);
+        var request = new UpdateProductRequest(null!, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -216,7 +216,7 @@ public class UpdateProductValidatorTests
     {
         // Arrange
         var longName = new string('a', 201);
-        var request = new UpdateProductRequest(longName, null, true);
+        var request = new UpdateProductRequest(longName, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -231,7 +231,7 @@ public class UpdateProductValidatorTests
     {
         // Arrange
         var longDescription = new string('a', 2001);
-        var request = new UpdateProductRequest("Valid Name", longDescription, true);
+        var request = new UpdateProductRequest("Valid Name", longDescription);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -246,7 +246,7 @@ public class UpdateProductValidatorTests
     {
         // Arrange
         var maxLengthDescription = new string('a', 2000);
-        var request = new UpdateProductRequest("Valid Name", maxLengthDescription, false);
+        var request = new UpdateProductRequest("Valid Name", maxLengthDescription);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

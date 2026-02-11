@@ -42,7 +42,7 @@ public class ProductTemplateTests(IntegrationTestFixture fixture)
         var getByIdResponse = await httpClient.GetAsync($"/api/product-templates/{templateId}", cancellationToken);
         
         getByIdResponse.EnsureSuccessStatusCode();
-        var fetchedTemplate = await getByIdResponse.Content.ReadFromJsonAsync<GetProductTemplateByIdResponse>(cancellationToken);
+        var fetchedTemplate = await getByIdResponse.Content.ReadFromJsonAsync<GetProductTemplatesResponse>(cancellationToken);
         Assert.NotNull(fetchedTemplate);
         Assert.Equal(templateId, fetchedTemplate.Id);
         Assert.Equal(templateRequest.Name, fetchedTemplate.Name);
@@ -57,7 +57,7 @@ public class ProductTemplateTests(IntegrationTestFixture fixture)
         Assert.Contains(allTemplates, t => t.Id == templateId && t.Name == templateRequest.Name && t.ProductId == productId);
 
         // ===== CHECKPOINT 5: UPDATE =====
-        var updateRequest = new UpdateProductTemplateRequest("Workflow Template v2", 2, productId, false);
+        var updateRequest = new UpdateProductTemplateRequest("Workflow Template v2", 2, productId);
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/product-templates/{templateId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();
@@ -66,17 +66,15 @@ public class ProductTemplateTests(IntegrationTestFixture fixture)
         Assert.Equal(templateId, updatedTemplate.Id);
         Assert.Equal("Workflow Template v2", updatedTemplate.Name);
         Assert.Equal(2, updatedTemplate.Version);
-        Assert.False(updatedTemplate.IsActive);
 
         // ===== CHECKPOINT 6: VERIFY UPDATE (get by id again) =====
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/product-templates/{templateId}", cancellationToken);
         
         verifyUpdateResponse.EnsureSuccessStatusCode();
-        var verifiedTemplate = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductTemplateByIdResponse>(cancellationToken);
+        var verifiedTemplate = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductTemplatesResponse>(cancellationToken);
         Assert.NotNull(verifiedTemplate);
         Assert.Equal("Workflow Template v2", verifiedTemplate.Name);
         Assert.Equal(2, verifiedTemplate.Version);
-        Assert.False(verifiedTemplate.IsActive);
 
         // ===== CHECKPOINT 7: DELETE =====
         var deleteResponse = await httpClient.DeleteAsync($"/api/product-templates/{templateId}", cancellationToken);

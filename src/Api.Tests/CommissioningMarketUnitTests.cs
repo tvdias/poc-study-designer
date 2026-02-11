@@ -159,7 +159,7 @@ public class UpdateCommissioningMarketValidatorTests
     public async Task ValidMarket_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateCommissioningMarketRequest("US", "United States", true);
+        var request = new UpdateCommissioningMarketRequest("US", "United States");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -173,7 +173,7 @@ public class UpdateCommissioningMarketValidatorTests
     public async Task EmptyIsoCode_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateCommissioningMarketRequest("", "United States", true);
+        var request = new UpdateCommissioningMarketRequest("", "United States");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -187,7 +187,7 @@ public class UpdateCommissioningMarketValidatorTests
     public async Task EmptyName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateCommissioningMarketRequest("US", "", false);
+        var request = new UpdateCommissioningMarketRequest("US", "");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -202,7 +202,7 @@ public class UpdateCommissioningMarketValidatorTests
     {
         // Arrange
         var longName = new string('a', 101);
-        var request = new UpdateCommissioningMarketRequest("US", longName, true);
+        var request = new UpdateCommissioningMarketRequest("US", longName);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -217,7 +217,7 @@ public class UpdateCommissioningMarketValidatorTests
     {
         // Arrange
         var longIsoCode = new string('A', 11);
-        var request = new UpdateCommissioningMarketRequest(longIsoCode, "Test Market", false);
+        var request = new UpdateCommissioningMarketRequest(longIsoCode, "Test Market");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

@@ -210,7 +210,7 @@ public class UpdateClientValidatorTests
     public async Task ValidClient_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("Updated Account Name", "123456", "CUST-001", "UPD", true);
+        var request = new UpdateClientRequest("Updated Account Name", "123456", "CUST-001", "UPD");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -224,7 +224,7 @@ public class UpdateClientValidatorTests
     public async Task EmptyAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("", null, "CUST-001", null, true);
+        var request = new UpdateClientRequest("", null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -238,7 +238,7 @@ public class UpdateClientValidatorTests
     public async Task NullAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest(null!, null, "CUST-001", null, false);
+        var request = new UpdateClientRequest(null!, null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -253,7 +253,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var longName = new string('a', 201);
-        var request = new UpdateClientRequest(longName, null, "CUST-001", null, true);
+        var request = new UpdateClientRequest(longName, null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -269,7 +269,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var maxLengthName = new string('a', 200);
-        var request = new UpdateClientRequest(maxLengthName, null, "CUST-001", null, false);
+        var request = new UpdateClientRequest(maxLengthName, null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -283,7 +283,7 @@ public class UpdateClientValidatorTests
     public async Task WhitespaceAccountName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("   ", null, "CUST-001", null, true);
+        var request = new UpdateClientRequest("   ", null, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -297,7 +297,7 @@ public class UpdateClientValidatorTests
     public async Task EmptyCustomerNumber_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("Valid Name", null, "", null, true);
+        var request = new UpdateClientRequest("Valid Name", null, "", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -311,7 +311,7 @@ public class UpdateClientValidatorTests
     public async Task NullCustomerNumber_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateClientRequest("Valid Name", null, null!, null, false);
+        var request = new UpdateClientRequest("Valid Name", null, null!, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -326,7 +326,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var longNumber = new string('1', 51);
-        var request = new UpdateClientRequest("Valid Name", longNumber, "CUST-001", null, true);
+        var request = new UpdateClientRequest("Valid Name", longNumber, "CUST-001", null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -342,7 +342,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var longNumber = new string('1', 51);
-        var request = new UpdateClientRequest("Valid Name", null, longNumber, null, false);
+        var request = new UpdateClientRequest("Valid Name", null, longNumber, null);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -358,7 +358,7 @@ public class UpdateClientValidatorTests
     {
         // Arrange
         var longCode = new string('A', 51);
-        var request = new UpdateClientRequest("Valid Name", null, "CUST-001", longCode, true);
+        var request = new UpdateClientRequest("Valid Name", null, "CUST-001", longCode);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

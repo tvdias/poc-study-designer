@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Tags;
 
-public record GetTagByIdResponse(Guid Id, string Name, bool IsActive);
+public record GetTagByIdResponse(Guid Id, string Name);
 
 public static class GetTagByIdEndpoint
 {
@@ -22,14 +22,17 @@ public static class GetTagByIdEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var tag = await db.Tags.AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var tag = await db.Tags
+            .Where(t => t.IsActive)
+            .Where(t => t.Id == id)
+            .Select(t => new GetTagByIdResponse(t.Id, t.Name))
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (tag is null)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(new GetTagByIdResponse(tag.Id, tag.Name, tag.IsActive));
+        return TypedResults.Ok(new GetTagByIdResponse(tag.Id, tag.Name));
     }
 }

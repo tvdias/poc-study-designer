@@ -45,7 +45,7 @@ public class FieldworkMarketTests(IntegrationTestFixture fixture)
         Assert.Contains(allMarkets, m => m.Id == marketId && m.IsoCode == createRequest.IsoCode && m.Name == createRequest.Name);
 
         // ===== CHECKPOINT 4: UPDATE =====
-        var updateRequest = new UpdateFieldworkMarketRequest("GB-TEST", "Workflow Market (Updated)", false);
+        var updateRequest = new UpdateFieldworkMarketRequest("GB-TEST", "Workflow Market (Updated)");
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/fieldwork-markets/{marketId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();
@@ -53,7 +53,6 @@ public class FieldworkMarketTests(IntegrationTestFixture fixture)
         Assert.NotNull(updatedMarket);
         Assert.Equal(marketId, updatedMarket.Id);
         Assert.Equal("Workflow Market (Updated)", updatedMarket.Name);
-        Assert.False(updatedMarket.IsActive);
 
         // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/fieldwork-markets/{marketId}", cancellationToken);
@@ -62,7 +61,6 @@ public class FieldworkMarketTests(IntegrationTestFixture fixture)
         var verifiedMarket = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetFieldworkMarketByIdResponse>(cancellationToken);
         Assert.NotNull(verifiedMarket);
         Assert.Equal("Workflow Market (Updated)", verifiedMarket.Name);
-        Assert.False(verifiedMarket.IsActive);
 
         // ===== CHECKPOINT 6: SEARCH =====
         var searchResponse = await httpClient.GetAsync("/api/fieldwork-markets?query=Workflow", cancellationToken);

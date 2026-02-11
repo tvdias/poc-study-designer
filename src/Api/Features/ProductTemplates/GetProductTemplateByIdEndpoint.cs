@@ -21,8 +21,11 @@ public static class GetProductTemplateByIdEndpoint
         CancellationToken cancellationToken)
     {
         var template = await db.ProductTemplates
+            .AsNoTracking()
+            .Where(pt => pt.IsActive)
+            .Where(pt => pt.Id == id)
             .Include(pt => pt.Product)
-            .FirstOrDefaultAsync(pt => pt.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (template == null || template.Product == null)
         {
@@ -34,8 +37,7 @@ public static class GetProductTemplateByIdEndpoint
             template.Name,
             template.Version,
             template.ProductId,
-            template.Product.Name,
-            template.IsActive
+            template.Product.Name
         );
 
         return TypedResults.Ok(response);

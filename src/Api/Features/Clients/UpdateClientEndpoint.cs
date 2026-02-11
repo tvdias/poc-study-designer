@@ -28,7 +28,10 @@ public static class UpdateClientEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var client = await db.Clients.FindAsync([id], cancellationToken);
+        var client = await db.Clients
+            .Where(c => c.IsActive)
+            .Where(c => c.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (client is null)
         {
@@ -39,7 +42,6 @@ public static class UpdateClientEndpoint
         client.CompanyNumber = request.CompanyNumber;
         client.CustomerNumber = request.CustomerNumber;
         client.CompanyCode = request.CompanyCode;
-        client.IsActive = request.IsActive;
         client.ModifiedOn = DateTime.UtcNow;
         client.ModifiedBy = "System"; // TODO: Replace with real user
 
@@ -51,7 +53,6 @@ public static class UpdateClientEndpoint
             client.CompanyNumber,
             client.CustomerNumber,
             client.CompanyCode,
-            client.IsActive,
             client.CreatedOn));
     }
 }
