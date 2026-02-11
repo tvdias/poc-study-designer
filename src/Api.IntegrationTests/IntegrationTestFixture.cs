@@ -53,7 +53,6 @@ public class IntegrationTestFixture : IAsyncLifetime
                 builder.UseSetting("ConnectionStrings:studydb", _postgresContainer.GetConnectionString());
                 builder.UseSetting("ConnectionStrings:cache", _redisContainer.GetConnectionString());
 
-
                 // Use ConfigureServices (not ConfigureTestServices) to intercept BEFORE Aspire validates
                 builder.ConfigureServices((context, services) =>
                 {
