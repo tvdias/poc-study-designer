@@ -42,7 +42,7 @@ public class ProductTemplateTests(IntegrationTestFixture fixture)
         var getByIdResponse = await httpClient.GetAsync($"/api/product-templates/{templateId}", cancellationToken);
         
         getByIdResponse.EnsureSuccessStatusCode();
-        var fetchedTemplate = await getByIdResponse.Content.ReadFromJsonAsync<GetProductTemplateByIdResponse>(cancellationToken);
+        var fetchedTemplate = await getByIdResponse.Content.ReadFromJsonAsync<GetProductTemplatesResponse>(cancellationToken);
         Assert.NotNull(fetchedTemplate);
         Assert.Equal(templateId, fetchedTemplate.Id);
         Assert.Equal(templateRequest.Name, fetchedTemplate.Name);
@@ -72,7 +72,7 @@ public class ProductTemplateTests(IntegrationTestFixture fixture)
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/product-templates/{templateId}", cancellationToken);
         
         verifyUpdateResponse.EnsureSuccessStatusCode();
-        var verifiedTemplate = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductTemplateByIdResponse>(cancellationToken);
+        var verifiedTemplate = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductTemplatesResponse>(cancellationToken);
         Assert.NotNull(verifiedTemplate);
         Assert.Equal("Workflow Template v2", verifiedTemplate.Name);
         Assert.Equal(2, verifiedTemplate.Version);

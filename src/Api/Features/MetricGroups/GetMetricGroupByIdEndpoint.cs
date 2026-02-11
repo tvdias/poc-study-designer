@@ -21,6 +21,7 @@ public static class GetMetricGroupByIdEndpoint
     {
         var metricGroup = await db.MetricGroups
             .AsNoTracking()
+            .Where(mg => mg.IsActive)
             .FirstOrDefaultAsync(mg => mg.Id == id, cancellationToken);
 
         if (metricGroup == null)

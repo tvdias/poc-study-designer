@@ -99,6 +99,8 @@ api.MapDeleteFieldworkMarketEndpoint();
 api.MapCreateMetricGroupEndpoint();
 api.MapGetMetricGroupsEndpoint();
 api.MapGetMetricGroupByIdEndpoint();
+api.MapUpdateMetricGroupEndpoint();
+api.MapDeleteMetricGroupEndpoint();
 
 // Modules
 api.MapCreateModuleEndpoint();

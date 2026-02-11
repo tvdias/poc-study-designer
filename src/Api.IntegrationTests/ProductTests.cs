@@ -30,7 +30,7 @@ public class ProductTests(IntegrationTestFixture fixture)
         var getByIdResponse = await httpClient.GetAsync($"/api/products/{productId}", cancellationToken);
         
         getByIdResponse.EnsureSuccessStatusCode();
-        var fetchedProduct = await getByIdResponse.Content.ReadFromJsonAsync<GetProductByIdResponse>(cancellationToken);
+        var fetchedProduct = await getByIdResponse.Content.ReadFromJsonAsync<GetProductDetailResponse>(cancellationToken);
         Assert.NotNull(fetchedProduct);
         Assert.Equal(productId, fetchedProduct.Id);
         Assert.Equal(createRequest.Name, fetchedProduct.Name);
@@ -59,7 +59,7 @@ public class ProductTests(IntegrationTestFixture fixture)
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/products/{productId}", cancellationToken);
         
         verifyUpdateResponse.EnsureSuccessStatusCode();
-        var verifiedProduct = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductByIdResponse>(cancellationToken);
+        var verifiedProduct = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetProductDetailResponse>(cancellationToken);
         Assert.NotNull(verifiedProduct);
         Assert.Equal("Workflow Test Product (Updated)", verifiedProduct.Name);
         Assert.False(verifiedProduct.IsActive);

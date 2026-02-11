@@ -106,3 +106,50 @@ public class CreateMetricGroupValidatorTests
         Assert.Contains(result.Errors, e => e.ErrorMessage == "Name is required.");
     }
 }
+
+public class UpdateMetricGroupValidatorTests
+{
+    private readonly UpdateMetricGroupValidator _validator = new();
+
+    [Fact]
+    public async Task ValidUpdateMetricGroup_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new UpdateMetricGroupRequest("Valid Update", true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public async Task EmptyName_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateMetricGroupRequest("", true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Name is required.");
+    }
+
+    [Fact]
+    public async Task NameExceeding100Characters_ShouldFailValidation()
+    {
+        // Arrange
+        var longName = new string('a', 101);
+        var request = new UpdateMetricGroupRequest(longName, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Name must not exceed 100 characters.");
+    }
+}
