@@ -63,6 +63,9 @@ jobs:
 
     - name: Lint
       working-directory: src/Admin
+      # Note: Pre-existing lint errors are allowed to pass while they are being addressed separately.
+      # This ensures CI can validate builds and tests without blocking on style issues.
+      # TODO: Fix lint errors and remove continue-on-error
       run: npm run lint
       continue-on-error: true
 
