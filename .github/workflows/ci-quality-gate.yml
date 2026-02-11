@@ -1,0 +1,134 @@
+name: CI Quality Gate
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    name: Backend Tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/StudyDesigner.slnx
+
+      - name: Build solution
+        run: dotnet build src/StudyDesigner.slnx --no-restore --configuration Release
+
+      - name: Run unit tests
+        # Note: Using 'dotnet run' because Api.Tests uses Microsoft Testing Platform (xUnit v3)
+        # Backend code coverage collection requires additional Microsoft Testing Platform configuration
+        # and will be implemented in a follow-up task
+        run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
+
+  frontend-coverage:
+    runs-on: ubuntu-latest
+    name: Frontend Tests & Coverage
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/Admin/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/Admin
+        run: npm ci
+
+      - name: Install Vitest Coverage Provider
+        working-directory: src/Admin
+        run: npm install --save-dev @vitest/coverage-v8
+
+      - name: Run tests with coverage
+        working-directory: src/Admin
+        run: npm run test -- --coverage --run --reporter=verbose
+
+      - name: Check Frontend Coverage Threshold (80%)
+        working-directory: src/Admin
+        run: |
+          # Parse coverage from the summary
+          if [ -f coverage/coverage-summary.json ]; then
+            LINES=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')
+            BRANCHES=$(cat coverage/coverage-summary.json | jq -r '.total.branches.pct')
+            FUNCTIONS=$(cat coverage/coverage-summary.json | jq -r '.total.functions.pct')
+            STATEMENTS=$(cat coverage/coverage-summary.json | jq -r '.total.statements.pct')
+            
+            echo "📊 Coverage Results:"
+            echo "  Lines: ${LINES}%"
+            echo "  Branches: ${BRANCHES}%"
+            echo "  Functions: ${FUNCTIONS}%"
+            echo "  Statements: ${STATEMENTS}%"
+            
+            FAILED=0
+            if (( $(echo "$LINES < 80" | bc -l) )); then
+              echo "❌ Line coverage ${LINES}% is below threshold of 80%"
+              FAILED=1
+            fi
+            if (( $(echo "$BRANCHES < 80" | bc -l) )); then
+              echo "❌ Branch coverage ${BRANCHES}% is below threshold of 80%"
+              FAILED=1
+            fi
+            if (( $(echo "$FUNCTIONS < 80" | bc -l) )); then
+              echo "❌ Function coverage ${FUNCTIONS}% is below threshold of 80%"
+              FAILED=1
+            fi
+            if (( $(echo "$STATEMENTS < 80" | bc -l) )); then
+              echo "❌ Statement coverage ${STATEMENTS}% is below threshold of 80%"
+              FAILED=1
+            fi
+            
+            if [ $FAILED -eq 1 ]; then
+              exit 1
+            else
+              echo "✅ All coverage thresholds met (≥80%)"
+            fi
+          else
+            echo "❌ Coverage summary not found"
+            exit 1
+          fi
+
+      - name: Generate Coverage Report for PR
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: src/Admin
+
+  quality-gate:
+    runs-on: ubuntu-latest
+    name: Quality Gate Status
+    needs: [backend-tests, frontend-coverage]
+    if: always()
+    
+    steps:
+      - name: Check Quality Gate
+        run: |
+          echo "Backend Tests: ${{ needs.backend-tests.result }}"
+          echo "Frontend Coverage: ${{ needs.frontend-coverage.result }}"
+          
+          if [ "${{ needs.backend-tests.result }}" != "success" ]; then
+            echo "❌ Quality gate failed: Backend tests failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.frontend-coverage.result }}" != "success" ]; then
+            echo "❌ Quality gate failed: Frontend coverage threshold not met (required: 80%)"
+            exit 1
+          fi
+          
+          echo "✅ Quality gate passed: All tests passed and coverage ≥80%"
