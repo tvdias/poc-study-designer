@@ -54,6 +54,6 @@ public static class CreateMetricGroupEndpoint
             throw;
         }
 
-        return TypedResults.CreatedAtRoute(new CreateMetricGroupResponse(metricGroup.Id, metricGroup.Name, metricGroup.IsActive), "GetMetricGroupById", new { id = metricGroup.Id });
+        return TypedResults.CreatedAtRoute(new CreateMetricGroupResponse(metricGroup.Id, metricGroup.Name), "GetMetricGroupById", new { id = metricGroup.Id });
     }
 }

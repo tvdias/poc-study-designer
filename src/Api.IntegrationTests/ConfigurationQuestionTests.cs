@@ -23,7 +23,6 @@ public class ConfigurationQuestionTests(IntegrationTestFixture fixture)
         Assert.Equal(createRequest.Question, createdQuestion.Question);
         Assert.Equal(createRequest.RuleType, createdQuestion.RuleType);
         Assert.NotEqual(Guid.Empty, createdQuestion.Id);
-        Assert.True(createdQuestion.IsActive);
 
         var questionId = createdQuestion.Id;
 
@@ -46,7 +45,7 @@ public class ConfigurationQuestionTests(IntegrationTestFixture fixture)
         Assert.Contains(allQuestions, q => q.Id == questionId && q.Question == createRequest.Question);
 
         // ===== CHECKPOINT 4: UPDATE =====
-        var updateRequest = new UpdateConfigurationQuestionRequest("Workflow Config Question (Updated)", "AI prompt (updated)", RuleType.SingleCoded, false);
+        var updateRequest = new UpdateConfigurationQuestionRequest("Workflow Config Question (Updated)", "AI prompt (updated)", RuleType.SingleCoded);
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/configuration-questions/{questionId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();
@@ -55,7 +54,6 @@ public class ConfigurationQuestionTests(IntegrationTestFixture fixture)
         Assert.Equal(questionId, updatedQuestion.Id);
         Assert.Equal("Workflow Config Question (Updated)", updatedQuestion.Question);
         Assert.Equal(RuleType.SingleCoded, updatedQuestion.RuleType);
-        Assert.False(updatedQuestion.IsActive);
 
         // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/configuration-questions/{questionId}", cancellationToken);
@@ -65,7 +63,6 @@ public class ConfigurationQuestionTests(IntegrationTestFixture fixture)
         Assert.NotNull(verifiedQuestion);
         Assert.Equal("Workflow Config Question (Updated)", verifiedQuestion.Question);
         Assert.Equal(RuleType.SingleCoded, verifiedQuestion.RuleType);
-        Assert.False(verifiedQuestion.IsActive);
 
         // ===== CHECKPOINT 6: DELETE =====
         var deleteResponse = await httpClient.DeleteAsync($"/api/configuration-questions/{questionId}", cancellationToken);

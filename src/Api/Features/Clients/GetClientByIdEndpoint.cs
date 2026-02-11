@@ -1,5 +1,6 @@
 using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Clients;
 
@@ -18,20 +19,23 @@ public static class GetClientByIdEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var client = await db.Clients.FindAsync([id], cancellationToken);
+        var clientResponse = await db.Clients
+            .Where(c => c.IsActive)
+            .Where(c => c.Id == id)
+            .Select(c => new GetClientsResponse(
+                c.Id,
+                c.AccountName,
+                c.CompanyNumber,
+                c.CustomerNumber,
+                c.CompanyCode,
+                c.CreatedOn))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (client is null)
+        if (clientResponse is null)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(new GetClientsResponse(
-            client.Id,
-            client.AccountName,
-            client.CompanyNumber,
-            client.CustomerNumber,
-            client.CompanyCode,
-            client.IsActive,
-            client.CreatedOn));
+        return TypedResults.Ok(clientResponse);
     }
 }

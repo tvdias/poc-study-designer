@@ -22,7 +22,6 @@ public class MetricGroupTests(IntegrationTestFixture fixture)
         Assert.NotNull(createdGroup);
         Assert.Equal(createRequest.Name, createdGroup.Name);
         Assert.NotEqual(Guid.Empty, createdGroup.Id);
-        Assert.True(createdGroup.IsActive);
 
         var groupId = createdGroup.Id;
 
@@ -44,7 +43,7 @@ public class MetricGroupTests(IntegrationTestFixture fixture)
         Assert.Contains(allGroups, g => g.Id == groupId && g.Name == createRequest.Name);
 
         // ===== CHECKPOINT 4: UPDATE =====
-        var updateRequest = new UpdateMetricGroupRequest("Workflow Metric Group (Updated)", false);
+        var updateRequest = new UpdateMetricGroupRequest("Workflow Metric Group (Updated)");
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/metric-groups/{groupId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();
@@ -52,7 +51,6 @@ public class MetricGroupTests(IntegrationTestFixture fixture)
         Assert.NotNull(updatedGroup);
         Assert.Equal(groupId, updatedGroup.Id);
         Assert.Equal("Workflow Metric Group (Updated)", updatedGroup.Name);
-        Assert.False(updatedGroup.IsActive);
 
         // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/metric-groups/{groupId}", cancellationToken);
@@ -61,7 +59,6 @@ public class MetricGroupTests(IntegrationTestFixture fixture)
         var verifiedGroup = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetMetricGroupByIdResponse>(cancellationToken);
         Assert.NotNull(verifiedGroup);
         Assert.Equal("Workflow Metric Group (Updated)", verifiedGroup.Name);
-        Assert.False(verifiedGroup.IsActive);
 
         // ===== CHECKPOINT 6: DELETE =====
         var deleteResponse = await httpClient.DeleteAsync($"/api/metric-groups/{groupId}", cancellationToken);

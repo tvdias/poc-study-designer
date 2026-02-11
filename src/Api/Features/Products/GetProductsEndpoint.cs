@@ -19,7 +19,7 @@ public static class GetProductsEndpoint
         string? query,
         CancellationToken cancellationToken)
     {
-        var productsQuery = db.Products.AsQueryable();
+        var productsQuery = db.Products.Where(p => p.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -28,7 +28,7 @@ public static class GetProductsEndpoint
 
         var products = await productsQuery
             .OrderBy(p => p.Name)
-            .Select(p => new GetProductsResponse(p.Id, p.Name, p.Description, p.IsActive))
+            .Select(p => new GetProductsResponse(p.Id, p.Name, p.Description))
             .ToListAsync(cancellationToken);
 
         return TypedResults.Ok(products);

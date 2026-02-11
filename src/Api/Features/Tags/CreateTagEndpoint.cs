@@ -54,6 +54,6 @@ public static class CreateTagEndpoint
             throw;
         }
 
-        return TypedResults.CreatedAtRoute(new CreateTagResponse(tag.Id, tag.Name, tag.IsActive), "GetTagById", new { id = tag.Id });
+        return TypedResults.CreatedAtRoute(new CreateTagResponse(tag.Id, tag.Name), "GetTagById", new { id = tag.Id });
     }
 }

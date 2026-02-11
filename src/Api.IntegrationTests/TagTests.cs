@@ -43,7 +43,7 @@ public class TagTests(IntegrationTestFixture fixture)
         Assert.Contains(allTags, t => t.Id == tagId && t.Name == createRequest.Name);
 
         // ===== CHECKPOINT 4: UPDATE =====
-        var updateRequest = new UpdateTagRequest("CRUD Workflow Tag (Updated)", true);
+        var updateRequest = new UpdateTagRequest("CRUD Workflow Tag (Updated)");
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/tags/{tagId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();

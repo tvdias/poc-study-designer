@@ -28,7 +28,10 @@ public static class UpdateMetricGroupEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var metricGroup = await db.MetricGroups.FindAsync([id], cancellationToken);
+        var metricGroup = await db.MetricGroups
+            .Where(m => m.IsActive)
+            .Where(m => m.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (metricGroup is null)
         {
@@ -36,7 +39,6 @@ public static class UpdateMetricGroupEndpoint
         }
 
         metricGroup.Name = request.Name;
-        metricGroup.IsActive = request.IsActive;
         metricGroup.ModifiedOn = DateTime.UtcNow;
         metricGroup.ModifiedBy = "System"; // TODO: Replace with real user
 
@@ -54,6 +56,6 @@ public static class UpdateMetricGroupEndpoint
             throw;
         }
 
-        return TypedResults.Ok(new UpdateMetricGroupResponse(metricGroup.Id, metricGroup.Name, metricGroup.IsActive));
+        return TypedResults.Ok(new UpdateMetricGroupResponse(metricGroup.Id, metricGroup.Name));
     }
 }

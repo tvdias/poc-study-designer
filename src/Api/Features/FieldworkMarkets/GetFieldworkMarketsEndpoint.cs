@@ -18,7 +18,7 @@ public static class GetFieldworkMarketsEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var marketsQuery = db.FieldworkMarkets.AsNoTracking();
+        var marketsQuery = db.FieldworkMarkets.Where(m => m.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -27,7 +27,7 @@ public static class GetFieldworkMarketsEndpoint
         }
 
         return await marketsQuery
-            .Select(m => new GetFieldworkMarketsResponse(m.Id, m.IsoCode, m.Name, m.IsActive))
+            .Select(m => new GetFieldworkMarketsResponse(m.Id, m.IsoCode, m.Name))
             .ToListAsync(cancellationToken);
     }
 }

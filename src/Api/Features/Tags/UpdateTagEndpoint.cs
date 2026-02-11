@@ -36,12 +36,11 @@ public static class UpdateTagEndpoint
         }
 
         tag.Name = request.Name;
-        tag.IsActive = request.IsActive;
         tag.ModifiedOn = DateTime.UtcNow;
         tag.ModifiedBy = "System"; // TODO: Replace with real user
 
         await db.SaveChangesAsync(cancellationToken);
 
-        return TypedResults.Ok(new UpdateTagResponse(tag.Id, tag.Name, tag.IsActive));
+        return TypedResults.Ok(new UpdateTagResponse(tag.Id, tag.Name));
     }
 }

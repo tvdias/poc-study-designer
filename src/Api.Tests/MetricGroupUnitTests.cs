@@ -115,7 +115,7 @@ public class UpdateMetricGroupValidatorTests
     public async Task ValidUpdateMetricGroup_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateMetricGroupRequest("Valid Update", true);
+        var request = new UpdateMetricGroupRequest("Valid Update");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -128,7 +128,7 @@ public class UpdateMetricGroupValidatorTests
     public async Task EmptyName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateMetricGroupRequest("", true);
+        var request = new UpdateMetricGroupRequest("");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -143,7 +143,7 @@ public class UpdateMetricGroupValidatorTests
     {
         // Arrange
         var longName = new string('a', 101);
-        var request = new UpdateMetricGroupRequest(longName, true);
+        var request = new UpdateMetricGroupRequest(longName);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

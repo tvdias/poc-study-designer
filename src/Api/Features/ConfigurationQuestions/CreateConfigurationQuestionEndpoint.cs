@@ -45,7 +45,6 @@ public static class CreateConfigurationQuestionEndpoint
             question.Question,
             question.AiPrompt,
             question.RuleType,
-            question.IsActive,
             question.Version
         );
 

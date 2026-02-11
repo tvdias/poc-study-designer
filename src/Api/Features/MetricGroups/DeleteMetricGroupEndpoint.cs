@@ -19,7 +19,10 @@ public static class DeleteMetricGroupEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var metricGroup = await db.MetricGroups.FindAsync([id], cancellationToken);
+        var metricGroup = await db.MetricGroups
+            .Where(mg => mg.IsActive)
+            .Where(mg => mg.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (metricGroup is null)
         {

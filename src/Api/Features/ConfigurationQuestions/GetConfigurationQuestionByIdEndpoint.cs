@@ -41,12 +41,10 @@ public static class GetConfigurationQuestionByIdEndpoint
             question.Question,
             question.AiPrompt,
             question.RuleType,
-            question.IsActive,
             question.Version,
             question.Answers.Select(a => new ConfigurationAnswerDto(
                 a.Id,
                 a.Name,
-                a.IsActive,
                 a.CreatedOn,
                 a.CreatedBy
             )).ToList(),
@@ -62,7 +60,6 @@ public static class GetConfigurationQuestionByIdEndpoint
                 dr.QuestionBank,
                 dr.Tag,
                 dr.StatusReason,
-                dr.IsActive,
                 dr.CreatedOn,
                 dr.CreatedBy
             )).ToList()

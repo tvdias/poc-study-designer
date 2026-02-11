@@ -18,7 +18,7 @@ public static class GetCommissioningMarketsEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var marketsQuery = db.CommissioningMarkets.AsNoTracking();
+        var marketsQuery = db.CommissioningMarkets.Where(m => m.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -27,7 +27,7 @@ public static class GetCommissioningMarketsEndpoint
         }
 
         return await marketsQuery
-            .Select(m => new GetCommissioningMarketsResponse(m.Id, m.IsoCode, m.Name, m.IsActive))
+            .Select(m => new GetCommissioningMarketsResponse(m.Id, m.IsoCode, m.Name))
             .ToListAsync(cancellationToken);
     }
 }

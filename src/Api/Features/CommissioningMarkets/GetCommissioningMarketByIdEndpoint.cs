@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.CommissioningMarkets;
 
-public record GetCommissioningMarketByIdResponse(Guid Id, string IsoCode, string Name, bool IsActive);
+public record GetCommissioningMarketByIdResponse(Guid Id, string IsoCode, string Name);
 
 public static class GetCommissioningMarketByIdEndpoint
 {
@@ -22,14 +22,17 @@ public static class GetCommissioningMarketByIdEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var market = await db.CommissioningMarkets.AsNoTracking()
-            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+        var marketResponse = await db.CommissioningMarkets
+            .Where(m => m.IsActive)
+            .Where(m => m.Id == id)
+            .Select(m => new GetCommissioningMarketByIdResponse(m.Id, m.IsoCode, m.Name))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (market is null)
+        if (marketResponse is null)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(new GetCommissioningMarketByIdResponse(market.Id, market.IsoCode, market.Name, market.IsActive));
+        return TypedResults.Ok(marketResponse);
     }
 }

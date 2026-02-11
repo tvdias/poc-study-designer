@@ -19,14 +19,15 @@ public static class GetMetricGroupByIdEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var metricGroup = await db.MetricGroups
-            .AsNoTracking()
+        var metricGroupResponse = await db.MetricGroups
             .Where(mg => mg.IsActive)
-            .FirstOrDefaultAsync(mg => mg.Id == id, cancellationToken);
+            .Where(mg => mg.Id == id)
+            .Select(mg => new GetMetricGroupByIdResponse(mg.Id, mg.Name))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (metricGroup == null)
+        if (metricGroupResponse == null)
             return TypedResults.NotFound();
 
-        return TypedResults.Ok(new GetMetricGroupByIdResponse(metricGroup.Id, metricGroup.Name, metricGroup.IsActive));
+        return TypedResults.Ok(metricGroupResponse);
     }
 }

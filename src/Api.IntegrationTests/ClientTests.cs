@@ -23,7 +23,6 @@ public class ClientTests(IntegrationTestFixture fixture)
         Assert.Equal(createRequest.AccountName, createdClient.AccountName);
         Assert.Equal(createRequest.CustomerNumber, createdClient.CustomerNumber);
         Assert.NotEqual(Guid.Empty, createdClient.Id);
-        Assert.True(createdClient.IsActive);
 
         var clientId = createdClient.Id;
 
@@ -35,7 +34,6 @@ public class ClientTests(IntegrationTestFixture fixture)
         Assert.NotNull(fetchedClient);
         Assert.Equal(clientId, fetchedClient.Id);
         Assert.Equal(createRequest.AccountName, fetchedClient.AccountName);
-        Assert.True(fetchedClient.IsActive);
 
         // ===== CHECKPOINT 3: GET ALL (verify in list) =====
         var getAllResponse = await httpClient.GetAsync("/api/clients", cancellationToken);
@@ -46,7 +44,7 @@ public class ClientTests(IntegrationTestFixture fixture)
         Assert.Contains(allClients, c => c.Id == clientId && c.AccountName == createRequest.AccountName);
 
         // ===== CHECKPOINT 4: UPDATE =====
-        var updateRequest = new UpdateClientRequest("CRUD Workflow Client (Updated)", "99999", "CUST-CRUD-001-UPD", "CWC-UPD", false);
+        var updateRequest = new UpdateClientRequest("CRUD Workflow Client (Updated)", "99999", "CUST-CRUD-001-UPD", "CWC-UPD");
         var updateResponse = await httpClient.PutAsJsonAsync($"/api/clients/{clientId}", updateRequest, cancellationToken);
         
         updateResponse.EnsureSuccessStatusCode();
@@ -55,7 +53,6 @@ public class ClientTests(IntegrationTestFixture fixture)
         Assert.Equal(clientId, updatedClient.Id);
         Assert.Equal("CRUD Workflow Client (Updated)", updatedClient.AccountName);
         Assert.Equal("99999", updatedClient.CompanyNumber);
-        Assert.False(updatedClient.IsActive);
 
         // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
         var verifyUpdateResponse = await httpClient.GetAsync($"/api/clients/{clientId}", cancellationToken);
@@ -64,7 +61,6 @@ public class ClientTests(IntegrationTestFixture fixture)
         var verifiedClient = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetClientsResponse>(cancellationToken);
         Assert.NotNull(verifiedClient);
         Assert.Equal("CRUD Workflow Client (Updated)", verifiedClient.AccountName);
-        Assert.False(verifiedClient.IsActive);
 
         // ===== CHECKPOINT 6: DELETE =====
         var deleteResponse = await httpClient.DeleteAsync($"/api/clients/{clientId}", cancellationToken);

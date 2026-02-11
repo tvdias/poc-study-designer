@@ -1,4 +1,4 @@
 namespace Api.Features.MetricGroups;
 
 public record CreateMetricGroupRequest(string Name);
-public record CreateMetricGroupResponse(Guid Id, string Name, bool IsActive);
+public record CreateMetricGroupResponse(Guid Id, string Name);
