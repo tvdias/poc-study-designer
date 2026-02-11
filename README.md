@@ -127,7 +127,37 @@ Services will be available at:
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 
+## Testing
+
+The project includes comprehensive unit and integration tests. See **[TESTING.md](TESTING.md)** for:
+- How to run tests
+- Test architecture and patterns
+- Current test coverage
+- Best practices for writing tests
+
+## Continuous Integration
+
+The project includes automated CI pipelines to ensure code quality:
+
+### Backend CI (`.github/workflows/backend-ci.yml`)
+- **Triggers**: Push or PR to `main`/`develop` branches
+- **Steps**:
+  - Build .NET solution (Api, AppHost, Azure Functions, Tests)
+  - Run unit tests (Api.Tests - 140 tests)
+- **Requirements**: .NET 10.0 SDK
+
+### Frontend CI (`.github/workflows/frontend-ci.yml`)
+- **Triggers**: Push or PR to `main`/`develop` branches
+- **Steps**:
+  - Build and lint Designer app
+  - Build and lint Admin app
+  - Run Admin tests (21 tests with Vitest)
+- **Requirements**: Node.js 20
+
+Both pipelines use path filters to run only when relevant files change, optimizing CI resource usage.
+
 ## Additional Resources
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for all development options
 - **[CONTAINERS.md](CONTAINERS.md)** - Comprehensive container documentation
+- **[TESTING.md](TESTING.md)** - Complete testing guide
