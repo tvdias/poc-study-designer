@@ -22,9 +22,10 @@ var appAdmin = builder.AddViteApp("app-admin", "../Admin")
 
 if (enableAzureFunctions)
 {
-    var serviceBus = builder.AddAzureServiceBus("servicebus")
-        .AddTopic("questions")
-        .AddTopic("projects");
+    var serviceBus = builder.AddAzureServiceBus("servicebus");
+    
+    serviceBus.AddServiceBusTopic("questions");
+    serviceBus.AddServiceBusTopic("projects");
 
     builder.AddAzureFunctionsProject<Projects.CluedinProcessor>("func-cluedin-processor")
         .WithReference(serviceBus);
