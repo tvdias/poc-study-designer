@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
-using Testcontainers.Redis;
 using Xunit;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,7 +19,7 @@ namespace Api.IntegrationTests;
 public class IntegrationTestFixture : IAsyncLifetime
 {
     private PostgreSqlContainer? _postgresContainer;
-    private RedisContainer? _redisContainer;
+
     private WebApplicationFactory<Program>? _factory;
 
     public HttpClient HttpClient { get; private set; } = null!;
@@ -37,11 +36,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         await _postgresContainer.StartAsync();
 
-        // Start Redis container
-        _redisContainer = new RedisBuilder("redis:7-alpine")
-            .Build();
 
-        await _redisContainer.StartAsync();
 
         // Create WebApplicationFactory
         _factory = new WebApplicationFactory<Program>()
@@ -51,7 +46,6 @@ public class IntegrationTestFixture : IAsyncLifetime
                 
                 // Provide connection strings via UseSetting so they are available to WebApplicationBuilder
                 builder.UseSetting("ConnectionStrings:studydb", _postgresContainer.GetConnectionString());
-                builder.UseSetting("ConnectionStrings:cache", _redisContainer.GetConnectionString());
 
                 // Use ConfigureServices (not ConfigureTestServices) to intercept BEFORE Aspire validates
                 builder.ConfigureServices((context, services) =>
@@ -105,10 +99,6 @@ public class IntegrationTestFixture : IAsyncLifetime
             await _postgresContainer.DisposeAsync();
         }
 
-        if (_redisContainer != null)
-        {
-            await _redisContainer.StopAsync();
-            await _redisContainer.DisposeAsync();
-        }
+
     }
 }
