@@ -96,6 +96,7 @@ jobs:
         run: dotnet tool install --global Microsoft.Playwright.CLI
 
       - name: Install Playwright Browsers
+        working-directory: src/Api.E2ETests
         run: playwright install --with-deps
 
       - name: Install Admin App Dependencies
