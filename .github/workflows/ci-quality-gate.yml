@@ -92,6 +92,9 @@ jobs:
       - name: Run integration tests
         run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
 
+      - name: Install Playwright CLI
+        run: dotnet tool install --global Microsoft.Playwright.CLI
+
       - name: Install Playwright Browsers
         run: playwright install --with-deps
 
