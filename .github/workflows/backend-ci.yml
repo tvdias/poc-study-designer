@@ -23,6 +23,11 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '20'
+
     - name: Restore dependencies
       run: dotnet restore src/StudyDesigner.slnx
 
@@ -34,6 +39,12 @@ jobs:
 
     - name: Run integration tests
       run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
+
+    - name: Install Playwright Browsers
+      run: playwright install --with-deps
+
+    - name: Run E2E tests
+      run: dotnet run --project src/Api.E2ETests/Api.E2ETests.csproj --no-build --configuration Release
 
     - name: Display test summary
       if: always()

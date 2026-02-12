@@ -28,6 +28,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
       - name: Restore dependencies
         run: dotnet restore src/StudyDesigner.slnx
 
@@ -75,9 +80,13 @@ jobs:
           show_missing: true
 
       - name: Run integration tests
-        # Integration tests use .NET Aspire Testing with DistributedApplication
-        # These tests start the full application stack including PostgreSQL and Redis via Testcontainers
         run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
+
+      - name: Install Playwright Browsers
+        run: playwright install --with-deps
+
+      - name: Run E2E tests
+        run: dotnet run --project src/Api.E2ETests/Api.E2ETests.csproj --no-build --configuration Release
 
   frontend-coverage:
     runs-on: ubuntu-latest
