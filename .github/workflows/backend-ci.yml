@@ -43,6 +43,14 @@ jobs:
     - name: Install Playwright Browsers
       run: playwright install --with-deps
 
+    - name: Install Admin App Dependencies
+      working-directory: src/Admin
+      run: npm ci
+
+    - name: Install Designer App Dependencies
+      working-directory: src/Designer
+      run: npm ci
+
     - name: Run E2E tests
       run: dotnet run --project src/Api.E2ETests/Api.E2ETests.csproj --no-build --configuration Release
 
