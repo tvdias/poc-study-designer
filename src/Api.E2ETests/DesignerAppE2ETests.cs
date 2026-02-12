@@ -6,7 +6,7 @@ namespace Api.E2ETests;
 /// E2E tests for the Designer app basic functionality.
 /// These tests cover the full stack: Frontend UI -> API -> Database
 /// </summary>
-public class DesignerAppE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFixture>
+public class DesignerAppE2ETests(E2ETestFixture fixture)
 {
     [Fact]
     public async Task DesignerApp_ShouldLoadSuccessfully()

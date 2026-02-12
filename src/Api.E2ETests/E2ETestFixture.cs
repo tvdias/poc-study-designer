@@ -2,6 +2,9 @@ extern alias AppHostAssembly;
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Microsoft.Playwright;
+using Xunit;
+
+[assembly: AssemblyFixture(typeof(Api.E2ETests.E2ETestFixture))]
 
 namespace Api.E2ETests;
 
@@ -31,6 +34,12 @@ public class E2ETestFixture : IAsyncLifetime
             Headless = true,
             Args = ["--no-sandbox", "--disable-setuid-sandbox"]
         });
+
+        // Wait for services to be ready
+        var httpClient = new HttpClient();
+        await WaitForResourceAsync(httpClient, GetApiUrl());
+        await WaitForResourceAsync(httpClient, GetAdminAppUrl());
+        await WaitForResourceAsync(httpClient, GetDesignerAppUrl());
     }
 
     public async ValueTask DisposeAsync()
@@ -97,5 +106,34 @@ public class E2ETestFixture : IAsyncLifetime
     public HttpClient CreateApiClient()
     {
         return App.CreateHttpClient("api");
+    }
+
+
+    private async Task WaitForResourceAsync(HttpClient client, string url)
+    {
+        var timeout = TimeSpan.FromSeconds(180);
+        var delay = TimeSpan.FromSeconds(1);
+        var start = DateTime.UtcNow;
+
+        while (DateTime.UtcNow - start < timeout)
+        {
+            try
+            {
+                var response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Waiting for {url}: {ex.Message}");
+                // Ignore transient errors during startup
+            }
+
+            await Task.Delay(delay);
+        }
+
+        throw new TimeoutException($"Timed out waiting for resource at {url} to become available.");
     }
 }

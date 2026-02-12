@@ -8,7 +8,7 @@ namespace Api.E2ETests;
 /// E2E tests for Clients management in the Admin app.
 /// These tests cover the full stack: Frontend UI -> API -> Database
 /// </summary>
-public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFixture>
+public class AdminClientsE2ETests(E2ETestFixture fixture)
 {
     [Fact]
     public async Task CreateClient_ThroughUI_ShouldPersistInDatabase()

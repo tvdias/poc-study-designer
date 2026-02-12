@@ -8,7 +8,7 @@ namespace Api.E2ETests;
 /// E2E tests for Tags management in the Admin app.
 /// These tests cover the full stack: Frontend UI -> API -> Database
 /// </summary>
-public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFixture>
+public class AdminTagsE2ETests(E2ETestFixture fixture)
 {
     [Fact]
     public async Task CreateTag_ThroughUI_ShouldPersistInDatabase()
