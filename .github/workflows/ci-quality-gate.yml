@@ -15,6 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Backend Tests
     
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -31,10 +35,44 @@ jobs:
         run: dotnet build src/StudyDesigner.slnx --no-restore --configuration Release
 
       - name: Run unit tests
-        # Note: Using 'dotnet run' because Api.Tests uses Microsoft Testing Platform (xUnit v3)
-        # Backend code coverage collection requires additional Microsoft Testing Platform configuration
-        # and will be implemented in a follow-up task
-        run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
+        run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release -- --coverage --coverage-output-format Cobertura
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate Coverage Report
+        run: |
+          reportgenerator -reports:"**/TestResults/**/*.cobertura.xml" -targetdir:"coverage" -reporttypes:"Cobertura;JsonSummary"
+
+      - name: Check Backend Coverage Threshold (80%)
+        run: |
+          if [ ! -f coverage/Summary.json ]; then
+            echo "❌ Coverage summary not found"
+            exit 1
+          fi
+
+          # Extract coverage percentage for lines (can also check branches, etc.)
+          COVERAGE=$(cat coverage/Summary.json | jq -r '.summary.linecoverage')
+          
+          echo "📊 Backend Coverage Results:"
+          echo "  Line Coverage: ${COVERAGE}%"
+          
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Backend line coverage ${COVERAGE}% is below threshold of 80%"
+            exit 1
+          fi
+
+          echo "✅ Backend coverage threshold met (≥80%)"
+
+      - name: Publish Coverage Report to PR
+        if: always()
+        uses: madrapps/cobertura-action@v1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          path: coverage/Cobertura.xml
+          minimum_coverage: 80
+          fail_below_threshold: false # We handle failure in the previous step for custom messaging, or set true here.
+          show_missing: true
 
       - name: Run integration tests
         # Integration tests use .NET Aspire Testing with DistributedApplication

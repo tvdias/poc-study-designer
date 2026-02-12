@@ -30,14 +30,9 @@ jobs:
       run: dotnet build src/StudyDesigner.slnx --no-restore --configuration Release
 
     - name: Run unit tests
-      # Note: Using 'dotnet run' instead of 'dotnet test' because Api.Tests uses Microsoft Testing Platform (xUnit v3)
-      # with OutputType=Exe. The VSTest runner is no longer supported on .NET 10 SDK.
-      # See: https://aka.ms/dotnet-test-mtp-error
       run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
 
     - name: Run integration tests
-      # Integration tests use .NET Aspire Testing with DistributedApplication
-      # These tests start the full application stack including PostgreSQL and Redis via Testcontainers
       run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
 
     - name: Display test summary
