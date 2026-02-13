@@ -40,7 +40,7 @@ jobs:
         run: dotnet build src/StudyDesigner.slnx --no-restore --configuration Release
 
       - name: Run unit tests
-        run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release -- --coverage --coverage-output-format Cobertura
+        run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release -- --coverage --coverage-output-format Cobertura --coverage-settings src/Api.Tests/codecoverage.runsettings
 
       - name: Install ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
