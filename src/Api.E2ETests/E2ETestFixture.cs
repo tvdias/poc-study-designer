@@ -13,7 +13,7 @@ namespace Api.E2ETests;
 /// </summary>
 public class E2ETestFixture : IAsyncLifetime
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
 
     public DistributedApplication App { get; private set; } = null!;
     public IPlaywright Playwright { get; private set; } = null!;
@@ -21,20 +21,33 @@ public class E2ETestFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        Console.WriteLine($"[E2E] Starting Aspire application at {DateTime.UtcNow:O}");
+        
         // Start the Aspire application with all services (API, DB, Frontend apps)
         var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
         App = await appHost.BuildAsync();
+        
+        Console.WriteLine($"[E2E] Starting app resources at {DateTime.UtcNow:O}");
         await App.StartAsync().WaitAsync(DefaultTimeout);
+        Console.WriteLine($"[E2E] App resources started at {DateTime.UtcNow:O}");
 
         // Wait for API to be healthy (it has a registered health check)
+        Console.WriteLine($"[E2E] Waiting for API health check at {DateTime.UtcNow:O}");
         await App.ResourceNotifications.WaitForResourceHealthyAsync("api").WaitAsync(DefaultTimeout);
+        Console.WriteLine($"[E2E] API is healthy at {DateTime.UtcNow:O}");
 
         // Vite apps don't have Aspire health checks, so wait for them to be running
         // and then probe their HTTP endpoints to confirm they're serving requests.
+        Console.WriteLine($"[E2E] Waiting for Admin app at {DateTime.UtcNow:O}");
         await WaitForViteAppReadyAsync("app-admin");
+        Console.WriteLine($"[E2E] Admin app is ready at {DateTime.UtcNow:O}");
+        
+        Console.WriteLine($"[E2E] Waiting for Designer app at {DateTime.UtcNow:O}");
         await WaitForViteAppReadyAsync("app-designer");
+        Console.WriteLine($"[E2E] Designer app is ready at {DateTime.UtcNow:O}");
 
         // Initialize Playwright for browser automation
+        Console.WriteLine($"[E2E] Initializing Playwright at {DateTime.UtcNow:O}");
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
 
         // Launch browser in headless mode for CI/CD compatibility
@@ -43,6 +56,7 @@ public class E2ETestFixture : IAsyncLifetime
             Headless = true,
             Args = ["--no-sandbox", "--disable-setuid-sandbox"]
         });
+        Console.WriteLine($"[E2E] E2E fixture initialization complete at {DateTime.UtcNow:O}");
     }
 
     public async ValueTask DisposeAsync()
@@ -136,25 +150,36 @@ public class E2ETestFixture : IAsyncLifetime
         using var httpClient = App.CreateHttpClient(resourceName);
         var delay = TimeSpan.FromSeconds(2);
         var start = DateTime.UtcNow;
+        var attempts = 0;
+        Exception? lastException = null;
 
         while (DateTime.UtcNow - start < DefaultTimeout)
         {
+            attempts++;
             try
             {
                 var response = await httpClient.GetAsync("/");
                 if (response.IsSuccessStatusCode)
                 {
+                    Console.WriteLine($"[E2E] Vite app '{resourceName}' is ready after {attempts} attempts in {(DateTime.UtcNow - start).TotalSeconds:F1}s");
                     return;
                 }
+                lastException = new Exception($"HTTP {response.StatusCode}");
             }
-            catch
+            catch (Exception ex)
             {
                 // Vite dev server not ready yet, retry
+                lastException = ex;
+            }
+
+            if (attempts % 10 == 0)
+            {
+                Console.WriteLine($"[E2E] Still waiting for '{resourceName}' after {attempts} attempts ({(DateTime.UtcNow - start).TotalSeconds:F1}s elapsed)...");
             }
 
             await Task.Delay(delay);
         }
 
-        throw new TimeoutException($"Vite app '{resourceName}' did not become ready within {DefaultTimeout.TotalSeconds}s.");
+        throw new TimeoutException($"Vite app '{resourceName}' did not become ready within {DefaultTimeout.TotalSeconds}s after {attempts} attempts. Last error: {lastException?.Message}");
     }
 }
