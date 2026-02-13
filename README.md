@@ -129,27 +129,78 @@ Services will be available at:
 
 ## Testing
 
-The project includes comprehensive testing for both frontend and backend components:
+The project includes comprehensive testing for both frontend and backend components.
 
-- **Frontend Tests**: Component tests using Vitest and React Testing Library
-- **Backend Tests**: Unit and integration tests using xUnit
+### Frontend Tests
 
-To run tests:
+The Admin application uses **Vitest** and **React Testing Library** for component testing.
 
+**Run tests:**
 ```bash
-# Frontend (Admin app)
 cd src/Admin
-npm test
+npm test              # Run in watch mode
+npm test -- --run     # Run once (CI mode)
+npm test -- --coverage # Run with coverage
+```
 
-# Backend (API)
+**Test configuration:** Tests are configured in `vite.config.ts` with jsdom environment and setup file at `src/setupTests.ts`.
+
+**Writing component tests:**
+- Use `getByRole` queries (most accessible)
+- Mock API calls with `vi.mock()`
+- Test user interactions, not implementation details
+- Use `waitFor()` for async operations
+
+**Example test structure:**
+```typescript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('../services/api', () => ({
+    myApi: { getAll: vi.fn(), create: vi.fn() }
+}));
+
+describe('MyComponent', () => {
+    it('handles user interaction', async () => {
+        render(<MyComponent />);
+        fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+        await waitFor(() => expect(screen.getByText('Success')).toBeInTheDocument());
+    });
+});
+```
+
+### Backend Tests
+
+The API uses **xUnit** for unit and integration testing.
+
+**Run tests:**
+```bash
+# Unit tests
 dotnet test src/Api.Tests/
+
+# Integration tests  
 dotnet test src/Api.IntegrationTests/
 ```
 
-For detailed testing guidelines, best practices, and examples, see **[TESTING.md](TESTING.md)**.
+**Test structure:** Tests follow Arrange-Act-Assert pattern with naming convention `{Scenario}_{ExpectedBehavior}`.
+
+**Example:**
+```csharp
+[Fact]
+public async Task ValidInput_ShouldPassValidation()
+{
+    // Arrange
+    var request = new CreateRequest("Valid Data");
+    
+    // Act
+    var result = await validator.ValidateAsync(request);
+    
+    // Assert
+    Assert.True(result.IsValid);
+}
+```
 
 ## Additional Resources
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for all development options
 - **[CONTAINERS.md](CONTAINERS.md)** - Comprehensive container documentation
-- **[TESTING.md](TESTING.md)** - Comprehensive testing documentation and guidelines
