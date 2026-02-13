@@ -12,7 +12,6 @@ public record CreateConfigurationQuestionResponse(
     string Question,
     string? AiPrompt,
     RuleType RuleType,
-    bool IsActive,
     int Version
 );
 
@@ -20,8 +19,7 @@ public record CreateConfigurationQuestionResponse(
 public record UpdateConfigurationQuestionRequest(
     string Question,
     string? AiPrompt,
-    RuleType RuleType,
-    bool IsActive
+    RuleType RuleType
 );
 
 public record UpdateConfigurationQuestionResponse(
@@ -29,7 +27,6 @@ public record UpdateConfigurationQuestionResponse(
     string Question,
     string? AiPrompt,
     RuleType RuleType,
-    bool IsActive,
     int Version
 );
 
@@ -39,7 +36,6 @@ public record GetConfigurationQuestionsResponse(
     string Question,
     string? AiPrompt,
     RuleType RuleType,
-    bool IsActive,
     int Version,
     int AnswersCount
 );
@@ -50,7 +46,6 @@ public record GetConfigurationQuestionByIdResponse(
     string Question,
     string? AiPrompt,
     RuleType RuleType,
-    bool IsActive,
     int Version,
     List<ConfigurationAnswerDto> Answers,
     List<DependencyRuleDto> DependencyRules
@@ -59,7 +54,6 @@ public record GetConfigurationQuestionByIdResponse(
 public record ConfigurationAnswerDto(
     Guid Id,
     string Name,
-    bool IsActive,
     DateTime CreatedOn,
     string? CreatedBy
 );
@@ -76,7 +70,6 @@ public record DependencyRuleDto(
     string? QuestionBank,
     string? Tag,
     string? StatusReason,
-    bool IsActive,
     DateTime CreatedOn,
     string? CreatedBy
 );

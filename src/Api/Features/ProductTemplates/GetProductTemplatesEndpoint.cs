@@ -22,8 +22,9 @@ public static class GetProductTemplatesEndpoint
         CancellationToken cancellationToken)
     {
         var templatesQuery = db.ProductTemplates
+            .AsNoTracking()
             .Include(pt => pt.Product)
-            .AsQueryable();
+            .Where(pt => pt.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -43,8 +44,7 @@ public static class GetProductTemplatesEndpoint
                 pt.Name, 
                 pt.Version, 
                 pt.ProductId, 
-                pt.Product!.Name, 
-                pt.IsActive))
+                pt.Product!.Name))
             .ToListAsync(cancellationToken);
 
         return TypedResults.Ok(templates);

@@ -159,7 +159,7 @@ public class UpdateFieldworkMarketValidatorTests
     public async Task ValidMarket_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateFieldworkMarketRequest("US", "United States", true);
+        var request = new UpdateFieldworkMarketRequest("US", "United States");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -173,7 +173,7 @@ public class UpdateFieldworkMarketValidatorTests
     public async Task EmptyIsoCode_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateFieldworkMarketRequest("", "United States", true);
+        var request = new UpdateFieldworkMarketRequest("", "United States");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -187,7 +187,7 @@ public class UpdateFieldworkMarketValidatorTests
     public async Task EmptyName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateFieldworkMarketRequest("US", "", false);
+        var request = new UpdateFieldworkMarketRequest("US", "");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -202,7 +202,7 @@ public class UpdateFieldworkMarketValidatorTests
     {
         // Arrange
         var longName = new string('a', 101);
-        var request = new UpdateFieldworkMarketRequest("US", longName, true);
+        var request = new UpdateFieldworkMarketRequest("US", longName);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -217,7 +217,7 @@ public class UpdateFieldworkMarketValidatorTests
     {
         // Arrange
         var longIsoCode = new string('A', 11);
-        var request = new UpdateFieldworkMarketRequest(longIsoCode, "Test Market", false);
+        var request = new UpdateFieldworkMarketRequest(longIsoCode, "Test Market");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

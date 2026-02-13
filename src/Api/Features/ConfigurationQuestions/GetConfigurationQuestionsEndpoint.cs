@@ -34,7 +34,6 @@ public static class GetConfigurationQuestionsEndpoint
                 q.Question,
                 q.AiPrompt,
                 q.RuleType,
-                q.IsActive,
                 q.Version,
                 q.Answers.Count
             ))

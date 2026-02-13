@@ -121,7 +121,7 @@ public class UpdateConfigurationQuestionValidatorTests
     public async Task ValidQuestion_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateConfigurationQuestionRequest("Updated Question?", "AI prompt", RuleType.MultiCoded, true);
+        var request = new UpdateConfigurationQuestionRequest("Updated Question?", "AI prompt", RuleType.MultiCoded);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -135,7 +135,7 @@ public class UpdateConfigurationQuestionValidatorTests
     public async Task EmptyQuestion_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateConfigurationQuestionRequest("", null, RuleType.SingleCoded, true);
+        var request = new UpdateConfigurationQuestionRequest("", null, RuleType.SingleCoded);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

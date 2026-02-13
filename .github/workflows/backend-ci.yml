@@ -1,0 +1,66 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**/*.cs'
+      - 'src/**/*.csproj'
+      - 'src/**/*.slnx'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build and Test Backend
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '20'
+
+    - name: Restore dependencies
+      run: dotnet restore src/StudyDesigner.slnx
+
+    - name: Build solution
+      run: dotnet build src/StudyDesigner.slnx --no-restore --configuration Release
+
+    - name: Run unit tests
+      run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
+
+    - name: Run integration tests
+      run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
+
+    - name: Install Playwright CLI
+      run: dotnet tool install --global Microsoft.Playwright.CLI
+
+    - name: Install Playwright Browsers
+      working-directory: src/Api.E2ETests
+      run: playwright install --with-deps
+
+    - name: Install Admin App Dependencies
+      working-directory: src/Admin
+      run: npm ci
+
+    - name: Install Designer App Dependencies
+      working-directory: src/Designer
+      run: npm ci
+
+    - name: Run E2E tests
+      run: dotnet run --project src/Api.E2ETests/Api.E2ETests.csproj --no-build --configuration Release
+
+    - name: Display test summary
+      if: always()
+      run: |
+        echo "Backend build and test workflow completed"
+        echo "Unit tests: Api.Tests"
+        echo "Integration tests: Api.IntegrationTests"

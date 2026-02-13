@@ -39,7 +39,6 @@ public static class UpdateProductTemplateEndpoint
         template.Name = request.Name;
         template.Version = request.Version;
         template.ProductId = request.ProductId;
-        template.IsActive = request.IsActive;
         template.ModifiedOn = DateTime.UtcNow;
         template.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
 
@@ -58,6 +57,6 @@ public static class UpdateProductTemplateEndpoint
             throw;
         }
 
-        return TypedResults.Ok(new UpdateProductTemplateResponse(template.Id, template.Name, template.Version, template.ProductId, template.IsActive));
+        return TypedResults.Ok(new UpdateProductTemplateResponse(template.Id, template.Name, template.Version, template.ProductId));
     }
 }

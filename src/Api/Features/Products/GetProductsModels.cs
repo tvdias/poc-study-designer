@@ -1,12 +1,11 @@
 namespace Api.Features.Products;
 
-public record GetProductsResponse(Guid Id, string Name, string? Description, bool IsActive);
+public record GetProductsResponse(Guid Id, string Name, string? Description);
 
 public record GetProductDetailResponse(
     Guid Id, 
     string Name, 
-    string? Description, 
-    bool IsActive,
+    string? Description,
     List<ProductTemplateInfo> ProductTemplates,
     List<ProductConfigQuestionInfo> ConfigurationQuestions
 );

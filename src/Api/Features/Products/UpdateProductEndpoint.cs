@@ -28,7 +28,10 @@ public static class UpdateProductEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var product = await db.Products.FindAsync([id], cancellationToken);
+        var product = await db.Products
+            .Where(p => p.IsActive)
+            .Where(p => p.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (product == null)
         {
@@ -37,7 +40,6 @@ public static class UpdateProductEndpoint
 
         product.Name = request.Name;
         product.Description = request.Description;
-        product.IsActive = request.IsActive;
         product.ModifiedOn = DateTime.UtcNow;
         product.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
 
@@ -56,6 +58,6 @@ public static class UpdateProductEndpoint
             throw;
         }
 
-        return TypedResults.Ok(new UpdateProductResponse(product.Id, product.Name, product.Description, product.IsActive));
+        return TypedResults.Ok(new UpdateProductResponse(product.Id, product.Name, product.Description));
     }
 }

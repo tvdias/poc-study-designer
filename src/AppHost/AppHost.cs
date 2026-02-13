@@ -4,13 +4,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 var enableAzureFunctions = builder.Configuration.GetValue<bool>("EnableAzureFunctions", false);
 
 var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
-var cache = builder.AddRedis("cache");
 
 var api = builder.AddProject<Projects.Api>("api")
     .WithReference(postgres)
     .WaitFor(postgres)
-    .WithReference(cache)
-    .WaitFor(cache)
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();
 
@@ -22,9 +19,10 @@ var appAdmin = builder.AddViteApp("app-admin", "../Admin")
 
 if (enableAzureFunctions)
 {
-    var serviceBus = builder.AddAzureServiceBus("servicebus")
-        .AddTopic("questions")
-        .AddTopic("projects");
+    var serviceBus = builder.AddAzureServiceBus("servicebus");
+    
+    serviceBus.AddServiceBusTopic("questions");
+    serviceBus.AddServiceBusTopic("projects");
 
     builder.AddAzureFunctionsProject<Projects.CluedinProcessor>("func-cluedin-processor")
         .WithReference(serviceBus);
@@ -34,5 +32,3 @@ if (enableAzureFunctions)
 }
 
 builder.Build().Run();
-
-public partial class Program { }

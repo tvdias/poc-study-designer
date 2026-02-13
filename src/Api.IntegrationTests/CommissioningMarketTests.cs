@@ -1,130 +1,84 @@
-extern alias AppHostAssembly;
 using Api.Features.CommissioningMarkets;
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
 using System.Net.Http.Json;
 
 namespace Api.IntegrationTests;
 
-public class CommissioningMarketTests(BoxedAppHostFixture fixture) : IClassFixture<BoxedAppHostFixture>
+public class CommissioningMarketTests(IntegrationTestFixture fixture)
 {
     [Fact]
-    public async Task CreateAndGetCommissioningMarkets_WorksCorrectly()
+    public async Task CommissioningMarketCrudWorkflow_ExecutesSuccessfully()
     {
         // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
+        var httpClient = fixture.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        // Act - Create
-        var newMarket = new CreateCommissioningMarketRequest("US", "United States");
-        var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert - Create
+        // ===== CHECKPOINT 1: CREATE =====
+        var createRequest = new CreateCommissioningMarketRequest("US-TEST", "Workflow Market");
+        var createResponse = await httpClient.PostAsJsonAsync("/api/commissioning-markets", createRequest, cancellationToken);
+        
         createResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateCommissioningMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateCommissioningMarketResponse>(cancellationToken);
         Assert.NotNull(createdMarket);
-        Assert.Equal(newMarket.IsoCode, createdMarket.IsoCode);
-        Assert.Equal(newMarket.Name, createdMarket.Name);
+        Assert.Equal(createRequest.IsoCode, createdMarket.IsoCode);
+        Assert.Equal(createRequest.Name, createdMarket.Name);
         Assert.NotEqual(Guid.Empty, createdMarket.Id);
 
-        // Act - Get
-        var getResponse = await client.GetAsync("/api/commissioning-markets", TestContext.Current.CancellationToken);
+        var marketId = createdMarket.Id;
+
+        // ===== CHECKPOINT 2: GET BY ID =====
+        var getByIdResponse = await httpClient.GetAsync($"/api/commissioning-markets/{marketId}", cancellationToken);
         
-        // Assert - Get
-        getResponse.EnsureSuccessStatusCode();
-        var markets = await getResponse.Content.ReadFromJsonAsync<List<GetCommissioningMarketsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(markets);
-        Assert.Contains(markets, m => m.Id == createdMarket.Id && m.IsoCode == newMarket.IsoCode && m.Name == newMarket.Name);
-    }
-
-    [Fact]
-    public async Task GetCommissioningMarketById_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var newMarket = new CreateCommissioningMarketRequest("CA", "Canada");
-        var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        Assert.Equal(System.Net.HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(createResponse.Headers.Location);
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateCommissioningMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
-
-        // Act
-        var getResponse = await client.GetAsync($"/api/commissioning-markets/{createdMarket!.Id}", TestContext.Current.CancellationToken);
-
-        // Assert
-        getResponse.EnsureSuccessStatusCode();
-        var fetchedMarket = await getResponse.Content.ReadFromJsonAsync<GetCommissioningMarketByIdResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        getByIdResponse.EnsureSuccessStatusCode();
+        var fetchedMarket = await getByIdResponse.Content.ReadFromJsonAsync<GetCommissioningMarketByIdResponse>(cancellationToken);
         Assert.NotNull(fetchedMarket);
-        Assert.Equal(createdMarket.Id, fetchedMarket.Id);
-        Assert.Equal(createdMarket.IsoCode, fetchedMarket.IsoCode);
-        Assert.Equal(createdMarket.Name, fetchedMarket.Name);
-    }
+        Assert.Equal(marketId, fetchedMarket.Id);
+        Assert.Equal(createRequest.IsoCode, fetchedMarket.IsoCode);
+        Assert.Equal(createRequest.Name, fetchedMarket.Name);
 
-    [Fact]
-    public async Task UpdateCommissioningMarket_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var newMarket = new CreateCommissioningMarketRequest("MX", "Mexico");
-        var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateCommissioningMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 3: GET ALL (verify in list) =====
+        var getAllResponse = await httpClient.GetAsync("/api/commissioning-markets", cancellationToken);
+        
+        getAllResponse.EnsureSuccessStatusCode();
+        var allMarkets = await getAllResponse.Content.ReadFromJsonAsync<List<GetCommissioningMarketsResponse>>(cancellationToken);
+        Assert.NotNull(allMarkets);
+        Assert.Contains(allMarkets, m => m.Id == marketId && m.IsoCode == createRequest.IsoCode && m.Name == createRequest.Name);
 
-        // Act
-        var updateRequest = new UpdateCommissioningMarketRequest("MX", "Mexico (Updated)", false);
-        var updateResponse = await client.PutAsJsonAsync($"/api/commissioning-markets/{createdMarket!.Id}", updateRequest, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert
+        // ===== CHECKPOINT 4: UPDATE =====
+        var updateRequest = new UpdateCommissioningMarketRequest("US-TEST", "Workflow Market (Updated)");
+        var updateResponse = await httpClient.PutAsJsonAsync($"/api/commissioning-markets/{marketId}", updateRequest, cancellationToken);
+        
         updateResponse.EnsureSuccessStatusCode();
-        var updatedMarket = await updateResponse.Content.ReadFromJsonAsync<UpdateCommissioningMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var updatedMarket = await updateResponse.Content.ReadFromJsonAsync<UpdateCommissioningMarketResponse>(cancellationToken);
         Assert.NotNull(updatedMarket);
-        Assert.Equal(createdMarket.Id, updatedMarket.Id);
-        Assert.Equal("Mexico (Updated)", updatedMarket.Name);
-        Assert.False(updatedMarket.IsActive);
-    }
+        Assert.Equal(marketId, updatedMarket.Id);
+        Assert.Equal("Workflow Market (Updated)", updatedMarket.Name);
 
-    [Fact]
-    public async Task DeleteCommissioningMarket_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var newMarket = new CreateCommissioningMarketRequest("BR", "Brazil");
-        var createResponse = await client.PostAsJsonAsync("/api/commissioning-markets", newMarket, cancellationToken: TestContext.Current.CancellationToken);
-        createResponse.EnsureSuccessStatusCode();
-        var createdMarket = await createResponse.Content.ReadFromJsonAsync<CreateCommissioningMarketResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 5: VERIFY UPDATE (get by id again) =====
+        var verifyUpdateResponse = await httpClient.GetAsync($"/api/commissioning-markets/{marketId}", cancellationToken);
+        
+        verifyUpdateResponse.EnsureSuccessStatusCode();
+        var verifiedMarket = await verifyUpdateResponse.Content.ReadFromJsonAsync<GetCommissioningMarketByIdResponse>(cancellationToken);
+        Assert.NotNull(verifiedMarket);
+        Assert.Equal("Workflow Market (Updated)", verifiedMarket.Name);
 
-        // Act
-        var deleteResponse = await client.DeleteAsync($"/api/commissioning-markets/{createdMarket!.Id}", TestContext.Current.CancellationToken);
+        // ===== CHECKPOINT 6: SEARCH =====
+        var searchResponse = await httpClient.GetAsync("/api/commissioning-markets?query=Workflow", cancellationToken);
+        
+        searchResponse.EnsureSuccessStatusCode();
+        var searchedMarkets = await searchResponse.Content.ReadFromJsonAsync<List<GetCommissioningMarketsResponse>>(cancellationToken);
+        Assert.NotNull(searchedMarkets);
+        Assert.Contains(searchedMarkets, m => m.Id == marketId);
 
-        // Assert
+        // ===== CHECKPOINT 7: DELETE =====
+        var deleteResponse = await httpClient.DeleteAsync($"/api/commissioning-markets/{marketId}", cancellationToken);
+        
         deleteResponse.EnsureSuccessStatusCode();
         Assert.Equal(System.Net.HttpStatusCode.NoContent, deleteResponse.StatusCode);
-    }
 
-    [Fact]
-    public async Task SearchCommissioningMarkets_WorksCorrectly()
-    {
-        // Arrange
-        var appName = "api";
-        var client = fixture.App.CreateHttpClient(appName);
-        var market1 = new CreateCommissioningMarketRequest("FR", "France");
-        var market2 = new CreateCommissioningMarketRequest("DE", "Germany");
-        await client.PostAsJsonAsync("/api/commissioning-markets", market1, cancellationToken: TestContext.Current.CancellationToken);
-        await client.PostAsJsonAsync("/api/commissioning-markets", market2, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Act
-        var searchResponse = await client.GetAsync("/api/commissioning-markets?query=France", TestContext.Current.CancellationToken);
-
-        // Assert
-        searchResponse.EnsureSuccessStatusCode();
-        var markets = await searchResponse.Content.ReadFromJsonAsync<List<GetCommissioningMarketsResponse>>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.NotNull(markets);
-        Assert.Contains(markets, m => m.Name == "France");
+        // ===== CHECKPOINT 8: VERIFY DELETION (should return 404) =====
+        var verifyDeleteResponse = await httpClient.GetAsync($"/api/commissioning-markets/{marketId}", cancellationToken);
+        
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, verifyDeleteResponse.StatusCode);
     }
 }

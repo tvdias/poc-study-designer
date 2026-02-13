@@ -18,7 +18,7 @@ public static class GetClientsEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var clientsQuery = db.Clients.AsNoTracking();
+        var clientsQuery = db.Clients.Where(c => c.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -27,7 +27,7 @@ public static class GetClientsEndpoint
         }
 
         return await clientsQuery
-            .Select(c => new GetClientsResponse(c.Id, c.AccountName, c.CompanyNumber, c.CustomerNumber, c.CompanyCode, c.IsActive, c.CreatedOn))
+            .Select(c => new GetClientsResponse(c.Id, c.AccountName, c.CompanyNumber, c.CustomerNumber, c.CompanyCode, c.CreatedOn))
             .ToListAsync(cancellationToken);
     }
 }

@@ -55,6 +55,6 @@ public static class CreateFieldworkMarketEndpoint
             throw;
         }
 
-        return TypedResults.CreatedAtRoute(new CreateFieldworkMarketResponse(market.Id, market.IsoCode, market.Name, market.IsActive), "GetFieldworkMarketById", new { id = market.Id });
+        return TypedResults.CreatedAtRoute(new CreateFieldworkMarketResponse(market.Id, market.IsoCode, market.Name), "GetFieldworkMarketById", new { id = market.Id });
     }
 }

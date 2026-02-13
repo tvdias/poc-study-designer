@@ -18,7 +18,7 @@ public static class GetMetricGroupsEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var metricGroupsQuery = db.MetricGroups.AsNoTracking();
+        var metricGroupsQuery = db.MetricGroups.Where(mg => mg.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -27,7 +27,7 @@ public static class GetMetricGroupsEndpoint
         }
 
         return await metricGroupsQuery
-            .Select(mg => new GetMetricGroupsResponse(mg.Id, mg.Name, mg.IsActive))
+            .Select(mg => new GetMetricGroupsResponse(mg.Id, mg.Name))
             .ToListAsync(cancellationToken);
     }
 }

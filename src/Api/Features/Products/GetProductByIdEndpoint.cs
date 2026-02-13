@@ -19,11 +19,13 @@ public static class GetProductByIdEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var product = await db.Products
+        var product = await db.Products.AsNoTracking()
+            .Where(p => p.IsActive)
+            .Where(p => p.Id == id)
             .Include(p => p.ProductTemplates)
             .Include(p => p.ProductConfigQuestions)
                 .ThenInclude(pcq => pcq.ConfigurationQuestion)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (product == null)
         {
@@ -34,17 +36,15 @@ public static class GetProductByIdEndpoint
             product.Id,
             product.Name,
             product.Description,
-            product.IsActive,
-            product.ProductTemplates
-                .Select(pt => new ProductTemplateInfo(pt.Id, pt.Name, pt.Version))
-                .ToList(),
-            product.ProductConfigQuestions
-                .Where(pcq => pcq.ConfigurationQuestion != null)
+            [.. product.ProductTemplates
+                .Where(pt => pt.IsActive)
+                .Select(pt => new ProductTemplateInfo(pt.Id, pt.Name, pt.Version))],
+            [.. product.ProductConfigQuestions
+                .Where(pcq => pcq.IsActive && pcq.ConfigurationQuestion != null)
                 .Select(pcq => new ProductConfigQuestionInfo(
                     pcq.Id, 
                     pcq.ConfigurationQuestionId, 
-                    pcq.ConfigurationQuestion!.Question))
-                .ToList()
+                    pcq.ConfigurationQuestion!.Question))]
         );
 
         return TypedResults.Ok(response);
