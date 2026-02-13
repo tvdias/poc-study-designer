@@ -203,13 +203,13 @@ jobs:
           echo "Frontend Coverage: ${{ needs.frontend-coverage.result }}"
           
           if [ "${{ needs.backend-tests.result }}" != "success" ]; then
-            echo "❌ Quality gate failed: Backend tests failed"
+            echo "❌ Backend Quality gate failed."
             exit 1
           fi
           
           if [ "${{ needs.frontend-coverage.result }}" != "success" ]; then
-            echo "❌ Quality gate failed: Frontend coverage threshold not met (required: 50%)"
+            echo "❌ Frontend Quality gate failed."
             exit 1
           fi
           
-          echo "✅ Quality gate passed (Soft Gate): All tests passed. Coverage targets checked."
+          echo "✅ Quality gate passed."
