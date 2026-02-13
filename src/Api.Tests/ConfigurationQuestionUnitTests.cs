@@ -284,3 +284,189 @@ public class CreateDependencyRuleValidatorTests
         Assert.Equal("Classification must not exceed 100 characters.", result.Errors[0].ErrorMessage);
     }
 }
+
+public class UpdateConfigurationAnswerValidatorTests
+{
+    private readonly UpdateConfigurationAnswerValidator _validator = new();
+
+    [Fact]
+    public async Task ValidAnswer_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new UpdateConfigurationAnswerRequest("Updated Answer", true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public async Task EmptyName_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateConfigurationAnswerRequest("", true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Answer name is required.");
+    }
+
+    [Fact]
+    public async Task NullName_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateConfigurationAnswerRequest(null!, false);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Answer name is required.");
+    }
+
+    [Fact]
+    public async Task NameExceeding200Characters_ShouldFailValidation()
+    {
+        // Arrange
+        var longName = new string('a', 201);
+        var request = new UpdateConfigurationAnswerRequest(longName, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Answer name must not exceed 200 characters.", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task NameExactly200Characters_ShouldPassValidation()
+    {
+        // Arrange
+        var maxLengthName = new string('a', 200);
+        var request = new UpdateConfigurationAnswerRequest(maxLengthName, false);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+}
+
+public class UpdateDependencyRuleValidatorTests
+{
+    private readonly UpdateDependencyRuleValidator _validator = new();
+
+    [Fact]
+    public async Task ValidRule_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new UpdateDependencyRuleRequest(
+            "Updated Rule",
+            null,
+            "Classification",
+            "Type",
+            "Content Type",
+            "Module",
+            "Question Bank",
+            "Tag",
+            "Status Reason",
+            true
+        );
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public async Task EmptyName_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateDependencyRuleRequest("", null, null, null, null, null, null, null, null, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Dependency rule name is required.");
+    }
+
+    [Fact]
+    public async Task NameExceeding200Characters_ShouldFailValidation()
+    {
+        // Arrange
+        var longName = new string('a', 201);
+        var request = new UpdateDependencyRuleRequest(longName, null, null, null, null, null, null, null, null, false);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Dependency rule name must not exceed 200 characters.", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ClassificationExceeding100Characters_ShouldFailValidation()
+    {
+        // Arrange
+        var longClassification = new string('a', 101);
+        var request = new UpdateDependencyRuleRequest("Rule", null, longClassification, null, null, null, null, null, null, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Classification must not exceed 100 characters.", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task TypeExceeding100Characters_ShouldFailValidation()
+    {
+        // Arrange
+        var longType = new string('a', 101);
+        var request = new UpdateDependencyRuleRequest("Rule", null, null, longType, null, null, null, null, null, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Type must not exceed 100 characters.", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task StatusReasonExceeding200Characters_ShouldFailValidation()
+    {
+        // Arrange
+        var longStatusReason = new string('a', 201);
+        var request = new UpdateDependencyRuleRequest("Rule", null, null, null, null, null, null, null, longStatusReason, false);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Status reason must not exceed 200 characters.", result.Errors[0].ErrorMessage);
+    }
+}
