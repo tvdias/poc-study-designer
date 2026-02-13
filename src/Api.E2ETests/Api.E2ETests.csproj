@@ -20,14 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\Api\Api.csproj" />
+    <ProjectReference Include="..\AppHost\AppHost.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Api\Api.csproj" />
-    <ProjectReference Include="..\AppHost\AppHost.csproj">
-      <Aliases>AppHostAssembly</Aliases>
-    </ProjectReference>
+    <!--<Using Include="Aspire.Hosting.ApplicationModel" />-->
+    <!--<Using Include="Aspire.Hosting.Testing" />-->
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Playwright" />
+    <Using Include="System.Net" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
 </Project>

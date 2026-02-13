@@ -32,5 +32,3 @@ if (enableAzureFunctions)
 }
 
 builder.Build().Run();
-
-public partial class Program { }

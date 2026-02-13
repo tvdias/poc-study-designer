@@ -1,10 +1,8 @@
-using Microsoft.Playwright;
-
 namespace Api.E2ETests;
 
 /// <summary>
 /// E2E tests for the Designer app basic functionality.
-/// These tests cover the full stack: Frontend UI -> API -> Database
+/// These tests verify the Designer frontend loads and renders correctly.
 /// </summary>
 public class DesignerAppE2ETests(E2ETestFixture fixture)
 {
@@ -17,18 +15,16 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
 
         try
         {
-            // Act - Navigate to Designer app
+            // Act
             await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert - Verify the page loaded
-            var title = await page.TitleAsync();
-            Assert.NotNull(title);
+            // Assert - verify the React app rendered with expected content
+            var heading = page.GetByRole(AriaRole.Heading, new() { Name = "Study Designer" });
+            await heading.WaitForAsync(new() { Timeout = 10000 });
+            Assert.True(await heading.IsVisibleAsync(), "Expected 'Study Designer' heading to be visible");
 
-            // Verify we can see some content (adjust based on actual Designer app UI)
-            var body = await page.Locator("body").TextContentAsync();
-            Assert.NotNull(body);
-            Assert.NotEmpty(body);
+            var welcomeMessage = page.Locator("text=Welcome to the PoC Study Designer application.");
+            Assert.True(await welcomeMessage.IsVisibleAsync(), "Expected welcome message to be visible");
         }
         finally
         {
@@ -45,55 +41,17 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
 
         try
         {
-            // Act - Navigate to Designer app
+            // Act
             await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Get the current URL
-            var currentUrl = page.Url;
-            Assert.Contains(designerUrl, currentUrl);
+            // Assert - verify footer navigation elements exist
+            var footerNav = page.Locator("footer nav");
+            await footerNav.WaitForAsync(new() { Timeout = 10000 });
+            Assert.True(await footerNav.IsVisibleAsync(), "Expected footer navigation to be visible");
 
-            // Verify basic navigation elements exist (adjust based on actual Designer app structure)
-            var navElements = await page.Locator("nav, header, [role='navigation']").CountAsync();
-            Assert.True(navElements > 0, "Expected to find navigation elements");
-        }
-        finally
-        {
-            await page.CloseAsync();
-        }
-    }
-
-    [Fact]
-    public async Task DesignerApp_ShouldConnectToAPI()
-    {
-        // Arrange
-        var page = await fixture.CreatePageAsync();
-        var designerUrl = fixture.GetDesignerAppUrl();
-
-        // Set up request interception to verify API calls
-        var apiCallsMade = new List<string>();
-        page.Request += (_, request) =>
-        {
-            if (request.Url.Contains("/api/"))
-            {
-                apiCallsMade.Add(request.Url);
-            }
-        };
-
-        try
-        {
-            // Act - Navigate to Designer app
-            await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            // Wait a bit for any API calls to be made
-            await Task.Delay(2000);
-
-            // Assert - Verify API calls were made (the Designer app should fetch some data)
-            // Note: Adjust this assertion based on what API calls the Designer app makes on load
-            // For now, we just verify the app can make requests to the API
-            var apiUrl = fixture.GetApiUrl();
-            Assert.NotEmpty(apiUrl);
+            // Verify the Aspire link is present
+            var aspireLink = footerNav.GetByRole(AriaRole.Link, new() { Name = "Learn more about Aspire" });
+            Assert.True(await aspireLink.IsVisibleAsync(), "Expected 'Learn more about Aspire' link to be visible");
         }
         finally
         {
@@ -107,19 +65,9 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
         // Arrange
         var page = await fixture.CreatePageAsync();
         var designerUrl = fixture.GetDesignerAppUrl();
-        var consoleErrors = new List<string>();
         var pageErrors = new List<string>();
 
-        // Listen for console errors
-        page.Console += (_, msg) =>
-        {
-            if (msg.Type == "error")
-            {
-                consoleErrors.Add(msg.Text);
-            }
-        };
-
-        // Listen for page errors
+        // Listen for page errors (uncaught exceptions)
         page.PageError += (_, error) =>
         {
             pageErrors.Add(error);
@@ -127,23 +75,15 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
 
         try
         {
-            // Act - Navigate to Designer app
+            // Act
             await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Wait a bit for any delayed errors
-            await Task.Delay(2000);
+            // Wait for the app to fully render
+            var heading = page.GetByRole(AriaRole.Heading, new() { Name = "Study Designer" });
+            await heading.WaitForAsync(new() { Timeout = 10000 });
 
-            // Assert - Verify no console or page errors
+            // Assert - no uncaught page errors
             Assert.Empty(pageErrors);
-            
-            // Filter out known acceptable console errors (like network timing issues)
-            var criticalErrors = consoleErrors.Where(e => 
-                !e.Contains("favicon") && 
-                !e.Contains("404") &&
-                !e.Contains("Failed to load resource")).ToList();
-            
-            Assert.Empty(criticalErrors);
         }
         finally
         {

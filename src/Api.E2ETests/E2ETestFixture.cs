@@ -1,58 +1,60 @@
-extern alias AppHostAssembly;
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
-using Microsoft.Playwright;
-using Xunit;
 
 [assembly: AssemblyFixture(typeof(Api.E2ETests.E2ETestFixture))]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Api.E2ETests;
 
 /// <summary>
-/// Fixture for E2E tests that starts the full Aspire application including frontend apps.
-/// This fixture is shared across all E2E tests in the same test class.
+/// Assembly-level fixture for E2E tests that starts the full Aspire application
+/// including frontend apps. Initialized once and shared across all test classes.
 /// </summary>
 public class E2ETestFixture : IAsyncLifetime
 {
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
+
     public DistributedApplication App { get; private set; } = null!;
     public IPlaywright Playwright { get; private set; } = null!;
     public IBrowser Browser { get; private set; } = null!;
 
     public async ValueTask InitializeAsync()
     {
-        // Start the Aspire application with all services (API, DB, Redis, Frontend apps)
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<AppHostAssembly::Program>();
+        // Start the Aspire application with all services (API, DB, Frontend apps)
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
         App = await appHost.BuildAsync();
-        await App.StartAsync();
+        await App.StartAsync().WaitAsync(DefaultTimeout);
+
+        // Wait for API to be healthy (it has a registered health check)
+        await App.ResourceNotifications.WaitForResourceHealthyAsync("api").WaitAsync(DefaultTimeout);
+
+        // Vite apps don't have Aspire health checks, so wait for them to be running
+        // and then probe their HTTP endpoints to confirm they're serving requests.
+        await WaitForViteAppReadyAsync("app-admin");
+        await WaitForViteAppReadyAsync("app-designer");
 
         // Initialize Playwright for browser automation
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
-        
+
         // Launch browser in headless mode for CI/CD compatibility
         Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
             Headless = true,
             Args = ["--no-sandbox", "--disable-setuid-sandbox"]
         });
-
-        // Wait for services to be ready
-        var httpClient = new HttpClient();
-        await WaitForResourceAsync(httpClient, GetApiUrl());
-        await WaitForResourceAsync(httpClient, GetAdminAppUrl());
-        await WaitForResourceAsync(httpClient, GetDesignerAppUrl());
     }
 
     public async ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
+
         if (Browser != null)
         {
             await Browser.DisposeAsync();
         }
 
-        if (Playwright != null)
-        {
-            Playwright.Dispose();
-        }
+        Playwright?.Dispose();
 
         if (App != null)
         {
@@ -101,39 +103,58 @@ public class E2ETestFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Creates an HTTP client for direct API calls (for setup/verification).
+    /// Creates an HTTP client configured for the API resource.
     /// </summary>
     public HttpClient CreateApiClient()
     {
         return App.CreateHttpClient("api");
     }
 
-
-    private async Task WaitForResourceAsync(HttpClient client, string url)
+    /// <summary>
+    /// Creates an HTTP client configured for the Admin app resource.
+    /// </summary>
+    public HttpClient CreateAdminClient()
     {
-        var timeout = TimeSpan.FromSeconds(180);
-        var delay = TimeSpan.FromSeconds(1);
+        return App.CreateHttpClient("app-admin");
+    }
+
+    /// <summary>
+    /// Creates an HTTP client configured for the Designer app resource.
+    /// </summary>
+    public HttpClient CreateDesignerClient()
+    {
+        return App.CreateHttpClient("app-designer");
+    }
+
+    /// <summary>
+    /// Waits for a Vite app to be running and able to serve HTTP requests.
+    /// Vite dev servers don't register Aspire health checks, so we poll the root
+    /// endpoint until it responds successfully.
+    /// </summary>
+    private async Task WaitForViteAppReadyAsync(string resourceName)
+    {
+        using var httpClient = App.CreateHttpClient(resourceName);
+        var delay = TimeSpan.FromSeconds(2);
         var start = DateTime.UtcNow;
 
-        while (DateTime.UtcNow - start < timeout)
+        while (DateTime.UtcNow - start < DefaultTimeout)
         {
             try
             {
-                var response = await client.GetAsync(url);
+                var response = await httpClient.GetAsync("/");
                 if (response.IsSuccessStatusCode)
                 {
                     return;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Waiting for {url}: {ex.Message}");
-                // Ignore transient errors during startup
+                // Vite dev server not ready yet, retry
             }
 
             await Task.Delay(delay);
         }
 
-        throw new TimeoutException($"Timed out waiting for resource at {url} to become available.");
+        throw new TimeoutException($"Vite app '{resourceName}' did not become ready within {DefaultTimeout.TotalSeconds}s.");
     }
 }
