@@ -24,16 +24,16 @@ public class E2ETestFixture : IAsyncLifetime
         Console.WriteLine($"[E2E] Starting Aspire application at {DateTime.UtcNow:O}");
         
         // Start the Aspire application with all services (API, DB, Frontend apps)
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
+        IDistributedApplicationTestingBuilder appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
         App = await appHost.BuildAsync();
         
         Console.WriteLine($"[E2E] Starting app resources at {DateTime.UtcNow:O}");
         await App.StartAsync().WaitAsync(DefaultTimeout);
         Console.WriteLine($"[E2E] App resources started at {DateTime.UtcNow:O}");
 
-        // Wait for API to be healthy (it has a registered health check)
+        // Wait for API to respond over HTTP (avoid HTTPS dev cert issues in CI)
         Console.WriteLine($"[E2E] Waiting for API health check at {DateTime.UtcNow:O}");
-        await App.ResourceNotifications.WaitForResourceHealthyAsync("api").WaitAsync(DefaultTimeout);
+        await WaitForApiReadyAsync();
         Console.WriteLine($"[E2E] API is healthy at {DateTime.UtcNow:O}");
 
         // Vite apps don't have Aspire health checks, so wait for them to be running
@@ -121,7 +121,7 @@ public class E2ETestFixture : IAsyncLifetime
     /// </summary>
     public HttpClient CreateApiClient()
     {
-        return App.CreateHttpClient("api");
+        return CreateHttpClientForResource("api");
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public class E2ETestFixture : IAsyncLifetime
     /// </summary>
     public HttpClient CreateAdminClient()
     {
-        return App.CreateHttpClient("app-admin");
+        return CreateHttpClientForResource("app-admin");
     }
 
     /// <summary>
@@ -137,17 +137,21 @@ public class E2ETestFixture : IAsyncLifetime
     /// </summary>
     public HttpClient CreateDesignerClient()
     {
-        return App.CreateHttpClient("app-designer");
+        return CreateHttpClientForResource("app-designer");
+    }
+
+    private HttpClient CreateHttpClientForResource(string resourceName)
+    {
+        Uri endpoint = App.GetEndpoint(resourceName, "http");
+        return new HttpClient { BaseAddress = endpoint };
     }
 
     /// <summary>
-    /// Waits for a Vite app to be running and able to serve HTTP requests.
-    /// Vite dev servers don't register Aspire health checks, so we poll the root
-    /// endpoint until it responds successfully.
+    /// Waits for the API to respond to HTTP health checks.
     /// </summary>
-    private async Task WaitForViteAppReadyAsync(string resourceName)
+    private async Task WaitForApiReadyAsync()
     {
-        using var httpClient = App.CreateHttpClient(resourceName);
+        using HttpClient httpClient = CreateHttpClientForResource("api");
         var delay = TimeSpan.FromSeconds(2);
         var start = DateTime.UtcNow;
         var attempts = 0;
@@ -158,7 +162,49 @@ public class E2ETestFixture : IAsyncLifetime
             attempts++;
             try
             {
-                var response = await httpClient.GetAsync("/");
+                HttpResponseMessage response = await httpClient.GetAsync("/health");
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[E2E] API is ready after {attempts} attempts in {(DateTime.UtcNow - start).TotalSeconds:F1}s");
+                    return;
+                }
+                lastException = new Exception($"HTTP {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+            }
+
+            if (attempts % 10 == 0)
+            {
+                Console.WriteLine($"[E2E] Still waiting for API after {attempts} attempts ({(DateTime.UtcNow - start).TotalSeconds:F1}s elapsed)...");
+            }
+
+            await Task.Delay(delay);
+        }
+
+        throw new TimeoutException($"API did not become ready within {DefaultTimeout.TotalSeconds}s after {attempts} attempts. Last error: {lastException?.Message}");
+    }
+
+    /// <summary>
+    /// Waits for a Vite app to be running and able to serve HTTP requests.
+    /// Vite dev servers don't register Aspire health checks, so we poll the root
+    /// endpoint until it responds successfully.
+    /// </summary>
+    private async Task WaitForViteAppReadyAsync(string resourceName)
+    {
+        using HttpClient httpClient = CreateHttpClientForResource(resourceName);
+        var delay = TimeSpan.FromSeconds(2);
+        var start = DateTime.UtcNow;
+        var attempts = 0;
+        Exception? lastException = null;
+
+        while (DateTime.UtcNow - start < DefaultTimeout)
+        {
+            attempts++;
+            try
+            {
+                HttpResponseMessage response = await httpClient.GetAsync("/");
                 if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"[E2E] Vite app '{resourceName}' is ready after {attempts} attempts in {(DateTime.UtcNow - start).TotalSeconds:F1}s");
