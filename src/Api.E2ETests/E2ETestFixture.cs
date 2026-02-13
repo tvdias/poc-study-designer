@@ -21,33 +21,27 @@ public class E2ETestFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        Console.WriteLine($"[E2E] Starting Aspire application at {DateTime.UtcNow:O}");
-        
-        // Start the Aspire application with all services (API, DB, Frontend apps)
-        IDistributedApplicationTestingBuilder appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
+        Console.WriteLine($"[E2E] Starting Aspire application.");
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
         App = await appHost.BuildAsync();
         
-        Console.WriteLine($"[E2E] Starting app resources at {DateTime.UtcNow:O}");
+        Console.WriteLine($"[E2E] Starting app resources.");
         await App.StartAsync().WaitAsync(DefaultTimeout);
-        Console.WriteLine($"[E2E] App resources started at {DateTime.UtcNow:O}");
 
         // Wait for API to respond over HTTP (avoid HTTPS dev cert issues in CI)
-        Console.WriteLine($"[E2E] Waiting for API health check at {DateTime.UtcNow:O}");
-        await WaitForApiReadyAsync();
-        Console.WriteLine($"[E2E] API is healthy at {DateTime.UtcNow:O}");
+        Console.WriteLine($"[E2E] Waiting for API health check.");
+        await WaitForResourceReadyAsync("api", "/health");
 
         // Vite apps don't have Aspire health checks, so wait for them to be running
         // and then probe their HTTP endpoints to confirm they're serving requests.
-        Console.WriteLine($"[E2E] Waiting for Admin app at {DateTime.UtcNow:O}");
-        await WaitForViteAppReadyAsync("app-admin");
-        Console.WriteLine($"[E2E] Admin app is ready at {DateTime.UtcNow:O}");
+        Console.WriteLine($"[E2E] Waiting for Admin app.");
+        await WaitForResourceReadyAsync("app-admin");
         
-        Console.WriteLine($"[E2E] Waiting for Designer app at {DateTime.UtcNow:O}");
-        await WaitForViteAppReadyAsync("app-designer");
-        Console.WriteLine($"[E2E] Designer app is ready at {DateTime.UtcNow:O}");
+        Console.WriteLine($"[E2E] Waiting for Designer app.");
+        await WaitForResourceReadyAsync("app-designer");
 
         // Initialize Playwright for browser automation
-        Console.WriteLine($"[E2E] Initializing Playwright at {DateTime.UtcNow:O}");
+        Console.WriteLine($"[E2E] Initializing Playwright.");
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
 
         // Launch browser in headless mode for CI/CD compatibility
@@ -56,7 +50,7 @@ public class E2ETestFixture : IAsyncLifetime
             Headless = true,
             Args = ["--no-sandbox", "--disable-setuid-sandbox"]
         });
-        Console.WriteLine($"[E2E] E2E fixture initialization complete at {DateTime.UtcNow:O}");
+        Console.WriteLine($"[E2E] E2E fixture initialization complete.");
     }
 
     public async ValueTask DisposeAsync()
@@ -108,15 +102,6 @@ public class E2ETestFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Gets the base URL for the API.
-    /// </summary>
-    public string GetApiUrl()
-    {
-        var endpoint = App.GetEndpoint("api", "http");
-        return endpoint.ToString().TrimEnd('/');
-    }
-
-    /// <summary>
     /// Creates an HTTP client configured for the API resource.
     /// </summary>
     public HttpClient CreateApiClient()
@@ -124,34 +109,18 @@ public class E2ETestFixture : IAsyncLifetime
         return CreateHttpClientForResource("api");
     }
 
-    /// <summary>
-    /// Creates an HTTP client configured for the Admin app resource.
-    /// </summary>
-    public HttpClient CreateAdminClient()
-    {
-        return CreateHttpClientForResource("app-admin");
-    }
-
-    /// <summary>
-    /// Creates an HTTP client configured for the Designer app resource.
-    /// </summary>
-    public HttpClient CreateDesignerClient()
-    {
-        return CreateHttpClientForResource("app-designer");
-    }
-
     private HttpClient CreateHttpClientForResource(string resourceName)
     {
-        Uri endpoint = App.GetEndpoint(resourceName, "http");
+        var endpoint = App.GetEndpoint(resourceName, "http");
         return new HttpClient { BaseAddress = endpoint };
     }
 
     /// <summary>
-    /// Waits for the API to respond to HTTP health checks.
+    /// Waits for a resource to be functioning by polling a specific HTTP path.
     /// </summary>
-    private async Task WaitForApiReadyAsync()
+    private async Task WaitForResourceReadyAsync(string resourceName, string path = "/")
     {
-        using HttpClient httpClient = CreateHttpClientForResource("api");
+        using var httpClient = CreateHttpClientForResource(resourceName);
         var delay = TimeSpan.FromSeconds(2);
         var start = DateTime.UtcNow;
         var attempts = 0;
@@ -162,13 +131,13 @@ public class E2ETestFixture : IAsyncLifetime
             attempts++;
             try
             {
-                HttpResponseMessage response = await httpClient.GetAsync("/health");
+                var response = await httpClient.GetAsync(path);
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"[E2E] API is ready after {attempts} attempts in {(DateTime.UtcNow - start).TotalSeconds:F1}s");
+                    Console.WriteLine($"[E2E] {resourceName} is ready after {attempts} attempts in {(DateTime.UtcNow - start).TotalSeconds:F1}s");
                     return;
                 }
-                lastException = new Exception($"HTTP {response.StatusCode}");
+                lastException = new Exception($"HTTP {response.StatusCode} at {path}");
             }
             catch (Exception ex)
             {
@@ -177,55 +146,12 @@ public class E2ETestFixture : IAsyncLifetime
 
             if (attempts % 10 == 0)
             {
-                Console.WriteLine($"[E2E] Still waiting for API after {attempts} attempts ({(DateTime.UtcNow - start).TotalSeconds:F1}s elapsed)...");
+                Console.WriteLine($"[E2E] Still waiting for {resourceName} after {attempts} attempts ({(DateTime.UtcNow - start).TotalSeconds:F1}s elapsed)...");
             }
 
             await Task.Delay(delay);
         }
 
-        throw new TimeoutException($"API did not become ready within {DefaultTimeout.TotalSeconds}s after {attempts} attempts. Last error: {lastException?.Message}");
-    }
-
-    /// <summary>
-    /// Waits for a Vite app to be running and able to serve HTTP requests.
-    /// Vite dev servers don't register Aspire health checks, so we poll the root
-    /// endpoint until it responds successfully.
-    /// </summary>
-    private async Task WaitForViteAppReadyAsync(string resourceName)
-    {
-        using HttpClient httpClient = CreateHttpClientForResource(resourceName);
-        var delay = TimeSpan.FromSeconds(2);
-        var start = DateTime.UtcNow;
-        var attempts = 0;
-        Exception? lastException = null;
-
-        while (DateTime.UtcNow - start < DefaultTimeout)
-        {
-            attempts++;
-            try
-            {
-                HttpResponseMessage response = await httpClient.GetAsync("/");
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"[E2E] Vite app '{resourceName}' is ready after {attempts} attempts in {(DateTime.UtcNow - start).TotalSeconds:F1}s");
-                    return;
-                }
-                lastException = new Exception($"HTTP {response.StatusCode}");
-            }
-            catch (Exception ex)
-            {
-                // Vite dev server not ready yet, retry
-                lastException = ex;
-            }
-
-            if (attempts % 10 == 0)
-            {
-                Console.WriteLine($"[E2E] Still waiting for '{resourceName}' after {attempts} attempts ({(DateTime.UtcNow - start).TotalSeconds:F1}s elapsed)...");
-            }
-
-            await Task.Delay(delay);
-        }
-
-        throw new TimeoutException($"Vite app '{resourceName}' did not become ready within {DefaultTimeout.TotalSeconds}s after {attempts} attempts. Last error: {lastException?.Message}");
+        throw new TimeoutException($"Resource '{resourceName}' did not become ready at '{path}' within {DefaultTimeout.TotalSeconds}s after {attempts} attempts. Last error: {lastException?.Message}");
     }
 }
