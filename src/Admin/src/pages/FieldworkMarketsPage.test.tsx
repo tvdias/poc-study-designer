@@ -175,4 +175,56 @@ describe('FieldworkMarketsPage', () => {
             expect(fieldworkMarketsApi.getAll).toHaveBeenCalledWith('United');
         });
     });
+
+    it('updates a fieldwork market and returns to view mode', async () => {
+        const mockMarket = { id: '1', isoCode: 'US', name: 'United States', isActive: true };
+        const updatedMarket = { id: '1', isoCode: 'US', name: 'USA', isActive: true };
+        (fieldworkMarketsApi.getAll as any).mockResolvedValue([mockMarket]);
+        (fieldworkMarketsApi.update as any).mockResolvedValue(updatedMarket);
+
+        render(<FieldworkMarketsPage />);
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('United States'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'United States' })).toBeInTheDocument();
+        });
+
+        // Click Edit
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Fieldwork Market/i })).toBeInTheDocument();
+        });
+
+        // Update name
+        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'USA' } });
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+        await waitFor(() => {
+            expect(fieldworkMarketsApi.update).toHaveBeenCalled();
+        });
+
+        // Should return to view mode
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'USA' })).toBeInTheDocument();
+        });
+    });
+
+    it('refreshes the list when refresh button is clicked', async () => {
+        const mockMarkets = [{ id: '1', isoCode: 'US', name: 'United States', isActive: true }];
+        (fieldworkMarketsApi.getAll as any).mockResolvedValue(mockMarkets);
+
+        render(<FieldworkMarketsPage />);
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
+
+        const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+        fireEvent.click(refreshBtn);
+
+        await waitFor(() => {
+            expect(fieldworkMarketsApi.getAll).toHaveBeenCalledTimes(2);
+        });
+    });
 });

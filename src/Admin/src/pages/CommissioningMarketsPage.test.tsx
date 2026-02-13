@@ -175,4 +175,56 @@ describe('CommissioningMarketsPage', () => {
             expect(commissioningMarketsApi.getAll).toHaveBeenCalledWith('United');
         });
     });
+
+    it('updates a commissioning market and returns to view mode', async () => {
+        const mockMarket = { id: '1', isoCode: 'US', name: 'United States', isActive: true };
+        const updatedMarket = { id: '1', isoCode: 'US', name: 'USA', isActive: true };
+        (commissioningMarketsApi.getAll as any).mockResolvedValue([mockMarket]);
+        (commissioningMarketsApi.update as any).mockResolvedValue(updatedMarket);
+
+        render(<CommissioningMarketsPage />);
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('United States'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'United States' })).toBeInTheDocument();
+        });
+
+        // Click Edit
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Commissioning Market/i })).toBeInTheDocument();
+        });
+
+        // Update name
+        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'USA' } });
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+        await waitFor(() => {
+            expect(commissioningMarketsApi.update).toHaveBeenCalled();
+        });
+
+        // Should return to view mode
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'USA' })).toBeInTheDocument();
+        });
+    });
+
+    it('refreshes the list when refresh button is clicked', async () => {
+        const mockMarkets = [{ id: '1', isoCode: 'US', name: 'United States', isActive: true }];
+        (commissioningMarketsApi.getAll as any).mockResolvedValue(mockMarkets);
+
+        render(<CommissioningMarketsPage />);
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
+
+        const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+        fireEvent.click(refreshBtn);
+
+        await waitFor(() => {
+            expect(commissioningMarketsApi.getAll).toHaveBeenCalledTimes(2);
+        });
+    });
 });
