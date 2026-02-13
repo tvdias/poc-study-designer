@@ -23,6 +23,11 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '20'
+
     - name: Restore dependencies
       run: dotnet restore src/StudyDesigner.slnx
 
@@ -30,15 +35,28 @@ jobs:
       run: dotnet build src/StudyDesigner.slnx --no-restore --configuration Release
 
     - name: Run unit tests
-      # Note: Using 'dotnet run' instead of 'dotnet test' because Api.Tests uses Microsoft Testing Platform (xUnit v3)
-      # with OutputType=Exe. The VSTest runner is no longer supported on .NET 10 SDK.
-      # See: https://aka.ms/dotnet-test-mtp-error
       run: dotnet run --project src/Api.Tests/Api.Tests.csproj --no-build --configuration Release
 
     - name: Run integration tests
-      # Integration tests use .NET Aspire Testing with DistributedApplication
-      # These tests start the full application stack including PostgreSQL and Redis via Testcontainers
       run: dotnet run --project src/Api.IntegrationTests/Api.IntegrationTests.csproj --no-build --configuration Release
+
+    - name: Install Playwright CLI
+      run: dotnet tool install --global Microsoft.Playwright.CLI
+
+    - name: Install Playwright Browsers
+      working-directory: src/Api.E2ETests
+      run: playwright install --with-deps
+
+    - name: Install Admin App Dependencies
+      working-directory: src/Admin
+      run: npm ci
+
+    - name: Install Designer App Dependencies
+      working-directory: src/Designer
+      run: npm ci
+
+    - name: Run E2E tests
+      run: dotnet run --project src/Api.E2ETests/Api.E2ETests.csproj --no-build --configuration Release
 
     - name: Display test summary
       if: always()

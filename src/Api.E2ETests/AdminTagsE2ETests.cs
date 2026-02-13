@@ -1,5 +1,4 @@
 using Api.Features.Tags;
-using Microsoft.Playwright;
 using System.Net.Http.Json;
 
 namespace Api.E2ETests;
@@ -8,7 +7,7 @@ namespace Api.E2ETests;
 /// E2E tests for Tags management in the Admin app.
 /// These tests cover the full stack: Frontend UI -> API -> Database
 /// </summary>
-public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFixture>
+public class AdminTagsE2ETests(E2ETestFixture fixture)
 {
     [Fact]
     public async Task CreateTag_ThroughUI_ShouldPersistInDatabase()
@@ -20,34 +19,33 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            // Navigate directly to the Tags page
+            await page.GotoAsync($"{adminUrl}/tags", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Wait for the app to load
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render (proves API call completed)
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Navigate to Tags page
-            await page.ClickAsync("text=Tags", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Click "New" button in the command bar
+            await page.Locator("button.cmd-btn.primary:has-text('New')").ClickAsync();
 
-            // Click "New Tag" button
-            await page.ClickAsync("button:has-text('New Tag')");
-
-            // Fill in the tag name
-            await page.FillAsync("input[placeholder*='Tag']", tagName);
+            // Wait for the side panel to open and fill in the tag name
+            var nameInput = page.Locator("#tagName");
+            await nameInput.WaitForAsync(new() { Timeout = 5000 });
+            await nameInput.FillAsync(tagName);
 
             // Click Save button
-            await page.ClickAsync("button:has-text('Save')");
+            await page.Locator("button:has-text('Save')").ClickAsync();
 
-            // Wait for the save to complete
+            // Wait for the save to complete and panel to close
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify the tag appears in the list
             var tagCell = page.Locator($"td:has-text('{tagName}')");
+            await tagCell.WaitForAsync(new() { Timeout = 10000 });
             Assert.True(await tagCell.IsVisibleAsync(), $"Expected tag '{tagName}' to be visible in the list");
 
-            // Assert - Verify in database via API
-            var apiClient = fixture.CreateApiClient();
+            // Verify in database via API
+            using var apiClient = fixture.CreateApiClient();
             var response = await apiClient.GetAsync("/api/tags", TestContext.Current.CancellationToken);
             response.EnsureSuccessStatusCode();
 
@@ -65,7 +63,7 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
     public async Task EditTag_ThroughUI_ShouldUpdateInDatabase()
     {
         // Arrange - Create a tag via API first
-        var apiClient = fixture.CreateApiClient();
+        using var apiClient = fixture.CreateApiClient();
         var originalName = $"E2E Original Tag {Guid.NewGuid()}";
         var updatedName = $"E2E Updated Tag {Guid.NewGuid()}";
 
@@ -81,30 +79,32 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Tags page
+            await page.GotoAsync($"{adminUrl}/tags", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Tags page
-            await page.ClickAsync("text=Tags", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Find the tag row and click Edit button
+            // Find the tag row and click Edit button (icon button with title="Edit")
             var tagRow = page.Locator($"tr:has-text('{originalName}')");
-            await tagRow.Locator("button:has-text('Edit')").ClickAsync();
+            await tagRow.Locator("button[title='Edit']").ClickAsync();
 
-            // Update the tag name
-            await page.FillAsync("input[placeholder*='Tag']", updatedName);
+            // Wait for the side panel form and update the tag name
+            var nameInput = page.Locator("#tagName");
+            await nameInput.WaitForAsync(new() { Timeout = 5000 });
+            await nameInput.ClearAsync();
+            await nameInput.FillAsync(updatedName);
 
             // Click Save button
-            await page.ClickAsync("button:has-text('Save')");
+            await page.Locator("button:has-text('Save')").ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify the updated tag appears in the list
             var updatedTagCell = page.Locator($"td:has-text('{updatedName}')");
+            await updatedTagCell.WaitForAsync(new() { Timeout = 10000 });
             Assert.True(await updatedTagCell.IsVisibleAsync(), $"Expected updated tag '{updatedName}' to be visible in the list");
 
-            // Assert - Verify in database via API
+            // Verify in database via API
             var getResponse = await apiClient.GetAsync($"/api/tags/{createdTag.Id}", TestContext.Current.CancellationToken);
             getResponse.EnsureSuccessStatusCode();
             var fetchedTag = await getResponse.Content.ReadFromJsonAsync<GetTagByIdResponse>(cancellationToken: TestContext.Current.CancellationToken);
@@ -121,7 +121,7 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
     public async Task DeleteTag_ThroughUI_ShouldRemoveFromDatabase()
     {
         // Arrange - Create a tag via API first
-        var apiClient = fixture.CreateApiClient();
+        using var apiClient = fixture.CreateApiClient();
         var tagName = $"E2E Delete Tag {Guid.NewGuid()}";
 
         var createResponse = await apiClient.PostAsJsonAsync("/api/tags",
@@ -136,32 +136,25 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Tags page
+            await page.GotoAsync($"{adminUrl}/tags", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Tags page
-            await page.ClickAsync("text=Tags", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Find the tag row and click Delete button
+            // The delete handler uses browser confirm() dialog — accept it automatically
+            page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
+
+            // Find the tag row and click Delete button (icon button with title="Delete")
             var tagRow = page.Locator($"tr:has-text('{tagName}')");
-            await tagRow.Locator("button:has-text('Delete')").ClickAsync();
-
-            // Confirm deletion (if there's a confirmation dialog)
-            var confirmButton = page.Locator("button:has-text('Confirm')");
-            if (await confirmButton.IsVisibleAsync())
-            {
-                await confirmButton.ClickAsync();
-            }
+            await tagRow.Locator("button[title='Delete']").ClickAsync();
 
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify the tag no longer appears in the list
-            var deletedTagCell = page.Locator($"td:has-text('{tagName}')");
-            Assert.False(await deletedTagCell.IsVisibleAsync(), $"Expected tag '{tagName}' to not be visible in the list");
+            await Expect(page.Locator($"td:has-text('{tagName}')")).ToHaveCountAsync(0);
 
-            // Assert - Verify removed from database via API
+            // Verify removed from database via API
             var getResponse = await apiClient.GetAsync($"/api/tags/{createdTag.Id}", TestContext.Current.CancellationToken);
             Assert.Equal(System.Net.HttpStatusCode.NotFound, getResponse.StatusCode);
         }
@@ -175,7 +168,7 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
     public async Task ViewTag_ThroughUI_ShouldDisplayCorrectData()
     {
         // Arrange - Create a tag via API first
-        var apiClient = fixture.CreateApiClient();
+        using var apiClient = fixture.CreateApiClient();
         var tagName = $"E2E View Tag {Guid.NewGuid()}";
 
         var createResponse = await apiClient.PostAsJsonAsync("/api/tags",
@@ -190,28 +183,38 @@ public class AdminTagsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFi
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Tags page
+            await page.GotoAsync($"{adminUrl}/tags", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Tags page
-            await page.ClickAsync("text=Tags", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Find the tag row and click View button
+            // Find the tag row and click View button (icon button with title="View")
             var tagRow = page.Locator($"tr:has-text('{tagName}')");
-            await tagRow.Locator("button:has-text('View')").ClickAsync();
+            await tagRow.Locator("button[title='View']").ClickAsync();
 
-            // Assert - Verify the side panel shows correct data
-            var nameField = page.Locator("input[value*='" + tagName.Substring(0, 20) + "']");
-            Assert.True(await nameField.IsVisibleAsync(), "Expected name field to be visible in the side panel");
+            // Wait for the side panel to open (view mode shows data in .view-details divs)
+            var sidePanel = page.Locator(".side-panel");
+            await sidePanel.WaitForAsync(new() { Timeout = 5000 });
 
-            var idField = page.Locator($"text={createdTag.Id}");
-            Assert.True(await idField.IsVisibleAsync(), "Expected ID field to be visible in the side panel");
+            // Verify the panel title shows the tag name
+            var panelTitle = sidePanel.Locator("h3");
+            await Expect(panelTitle).ToHaveTextAsync(tagName);
+
+            // Verify the name value is displayed
+            var nameValue = sidePanel.Locator(".detail-item .value", new() { HasText = tagName });
+            Assert.True(await nameValue.IsVisibleAsync(), "Expected tag name to be visible in the side panel");
+
+            // Verify the ID value is displayed
+            var idValue = sidePanel.Locator($".detail-item .value.monospace:has-text('{createdTag.Id}')");
+            Assert.True(await idValue.IsVisibleAsync(), "Expected ID to be visible in the side panel");
         }
         finally
         {
             await page.CloseAsync();
         }
     }
+
+    private static ILocatorAssertions Expect(ILocator locator)
+        => Assertions.Expect(locator);
 }

@@ -1,5 +1,4 @@
 using Api.Features.Clients;
-using Microsoft.Playwright;
 using System.Net.Http.Json;
 
 namespace Api.E2ETests;
@@ -8,7 +7,7 @@ namespace Api.E2ETests;
 /// E2E tests for Clients management in the Admin app.
 /// These tests cover the full stack: Frontend UI -> API -> Database
 /// </summary>
-public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETestFixture>
+public class AdminClientsE2ETests(E2ETestFixture fixture)
 {
     [Fact]
     public async Task CreateClient_ThroughUI_ShouldPersistInDatabase()
@@ -23,33 +22,34 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Clients page
+            await page.GotoAsync($"{adminUrl}/clients", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Clients page
-            await page.ClickAsync("text=Clients", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render (proves API call completed)
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Click "New Client" button
-            await page.ClickAsync("button:has-text('New Client')");
+            // Click "New" button in the command bar
+            await page.Locator("button.cmd-btn.primary:has-text('New')").ClickAsync();
 
-            // Fill in the client details
-            await page.FillAsync("input[placeholder*='Account Name']", accountName);
-            await page.FillAsync("input[placeholder*='Company Number']", companyNumber);
-            await page.FillAsync("input[placeholder*='Customer Number']", customerNumber);
-            await page.FillAsync("input[placeholder*='Company Code']", companyCode);
+            // Wait for the side panel form to open and fill in client details
+            var accountNameInput = page.Locator("#accountName");
+            await accountNameInput.WaitForAsync(new() { Timeout = 5000 });
+            await accountNameInput.FillAsync(accountName);
+            await page.Locator("#companyNumber").FillAsync(companyNumber);
+            await page.Locator("#customerNumber").FillAsync(customerNumber);
+            await page.Locator("#companyCode").FillAsync(companyCode);
 
             // Click Save button
-            await page.ClickAsync("button:has-text('Save')");
+            await page.Locator("button:has-text('Save')").ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify the client appears in the list
             var clientCell = page.Locator($"td:has-text('{accountName}')");
+            await clientCell.WaitForAsync(new() { Timeout = 10000 });
             Assert.True(await clientCell.IsVisibleAsync(), $"Expected client '{accountName}' to be visible in the list");
 
-            // Assert - Verify in database via API
-            var apiClient = fixture.CreateApiClient();
+            // Verify in database via API
+            using var apiClient = fixture.CreateApiClient();
             var response = await apiClient.GetAsync("/api/clients", TestContext.Current.CancellationToken);
             response.EnsureSuccessStatusCode();
 
@@ -67,7 +67,7 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
     public async Task EditClient_ThroughUI_ShouldUpdateInDatabase()
     {
         // Arrange - Create a client via API first
-        var apiClient = fixture.CreateApiClient();
+        using var apiClient = fixture.CreateApiClient();
         var originalAccountName = $"E2E Original Client {Guid.NewGuid()}";
         var originalCompanyNumber = $"ORIG-{Guid.NewGuid().ToString()[..8]}";
         var originalCustomerNumber = $"CUST-ORIG-{Guid.NewGuid().ToString()[..8]}";
@@ -87,31 +87,36 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Clients page
+            await page.GotoAsync($"{adminUrl}/clients", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Clients page
-            await page.ClickAsync("text=Clients", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Find the client row and click Edit button
+            // Find the client row and click Edit button (icon button with title="Edit")
             var clientRow = page.Locator($"tr:has-text('{originalAccountName}')");
-            await clientRow.Locator("button:has-text('Edit')").ClickAsync();
+            await clientRow.Locator("button[title='Edit']").ClickAsync();
 
-            // Update the client details
-            await page.FillAsync("input[placeholder*='Account Name']", updatedAccountName);
-            await page.FillAsync("input[placeholder*='Company Number']", updatedCompanyNumber);
+            // Wait for the side panel form and update client details
+            var accountNameInput = page.Locator("#accountName");
+            await accountNameInput.WaitForAsync(new() { Timeout = 5000 });
+            await accountNameInput.ClearAsync();
+            await accountNameInput.FillAsync(updatedAccountName);
+
+            var companyNumberInput = page.Locator("#companyNumber");
+            await companyNumberInput.ClearAsync();
+            await companyNumberInput.FillAsync(updatedCompanyNumber);
 
             // Click Save button
-            await page.ClickAsync("button:has-text('Save')");
+            await page.Locator("button:has-text('Save')").ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify the updated client appears in the list
             var updatedClientCell = page.Locator($"td:has-text('{updatedAccountName}')");
+            await updatedClientCell.WaitForAsync(new() { Timeout = 10000 });
             Assert.True(await updatedClientCell.IsVisibleAsync(), $"Expected updated client '{updatedAccountName}' to be visible in the list");
 
-            // Assert - Verify in database via API
+            // Verify in database via API
             var getResponse = await apiClient.GetAsync($"/api/clients/{createdClient.Id}", TestContext.Current.CancellationToken);
             getResponse.EnsureSuccessStatusCode();
             var fetchedClient = await getResponse.Content.ReadFromJsonAsync<GetClientsResponse>(cancellationToken: TestContext.Current.CancellationToken);
@@ -129,7 +134,7 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
     public async Task SearchClients_ThroughUI_ShouldFilterResults()
     {
         // Arrange - Create multiple clients via API
-        var apiClient = fixture.CreateApiClient();
+        using var apiClient = fixture.CreateApiClient();
         var searchTerm = $"SearchableClient{Guid.NewGuid().ToString()[..8]}";
         var client1Name = $"{searchTerm} One";
         var client2Name = $"{searchTerm} Two";
@@ -150,24 +155,23 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Clients page
+            await page.GotoAsync($"{adminUrl}/clients", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Clients page
-            await page.ClickAsync("text=Clients", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
             // Enter search term
-            var searchInput = page.Locator("input[placeholder*='Search']");
+            var searchInput = page.GetByPlaceholder("Search clients...");
             await searchInput.FillAsync(searchTerm);
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert - Verify filtered results
+            // Verify filtered results
             var client1Cell = page.Locator($"td:has-text('{client1Name}')");
             var client2Cell = page.Locator($"td:has-text('{client2Name}')");
             var client3Cell = page.Locator($"td:has-text('{client3Name}')");
 
+            await client1Cell.WaitForAsync(new() { Timeout = 10000 });
             Assert.True(await client1Cell.IsVisibleAsync(), $"Expected client1 '{client1Name}' to be visible");
             Assert.True(await client2Cell.IsVisibleAsync(), $"Expected client2 '{client2Name}' to be visible");
             Assert.False(await client3Cell.IsVisibleAsync(), $"Expected client3 '{client3Name}' to not be visible");
@@ -182,7 +186,7 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
     public async Task DeleteClient_ThroughUI_ShouldRemoveFromDatabase()
     {
         // Arrange - Create a client via API first
-        var apiClient = fixture.CreateApiClient();
+        using var apiClient = fixture.CreateApiClient();
         var accountName = $"E2E Delete Client {Guid.NewGuid()}";
         var companyNumber = $"DEL-{Guid.NewGuid().ToString()[..8]}";
         var customerNumber = $"CUST-DEL-{Guid.NewGuid().ToString()[..8]}";
@@ -200,32 +204,25 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
 
         try
         {
-            // Act - Navigate to Admin app
-            await page.GotoAsync(adminUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Navigate directly to the Clients page
+            await page.GotoAsync($"{adminUrl}/clients", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Navigate to Clients page
-            await page.ClickAsync("text=Clients", new PageClickOptions { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for the table to render
+            await page.Locator("table.details-list").WaitForAsync(new() { Timeout = 15000 });
 
-            // Find the client row and click Delete button
+            // The delete handler uses browser confirm() dialog — accept it automatically
+            page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
+
+            // Find the client row and click Delete button (icon button with title="Delete")
             var clientRow = page.Locator($"tr:has-text('{accountName}')");
-            await clientRow.Locator("button:has-text('Delete')").ClickAsync();
-
-            // Confirm deletion (if there's a confirmation dialog)
-            var confirmButton = page.Locator("button:has-text('Confirm')");
-            if (await confirmButton.IsVisibleAsync())
-            {
-                await confirmButton.ClickAsync();
-            }
+            await clientRow.Locator("button[title='Delete']").ClickAsync();
 
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify the client no longer appears in the list
-            var deletedClientCell = page.Locator($"td:has-text('{accountName}')");
-            Assert.False(await deletedClientCell.IsVisibleAsync(), $"Expected client '{accountName}' to not be visible after deletion");
+            await Expect(page.Locator($"td:has-text('{accountName}')")).ToHaveCountAsync(0);
 
-            // Assert - Verify removed from database via API
+            // Verify removed from database via API
             var getResponse = await apiClient.GetAsync($"/api/clients/{createdClient.Id}", TestContext.Current.CancellationToken);
             Assert.Equal(System.Net.HttpStatusCode.NotFound, getResponse.StatusCode);
         }
@@ -234,4 +231,7 @@ public class AdminClientsE2ETests(E2ETestFixture fixture) : IClassFixture<E2ETes
             await page.CloseAsync();
         }
     }
+
+    private static ILocatorAssertions Expect(ILocator locator)
+        => Assertions.Expect(locator);
 }
