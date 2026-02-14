@@ -159,4 +159,79 @@ describe('TagsPage', () => {
 
         confirmSpy.mockRestore();
     });
+
+    it('opens edit panel from view mode', async () => {
+        const mockTag = { id: '1', name: 'Test Tag', isActive: true };
+        (tagsApi.getAll as any).mockResolvedValue([mockTag]);
+
+        render(<TagsPage />);
+        await waitFor(() => expect(screen.getByText('Test Tag')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('Test Tag'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Test Tag' })).toBeInTheDocument();
+        });
+
+        // Click Edit button
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Tag/i })).toBeInTheDocument();
+            expect(screen.getByLabelText('Name')).toHaveValue('Test Tag');
+        });
+    });
+
+    it('updates a tag and returns to view mode', async () => {
+        const mockTag = { id: '1', name: 'Original Tag', isActive: true };
+        const updatedTag = { id: '1', name: 'Updated Tag', isActive: true };
+        (tagsApi.getAll as any).mockResolvedValue([mockTag]);
+        (tagsApi.update as any).mockResolvedValue(updatedTag);
+
+        render(<TagsPage />);
+        await waitFor(() => expect(screen.getByText('Original Tag')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('Original Tag'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Original Tag' })).toBeInTheDocument();
+        });
+
+        // Click Edit
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Tag/i })).toBeInTheDocument();
+        });
+
+        // Update name
+        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Updated Tag' } });
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+        await waitFor(() => {
+            expect(tagsApi.update).toHaveBeenCalledWith('1', { name: 'Updated Tag', isActive: true });
+        });
+
+        // Should return to view mode
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Updated Tag' })).toBeInTheDocument();
+        });
+    });
+
+    it('refreshes the list when refresh button is clicked', async () => {
+        const mockTags = [{ id: '1', name: 'Tag 1', isActive: true }];
+        (tagsApi.getAll as any).mockResolvedValue(mockTags);
+
+        render(<TagsPage />);
+        await waitFor(() => expect(screen.getByText('Tag 1')).toBeInTheDocument());
+
+        const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+        fireEvent.click(refreshBtn);
+
+        await waitFor(() => {
+            expect(tagsApi.getAll).toHaveBeenCalledTimes(2);
+        });
+    });
 });

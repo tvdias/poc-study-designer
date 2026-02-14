@@ -223,4 +223,79 @@ describe('ClientsPage', () => {
             expect(clientsApi.getAll).toHaveBeenCalledWith('Alpha');
         });
     });
+
+    it('updates a client and returns to view mode', async () => {
+        const mockClient = {
+            id: '1',
+            accountName: 'Original Client',
+            customerNumber: 'CUST-001',
+            companyNumber: null,
+            companyCode: null,
+            isActive: true
+        };
+        const updatedClient = {
+            id: '1',
+            accountName: 'Updated Client',
+            customerNumber: 'CUST-001',
+            companyNumber: null,
+            companyCode: null,
+            isActive: true
+        };
+        (clientsApi.getAll as any).mockResolvedValue([mockClient]);
+        (clientsApi.update as any).mockResolvedValue(updatedClient);
+
+        render(<ClientsPage />);
+        await waitFor(() => expect(screen.getByText('Original Client')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('Original Client'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Original Client' })).toBeInTheDocument();
+        });
+
+        // Click Edit
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Client/i })).toBeInTheDocument();
+        });
+
+        // Update name
+        fireEvent.change(screen.getByLabelText(/Account Name/i), { target: { value: 'Updated Client' } });
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+        await waitFor(() => {
+            expect(clientsApi.update).toHaveBeenCalled();
+        });
+
+        // Should return to view mode
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Updated Client' })).toBeInTheDocument();
+        });
+    });
+
+    it('refreshes the list when refresh button is clicked', async () => {
+        const mockClients = [
+            {
+                id: '1',
+                accountName: 'Test Client',
+                customerNumber: 'CUST-001',
+                companyNumber: null,
+                companyCode: null,
+                isActive: true
+            }
+        ];
+        (clientsApi.getAll as any).mockResolvedValue(mockClients);
+
+        render(<ClientsPage />);
+        await waitFor(() => expect(screen.getByText('Test Client')).toBeInTheDocument());
+
+        const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+        fireEvent.click(refreshBtn);
+
+        await waitFor(() => {
+            expect(clientsApi.getAll).toHaveBeenCalledTimes(2);
+        });
+    });
 });
