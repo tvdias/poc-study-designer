@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TagsPage } from './TagsPage';
 import { tagsApi } from '../services/api';
@@ -67,7 +68,7 @@ describe('TagsPage', () => {
         expect(screen.getByLabelText('Name')).toHaveValue('');
     });
 
-    it('creates a tag and refreshes list', async () => {
+    it('creates a tag and closes panel', async () => {
         (tagsApi.getAll as any).mockResolvedValue([]);
         (tagsApi.create as any).mockResolvedValue({ id: '3', name: 'New Tag', isActive: true });
 
@@ -89,11 +90,11 @@ describe('TagsPage', () => {
             expect(tagsApi.create).toHaveBeenCalledWith({ name: 'New Tag' });
         });
 
-        // Should switch to view mode (Title becomes the tag name)
+        // Should close the panel and return to list
         await waitFor(() => {
-            expect(screen.getByRole('heading', { name: 'New Tag' })).toBeInTheDocument();
-            // Ensure 'Edit' button is present (marks view mode)
-            expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'New Tag' })).not.toBeInTheDocument();
+            // The creation button (New) should be visible (meaning we are back to list)
+            expect(screen.getByRole('button', { name: /new/i })).toBeInTheDocument();
         });
 
         // Check list refresh
@@ -157,5 +158,80 @@ describe('TagsPage', () => {
         });
 
         confirmSpy.mockRestore();
+    });
+
+    it('opens edit panel from view mode', async () => {
+        const mockTag = { id: '1', name: 'Test Tag', isActive: true };
+        (tagsApi.getAll as any).mockResolvedValue([mockTag]);
+
+        render(<TagsPage />);
+        await waitFor(() => expect(screen.getByText('Test Tag')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('Test Tag'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Test Tag' })).toBeInTheDocument();
+        });
+
+        // Click Edit button
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Tag/i })).toBeInTheDocument();
+            expect(screen.getByLabelText('Name')).toHaveValue('Test Tag');
+        });
+    });
+
+    it('updates a tag and returns to view mode', async () => {
+        const mockTag = { id: '1', name: 'Original Tag', isActive: true };
+        const updatedTag = { id: '1', name: 'Updated Tag', isActive: true };
+        (tagsApi.getAll as any).mockResolvedValue([mockTag]);
+        (tagsApi.update as any).mockResolvedValue(updatedTag);
+
+        render(<TagsPage />);
+        await waitFor(() => expect(screen.getByText('Original Tag')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('Original Tag'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Original Tag' })).toBeInTheDocument();
+        });
+
+        // Click Edit
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Tag/i })).toBeInTheDocument();
+        });
+
+        // Update name
+        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Updated Tag' } });
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+        await waitFor(() => {
+            expect(tagsApi.update).toHaveBeenCalledWith('1', { name: 'Updated Tag', isActive: true });
+        });
+
+        // Should return to view mode
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'Updated Tag' })).toBeInTheDocument();
+        });
+    });
+
+    it('refreshes the list when refresh button is clicked', async () => {
+        const mockTags = [{ id: '1', name: 'Tag 1', isActive: true }];
+        (tagsApi.getAll as any).mockResolvedValue(mockTags);
+
+        render(<TagsPage />);
+        await waitFor(() => expect(screen.getByText('Tag 1')).toBeInTheDocument());
+
+        const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+        fireEvent.click(refreshBtn);
+
+        await waitFor(() => {
+            expect(tagsApi.getAll).toHaveBeenCalledTimes(2);
+        });
     });
 });

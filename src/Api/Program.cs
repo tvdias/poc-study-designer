@@ -2,6 +2,13 @@ using Api.Data;
 using Api.Features.Tags;
 using Api.Features.CommissioningMarkets;
 using Api.Features.FieldworkMarkets;
+using Api.Features.Modules;
+using Api.Features.Clients;
+using Api.Features.ConfigurationQuestions;
+using Api.Features.Products;
+using Api.Features.ProductTemplates;
+using Api.Features.QuestionBank;
+using Api.Features.MetricGroups;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -10,12 +17,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
-builder.AddRedisClientBuilder("cache")
-    .WithOutputCache();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -37,50 +46,126 @@ if (app.Environment.IsDevelopment())
     db.Database.Migrate();
 }
 
-app.UseOutputCache();
-
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
 var api = app.MapGroup("/api");
-api.MapCreateTagEndpoint();
-api.MapGetTagsEndpoint();
-api.MapGetTagByIdEndpoint();
-api.MapUpdateTagEndpoint();
-api.MapDeleteTagEndpoint();
+
+// Clients
+api.MapCreateClientEndpoint();
+api.MapGetClientsEndpoint();
+api.MapGetClientByIdEndpoint();
+api.MapUpdateClientEndpoint();
+api.MapDeleteClientEndpoint();
+
+// Commissioning Markets
 api.MapCreateCommissioningMarketEndpoint();
 api.MapGetCommissioningMarketsEndpoint();
 api.MapGetCommissioningMarketByIdEndpoint();
 api.MapUpdateCommissioningMarketEndpoint();
 api.MapDeleteCommissioningMarketEndpoint();
+
+// Configuration Answers
+api.MapCreateConfigurationAnswerEndpoint();
+api.MapGetConfigurationAnswersEndpoint();
+api.MapGetConfigurationAnswerByIdEndpoint();
+api.MapUpdateConfigurationAnswerEndpoint();
+api.MapDeleteConfigurationAnswerEndpoint();
+
+// Configuration Questions
+api.MapCreateConfigurationQuestionEndpoint();
+api.MapGetConfigurationQuestionsEndpoint();
+api.MapGetConfigurationQuestionByIdEndpoint();
+api.MapUpdateConfigurationQuestionEndpoint();
+api.MapDeleteConfigurationQuestionEndpoint();
+
+// Dependency Rules
+api.MapCreateDependencyRuleEndpoint();
+api.MapGetDependencyRulesEndpoint();
+api.MapGetDependencyRuleByIdEndpoint();
+api.MapUpdateDependencyRuleEndpoint();
+api.MapDeleteDependencyRuleEndpoint();
+
+// Fieldwork Markets
 api.MapCreateFieldworkMarketEndpoint();
 api.MapGetFieldworkMarketsEndpoint();
 api.MapGetFieldworkMarketByIdEndpoint();
 api.MapUpdateFieldworkMarketEndpoint();
 api.MapDeleteFieldworkMarketEndpoint();
-api.MapGet("weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.CacheOutput(p => p.Expire(TimeSpan.FromSeconds(5)))
-.WithName("GetWeatherForecast");
+
+// Metric Groups
+api.MapCreateMetricGroupEndpoint();
+api.MapGetMetricGroupsEndpoint();
+api.MapGetMetricGroupByIdEndpoint();
+api.MapUpdateMetricGroupEndpoint();
+api.MapDeleteMetricGroupEndpoint();
+
+// Modules
+api.MapCreateModuleEndpoint();
+api.MapGetModulesEndpoint();
+api.MapGetModuleByIdEndpoint();
+api.MapUpdateModuleEndpoint();
+api.MapDeleteModuleEndpoint();
+
+// Module Questions
+api.MapCreateModuleQuestionEndpoint();
+api.MapGetModuleQuestionsEndpoint();
+api.MapGetModuleQuestionByIdEndpoint();
+api.MapUpdateModuleQuestionEndpoint();
+api.MapDeleteModuleQuestionEndpoint();
+
+// Products
+api.MapCreateProductEndpoint();
+api.MapGetProductsEndpoint();
+api.MapGetProductByIdEndpoint();
+api.MapUpdateProductEndpoint();
+api.MapDeleteProductEndpoint();
+
+// Product Config Questions
+api.MapCreateProductConfigQuestionEndpoint();
+api.MapGetProductConfigQuestionByIdEndpoint();
+api.MapUpdateProductConfigQuestionEndpoint();
+api.MapDeleteProductConfigQuestionEndpoint();
+
+// Product Config Question Display Rules
+api.MapCreateProductConfigQuestionDisplayRuleEndpoint();
+api.MapGetProductConfigQuestionDisplayRulesEndpoint();
+api.MapGetProductConfigQuestionDisplayRuleByIdEndpoint();
+api.MapUpdateProductConfigQuestionDisplayRuleEndpoint();
+api.MapDeleteProductConfigQuestionDisplayRuleEndpoint();
+
+// Product Templates
+api.MapCreateProductTemplateEndpoint();
+api.MapGetProductTemplatesEndpoint();
+api.MapGetProductTemplateByIdEndpoint();
+api.MapUpdateProductTemplateEndpoint();
+api.MapDeleteProductTemplateEndpoint();
+
+// Product Template Lines
+api.MapCreateProductTemplateLineEndpoint();
+api.MapGetProductTemplateLinesEndpoint();
+api.MapGetProductTemplateLineByIdEndpoint();
+api.MapUpdateProductTemplateLineEndpoint();
+api.MapDeleteProductTemplateLineEndpoint();
+
+// Question Answers
+api.MapCreateQuestionAnswerEndpoint();
+api.MapUpdateQuestionAnswerEndpoint();
+api.MapDeleteQuestionAnswerEndpoint();
+
+// Question Bank Items
+api.MapCreateQuestionBankItemEndpoint();
+api.MapGetQuestionBankItemsEndpoint();
+api.MapGetQuestionBankItemByIdEndpoint();
+api.MapUpdateQuestionBankItemEndpoint();
+api.MapDeleteQuestionBankItemEndpoint();
+
+// Tags
+api.MapCreateTagEndpoint();
+api.MapGetTagsEndpoint();
+api.MapGetTagByIdEndpoint();
+api.MapUpdateTagEndpoint();
+api.MapDeleteTagEndpoint();
 
 app.MapDefaultEndpoints();
-
 app.UseFileServer();
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
 
 public partial class Program { }

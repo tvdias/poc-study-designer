@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.FieldworkMarkets;
 
-public record GetFieldworkMarketByIdResponse(Guid Id, string IsoCode, string Name, bool IsActive);
+public record GetFieldworkMarketByIdResponse(Guid Id, string IsoCode, string Name);
 
 public static class GetFieldworkMarketByIdEndpoint
 {
@@ -22,14 +22,17 @@ public static class GetFieldworkMarketByIdEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var market = await db.FieldworkMarkets.AsNoTracking()
-            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+        var marketResponse = await db.FieldworkMarkets
+            .Where(m => m.IsActive)
+            .Where(m => m.Id == id)
+            .Select(m => new GetFieldworkMarketByIdResponse(m.Id, m.IsoCode, m.Name))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (market is null)
+        if (marketResponse is null)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(new GetFieldworkMarketByIdResponse(market.Id, market.IsoCode, market.Name, market.IsActive));
+        return TypedResults.Ok(marketResponse);
     }
 }

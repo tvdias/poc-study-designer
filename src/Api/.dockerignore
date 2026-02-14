@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/*.user
+**/*.suo
+**/.git/
+**/.gitignore
+**/node_modules/
+**/.env
+**/.env.local
+**/appsettings.Development.json
+**/.DS_Store
+**/Thumbs.db

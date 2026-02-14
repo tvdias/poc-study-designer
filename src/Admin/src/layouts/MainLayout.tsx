@@ -21,6 +21,24 @@ export function MainLayout() {
                     <NavLink to="/fieldwork-markets" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
                         Fieldwork Markets
                     </NavLink>
+                    <NavLink to="/modules" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Modules
+                    </NavLink>
+                    <NavLink to="/clients" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Clients
+                    </NavLink>
+                    <NavLink to="/configuration-questions" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Configuration Questions
+                    </NavLink>
+                    <NavLink to="/question-bank" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Question Bank
+                    </NavLink>
+                    <NavLink to="/products" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Products
+                    </NavLink>
+                    <NavLink to="/product-templates" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+                        Product Templates
+                    </NavLink>
                 </nav>
             </aside>
             <main className="main-content">

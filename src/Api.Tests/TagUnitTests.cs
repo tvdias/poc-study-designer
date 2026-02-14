@@ -115,7 +115,7 @@ public class UpdateTagValidatorTests
     public async Task ValidTag_ShouldPassValidation()
     {
         // Arrange
-        var request = new UpdateTagRequest("Updated Tag Name", true);
+        var request = new UpdateTagRequest("Updated Tag Name");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -129,7 +129,7 @@ public class UpdateTagValidatorTests
     public async Task EmptyName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateTagRequest("", true);
+        var request = new UpdateTagRequest("");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -144,7 +144,7 @@ public class UpdateTagValidatorTests
     public async Task NullName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateTagRequest(null!, false);
+        var request = new UpdateTagRequest(null!);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -159,7 +159,7 @@ public class UpdateTagValidatorTests
     {
         // Arrange
         var longName = new string('a', 101);
-        var request = new UpdateTagRequest(longName, true);
+        var request = new UpdateTagRequest(longName);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -175,7 +175,7 @@ public class UpdateTagValidatorTests
     {
         // Arrange
         var maxLengthName = new string('a', 100);
-        var request = new UpdateTagRequest(maxLengthName, false);
+        var request = new UpdateTagRequest(maxLengthName);
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
@@ -189,7 +189,7 @@ public class UpdateTagValidatorTests
     public async Task WhitespaceName_ShouldFailValidation()
     {
         // Arrange
-        var request = new UpdateTagRequest("   ", true);
+        var request = new UpdateTagRequest("   ");
 
         // Act
         var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);

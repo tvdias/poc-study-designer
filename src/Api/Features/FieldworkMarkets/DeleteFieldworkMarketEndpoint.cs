@@ -19,7 +19,10 @@ public static class DeleteFieldworkMarketEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var market = await db.FieldworkMarkets.FindAsync([id], cancellationToken);
+        var market = await db.FieldworkMarkets
+            .Where(m => m.IsActive)
+            .Where(m => m.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (market is null)
         {

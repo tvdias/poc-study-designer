@@ -18,7 +18,8 @@ public static class GetTagsEndpoint
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
-        var tagsQuery = db.Tags.AsNoTracking();
+        var tagsQuery = db.Tags
+            .Where(t => t.IsActive);
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -27,7 +28,7 @@ public static class GetTagsEndpoint
         }
 
         return await tagsQuery
-            .Select(t => new GetTagsResponse(t.Id, t.Name, t.IsActive))
+            .Select(t => new GetTagsResponse(t.Id, t.Name))
             .ToListAsync(cancellationToken);
     }
 }

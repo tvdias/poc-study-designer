@@ -1,8 +1,13 @@
+using Microsoft.Extensions.Configuration;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Check if running in test mode for Admin E2E tests
 var testMode = Environment.GetEnvironmentVariable("ASPIRE_TEST_MODE");
 var isAdminE2ETest = testMode == "AdminE2E";
+
+// Check configuration for Azure Functions enablement
+var enableAzureFunctions = builder.Configuration.GetValue<bool>("EnableAzureFunctions", false);
 
 // Always add PostgreSQL - required by API
 var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
@@ -12,14 +17,10 @@ var apiBuilder = builder.AddProject<Projects.Api>("api")
     .WithReference(postgres)
     .WaitFor(postgres);
 
-// Add Redis and configure API to use it only when not in AdminE2E test mode
+// Add health check only when not in AdminE2E test mode (for faster startup in tests)
 if (!isAdminE2ETest)
 {
-    var cache = builder.AddRedis("cache");
-    apiBuilder = apiBuilder
-        .WithReference(cache)
-        .WaitFor(cache)
-        .WithHttpHealthCheck("/health");
+    apiBuilder = apiBuilder.WithHttpHealthCheck("/health");
 }
 
 var api = apiBuilder.WithExternalHttpEndpoints();
@@ -28,8 +29,7 @@ var api = apiBuilder.WithExternalHttpEndpoints();
 if (!isAdminE2ETest)
 {
     builder.AddViteApp("app-designer", "../Designer")
-        .WithReference(api)
-        .WaitFor(api);
+        .WithReference(api);
 }
 
 // Add Admin app only when not in AdminE2E test mode
@@ -37,16 +37,16 @@ if (!isAdminE2ETest)
 if (!isAdminE2ETest)
 {
     builder.AddViteApp("app-admin", "../Admin")
-        .WithReference(api)
-        .WaitFor(api);
+        .WithReference(api);
 }
 
-// Add Azure Service Bus and Functions only when not in AdminE2E test mode
-if (!isAdminE2ETest)
+// Add Azure Service Bus and Functions based on configuration or test mode
+if (!isAdminE2ETest && enableAzureFunctions)
 {
-    var serviceBus = builder.AddAzureServiceBus("servicebus")
-        .AddTopic("questions")
-        .AddTopic("projects");
+    var serviceBus = builder.AddAzureServiceBus("servicebus");
+    
+    serviceBus.AddServiceBusTopic("questions");
+    serviceBus.AddServiceBusTopic("projects");
 
     builder.AddAzureFunctionsProject<Projects.CluedinProcessor>("func-cluedin-processor")
         .WithReference(serviceBus);

@@ -1,0 +1,70 @@
+name: Validate Docker Configurations
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'docker-compose.yml'
+      - '.devcontainer/**'
+      - '**/Dockerfile'
+      - '.github/workflows/validate-docker.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'docker-compose.yml'
+      - '.devcontainer/**'
+      - '**/Dockerfile'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Docker Files
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Validate docker-compose.yml
+      run: |
+        docker compose config --quiet
+        echo "✓ docker-compose.yml is valid"
+
+    - name: Validate devcontainer docker-compose.yml
+      run: |
+        docker compose -f .devcontainer/docker-compose.yml config --quiet
+        echo "✓ .devcontainer/docker-compose.yml is valid"
+
+    - name: Validate devcontainer.json
+      run: |
+        sudo apt-get update && sudo apt-get install -y jq
+        jq empty .devcontainer/devcontainer.json
+        echo "✓ devcontainer.json is valid JSON"
+
+    - name: Check required files
+      run: |
+        echo "Checking Dockerfiles..."
+        test -f src/Api/Dockerfile && echo "✓ src/Api/Dockerfile"
+        test -f src/Designer/Dockerfile && echo "✓ src/Designer/Dockerfile"
+        test -f src/Admin/Dockerfile && echo "✓ src/Admin/Dockerfile"
+        test -f .devcontainer/Dockerfile && echo "✓ .devcontainer/Dockerfile"
+        
+        echo "Checking .dockerignore files..."
+        test -f src/Api/.dockerignore && echo "✓ src/Api/.dockerignore"
+        test -f src/Designer/.dockerignore && echo "✓ src/Designer/.dockerignore"
+        test -f src/Admin/.dockerignore && echo "✓ src/Admin/.dockerignore"
+        
+        echo "Checking entrypoint scripts..."
+        test -f src/Designer/docker-entrypoint.sh && echo "✓ src/Designer/docker-entrypoint.sh"
+        test -f src/Admin/docker-entrypoint.sh && echo "✓ src/Admin/docker-entrypoint.sh"
+        
+        echo "Checking documentation..."
+        test -f CONTAINERS.md && echo "✓ CONTAINERS.md"
+        test -f QUICKSTART.md && echo "✓ QUICKSTART.md"
+        test -f .env.example && echo "✓ .env.example"
+
+    - name: Verify Dockerfile syntax
+      run: |
+        docker run --rm -i hadolint/hadolint < src/Api/Dockerfile || true
+        docker run --rm -i hadolint/hadolint < src/Designer/Dockerfile || true
+        docker run --rm -i hadolint/hadolint < src/Admin/Dockerfile || true
+        echo "✓ Dockerfile syntax check completed"
