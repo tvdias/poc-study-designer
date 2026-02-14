@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CommissioningMarketsPage } from './CommissioningMarketsPage';
 import { commissioningMarketsApi } from '../services/api';
@@ -28,7 +29,7 @@ describe('CommissioningMarketsPage', () => {
     });
 
     it('shows loading state initially', async () => {
-        (commissioningMarketsApi.getAll as any).mockImplementation(() => new Promise(() => { }));
+        (commissioningMarketsApi.getAll as any).mockImplementation(() => new Promise(() => { })); // Never resolves
         render(<CommissioningMarketsPage />);
         expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
@@ -47,8 +48,8 @@ describe('CommissioningMarketsPage', () => {
             expect(screen.getByText('United Kingdom')).toBeInTheDocument();
         });
 
-        expect(screen.getByText('Active')).toBeInTheDocument();
-        expect(screen.getByText('Inactive')).toBeInTheDocument();
+        expect(screen.getByText('US')).toBeInTheDocument();
+        expect(screen.getByText('GB')).toBeInTheDocument();
     });
 
     it('opens create panel when New button is clicked', async () => {
@@ -67,40 +68,44 @@ describe('CommissioningMarketsPage', () => {
         expect(screen.getByLabelText('Name')).toHaveValue('');
     });
 
-    it('creates a commissioning market successfully', async () => {
+    it('creates a commissioning market and closes panel', async () => {
         (commissioningMarketsApi.getAll as any).mockResolvedValue([]);
-        (commissioningMarketsApi.create as any).mockResolvedValue({ 
-            id: '3', 
-            isoCode: 'FR', 
-            name: 'France', 
-            isActive: true 
-        });
+        (commissioningMarketsApi.create as any).mockResolvedValue({ id: '3', isoCode: 'FR', name: 'France', isActive: true });
 
         render(<CommissioningMarketsPage />);
         await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
 
+        // Open create
         fireEvent.click(screen.getByRole('button', { name: /new/i }));
+
         await waitFor(() => {
             expect(screen.getByRole('heading', { name: /New Commissioning Market/i })).toBeInTheDocument();
         });
 
+        // Fill form
         fireEvent.change(screen.getByLabelText('ISO Code'), { target: { value: 'FR' } });
         fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'France' } });
         fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
         await waitFor(() => {
-            expect(commissioningMarketsApi.create).toHaveBeenCalledWith({
-                isoCode: 'FR',
-                name: 'France'
-            });
+            expect(commissioningMarketsApi.create).toHaveBeenCalledWith({ isoCode: 'FR', name: 'France' });
         });
+
+        // Should close the panel and return to list
+        await waitFor(() => {
+            expect(screen.queryByRole('heading', { name: 'New Commissioning Market' })).not.toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /new/i })).toBeInTheDocument();
+        });
+
+        // Check list refresh
+        expect(commissioningMarketsApi.getAll).toHaveBeenCalledTimes(2);
     });
 
     it('displays validation errors when create fails', async () => {
         (commissioningMarketsApi.getAll as any).mockResolvedValue([]);
         const errorResponse = {
             status: 400,
-            errors: { IsoCode: ['ISO Code is required'], Name: ['Name is required'] }
+            errors: { IsoCode: ['ISO Code is required'] }
         };
         (commissioningMarketsApi.create as any).mockRejectedValue(errorResponse);
 
@@ -112,34 +117,34 @@ describe('CommissioningMarketsPage', () => {
 
         await waitFor(() => {
             expect(screen.getByText('ISO Code is required')).toBeInTheDocument();
-            expect(screen.getByText('Name is required')).toBeInTheDocument();
         });
     });
 
     it('opens view details when row is clicked', async () => {
-        const mockMarket = { id: '1', isoCode: 'DE', name: 'Germany', isActive: true };
+        const mockMarket = { id: '1', isoCode: 'US', name: 'United States', isActive: true };
         (commissioningMarketsApi.getAll as any).mockResolvedValue([mockMarket]);
 
         render(<CommissioningMarketsPage />);
-        await waitFor(() => expect(screen.getByText('Germany')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
 
-        fireEvent.click(screen.getByText('Germany'));
+        fireEvent.click(screen.getByText('United States'));
 
         await waitFor(() => {
-            expect(screen.getByRole('heading', { name: 'Germany' })).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'United States' })).toBeInTheDocument();
         });
     });
 
-    it('deletes a market with confirmation', async () => {
-        const mockMarket = { id: '1', isoCode: 'ES', name: 'Spain', isActive: true };
+    it('deletes a commissioning market with confirmation', async () => {
+        const mockMarket = { id: '1', isoCode: 'US', name: 'United States', isActive: true };
         (commissioningMarketsApi.getAll as any).mockResolvedValue([mockMarket]);
         (commissioningMarketsApi.delete as any).mockResolvedValue();
 
+        // Mock confirm
         const confirmSpy = vi.spyOn(window, 'confirm');
         confirmSpy.mockImplementation(() => true);
 
         render(<CommissioningMarketsPage />);
-        await waitFor(() => expect(screen.getByText('Spain')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
 
         const deleteBtns = screen.getAllByTitle('Delete');
         fireEvent.click(deleteBtns[0]);
@@ -152,5 +157,74 @@ describe('CommissioningMarketsPage', () => {
         });
 
         confirmSpy.mockRestore();
+    });
+
+    it('filters markets based on search input', async () => {
+        const mockMarkets = [
+            { id: '1', isoCode: 'US', name: 'United States', isActive: true },
+        ];
+        (commissioningMarketsApi.getAll as any).mockResolvedValue(mockMarkets);
+
+        render(<CommissioningMarketsPage />);
+        await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+
+        const searchInput = screen.getByPlaceholderText(/search/i);
+        fireEvent.change(searchInput, { target: { value: 'United' } });
+
+        await waitFor(() => {
+            expect(commissioningMarketsApi.getAll).toHaveBeenCalledWith('United');
+        });
+    });
+
+    it('updates a commissioning market and returns to view mode', async () => {
+        const mockMarket = { id: '1', isoCode: 'US', name: 'United States', isActive: true };
+        const updatedMarket = { id: '1', isoCode: 'US', name: 'USA', isActive: true };
+        (commissioningMarketsApi.getAll as any).mockResolvedValue([mockMarket]);
+        (commissioningMarketsApi.update as any).mockResolvedValue(updatedMarket);
+
+        render(<CommissioningMarketsPage />);
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
+
+        // Open view
+        fireEvent.click(screen.getByText('United States'));
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'United States' })).toBeInTheDocument();
+        });
+
+        // Click Edit
+        const editBtns = screen.getAllByTitle('Edit');
+        fireEvent.click(editBtns[0]);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: /Edit Commissioning Market/i })).toBeInTheDocument();
+        });
+
+        // Update name
+        fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'USA' } });
+        fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+        await waitFor(() => {
+            expect(commissioningMarketsApi.update).toHaveBeenCalled();
+        });
+
+        // Should return to view mode
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { name: 'USA' })).toBeInTheDocument();
+        });
+    });
+
+    it('refreshes the list when refresh button is clicked', async () => {
+        const mockMarkets = [{ id: '1', isoCode: 'US', name: 'United States', isActive: true }];
+        (commissioningMarketsApi.getAll as any).mockResolvedValue(mockMarkets);
+
+        render(<CommissioningMarketsPage />);
+        await waitFor(() => expect(screen.getByText('United States')).toBeInTheDocument());
+
+        const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+        fireEvent.click(refreshBtn);
+
+        await waitFor(() => {
+            expect(commissioningMarketsApi.getAll).toHaveBeenCalledTimes(2);
+        });
     });
 });

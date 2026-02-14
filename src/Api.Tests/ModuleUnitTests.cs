@@ -143,3 +143,114 @@ public class UpdateModuleValidatorTests
         Assert.Contains(result.Errors, e => e.ErrorMessage == "Variable name is required.");
     }
 }
+
+public class CreateModuleQuestionValidatorTests
+{
+    private readonly CreateModuleQuestionValidator _validator = new();
+
+    [Fact]
+    public async Task ValidModuleQuestion_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new CreateModuleQuestionRequest(Guid.NewGuid(), 1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public async Task EmptyQuestionBankItemId_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateModuleQuestionRequest(Guid.Empty, 1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Question Bank Item is required.", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task NegativeDisplayOrder_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateModuleQuestionRequest(Guid.NewGuid(), -1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Display order must be 0 or greater.", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ZeroDisplayOrder_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new CreateModuleQuestionRequest(Guid.NewGuid(), 0);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+}
+
+public class UpdateModuleQuestionValidatorTests
+{
+    private readonly UpdateModuleQuestionValidator _validator = new();
+
+    [Fact]
+    public async Task ValidModuleQuestion_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new UpdateModuleQuestionRequest(1, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public async Task NegativeDisplayOrder_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new UpdateModuleQuestionRequest(-1, true);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal("Display order must be greater than or equal to 0", result.Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ZeroDisplayOrder_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new UpdateModuleQuestionRequest(0, false);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+}
