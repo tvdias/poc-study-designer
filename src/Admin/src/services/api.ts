@@ -112,6 +112,11 @@ export interface CreateModuleQuestionRequest {
     displayOrder: number;
 }
 
+export interface UpdateModuleQuestionRequest {
+    displayOrder: number;
+    isActive: boolean;
+}
+
 export interface CreateModuleRequest {
     variableName: string;
     label: string;
@@ -848,29 +853,6 @@ export interface UpdateProductConfigQuestionDisplayRuleRequest {
     triggeringConfigurationQuestionId: string;
     triggeringAnswerId?: string;
     displayCondition: 'Show' | 'Hide';
-    isActive: boolean;
-}
-
-// ModuleQuestion interfaces
-export interface ModuleQuestion {
-    id: string;
-    moduleId: string;
-    questionBankItemId: string;
-    sortOrder: number;
-    isActive: boolean;
-    createdOn: string;
-    questionVariableName?: string;
-    questionText?: string;
-}
-
-export interface CreateModuleQuestionRequest {
-    moduleId: string;
-    questionBankItemId: string;
-    sortOrder: number;
-}
-
-export interface UpdateModuleQuestionRequest {
-    sortOrder: number;
     isActive: boolean;
 }
 
