@@ -55,20 +55,21 @@ npm test
 
 ### E2E Tests
 
-E2E tests are located in the `Admin.E2ETests` project and use Playwright with Aspire integration:
+E2E tests for the Admin app are located in the `Api.E2ETests` project, which contains all E2E tests for the entire application. These tests use Playwright with Aspire integration:
 
 ```bash
 # From project root
-dotnet test src/Admin.E2ETests/Admin.E2ETests.csproj
+dotnet test src/Api.E2ETests/Api.E2ETests.csproj
 ```
 
 **Benefits:**
-- ✅ Automatically starts all services (API, databases, Admin)
+- ✅ Automatically starts all services (API, databases, Admin, Designer)
 - ✅ No manual URL configuration (Aspire dynamically assigns ports)
 - ✅ Integrated with .NET test suite
+- ✅ Single E2E test project for the entire application
 - ✅ Works reliably even when ports change
 
-See [Admin.E2ETests/README.md](../Admin.E2ETests/README.md) for details.
+See [Api.E2ETests/README.md](../Api.E2ETests/README.md) for details.
 
 ## Project Structure
 
