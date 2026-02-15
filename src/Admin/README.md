@@ -1,3 +1,92 @@
+# Admin Application
+
+Administration portal for POC Study Designer, built with React, TypeScript, and Vite.
+
+## Features
+
+- **Tags Management**: Create, edit, and manage tags
+- **Commissioning Markets**: Manage commissioning market data
+- **Fieldwork Markets**: Manage fieldwork market data
+
+## Development
+
+### Prerequisites
+
+- Node.js 18.x or later
+- npm or yarn
+
+### Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server (requires Aspire to run the API)
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linter
+npm run lint
+```
+
+### Running with the Full Stack
+
+This application requires the backend API to be running. The recommended approach is to use .NET Aspire to orchestrate all services:
+
+```bash
+# From the project root
+cd src/AppHost
+dotnet run
+```
+
+The Aspire dashboard will show all running services and their URLs.
+
+## Testing
+
+### Unit Tests
+
+Run unit tests with Vitest:
+
+```bash
+npm test
+```
+
+### E2E Tests
+
+E2E tests for the Admin app are located in the `Api.E2ETests` project, which contains all E2E tests for the entire application. These tests use Playwright with Aspire integration:
+
+```bash
+# From project root
+dotnet test src/Api.E2ETests/Api.E2ETests.csproj
+```
+
+**Benefits:**
+- ✅ Automatically starts all services (API, databases, Admin, Designer)
+- ✅ No manual URL configuration (Aspire dynamically assigns ports)
+- ✅ Integrated with .NET test suite
+- ✅ Single E2E test project for the entire application
+- ✅ Works reliably even when ports change
+
+See [Api.E2ETests/README.md](../Api.E2ETests/README.md) for details.
+
+## Project Structure
+
+```
+src/
+├── assets/          # Static assets
+├── components/      # Reusable UI components
+├── layouts/         # Layout components
+├── pages/           # Page components
+│   ├── TagsPage.tsx
+│   ├── CommissioningMarketsPage.tsx
+│   └── FieldworkMarketsPage.tsx
+└── services/        # API services
+```
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

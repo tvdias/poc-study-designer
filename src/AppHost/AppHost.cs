@@ -1,22 +1,28 @@
 using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+// Check configuration for Azure Functions enablement
 var enableAzureFunctions = builder.Configuration.GetValue<bool>("EnableAzureFunctions", false);
 
+// Always add PostgreSQL - required by API
 var postgres = builder.AddPostgres("postgres").AddDatabase("studydb");
 
+// Configure API with health check
 var api = builder.AddProject<Projects.Api>("api")
     .WithReference(postgres)
     .WaitFor(postgres)
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();
 
-var appDesigner = builder.AddViteApp("app-designer", "../Designer")
+// Add Admin and Designer Vite apps
+builder.AddViteApp("app-admin", "../Admin")
     .WithReference(api);
 
-var appAdmin = builder.AddViteApp("app-admin", "../Admin")
+builder.AddViteApp("app-designer", "../Designer")
     .WithReference(api);
 
+// Add Azure Service Bus and Functions based on configuration
 if (enableAzureFunctions)
 {
     var serviceBus = builder.AddAzureServiceBus("servicebus");
@@ -32,3 +38,5 @@ if (enableAzureFunctions)
 }
 
 builder.Build().Run();
+
+public partial class Program { }
