@@ -7,6 +7,7 @@ using Api.Features.ConfigurationQuestions;
 using Api.Features.Products;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
+using Api.Features.Projects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -34,6 +35,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<QuestionBankItem> QuestionBankItems => Set<QuestionBankItem>();
     public DbSet<QuestionAnswer> QuestionAnswers => Set<QuestionAnswer>();
     public DbSet<MetricGroup> MetricGroups => Set<MetricGroup>();
+    public DbSet<Project> Projects => Set<Project>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -271,6 +273,28 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.HasIndex(e => e.Name).IsUnique(); // Ensure metric group names are unique
+        });
+
+        modelBuilder.Entity<Project>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.Owner).HasMaxLength(100);
+            entity.Property(e => e.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+            entity.HasIndex(e => e.Name).IsUnique(); // Ensure project names are unique
+            
+            entity.HasOne(e => e.Client)
+                .WithMany()
+                .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
     }
