@@ -1,19 +1,39 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Filter, ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import { projectsApi, type Project } from '../services/api';
+import { projectsApi, type Project, type CreateProjectRequest } from '../services/api';
+import { SidePanel } from '../components/ui/SidePanel';
 import './ProjectsListPage.css';
 
 export function ProjectsListPage() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState<string | null>(null);
+    
+    // Side panel state
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [formData, setFormData] = useState<CreateProjectRequest>({
+        name: '',
+        description: '',
+        owner: ''
+    });
+    const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+    const [serverError, setServerError] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         loadProjects();
     }, []);
+
+    // Open create panel when URL param is set
+    useEffect(() => {
+        if (searchParams.get('create') === 'true') {
+            openCreatePanel();
+        }
+    }, [searchParams]);
 
     const loadProjects = async (query?: string) => {
         try {
@@ -48,6 +68,64 @@ export function ProjectsListPage() {
     const getInitials = (name?: string) => {
         if (!name) return '?';
         return name.charAt(0).toUpperCase();
+    };
+
+    const openCreatePanel = () => {
+        setFormData({
+            name: '',
+            description: '',
+            owner: ''
+        });
+        setValidationErrors({});
+        setServerError('');
+        setIsCreateOpen(true);
+    };
+
+    const closeCreatePanel = () => {
+        setIsCreateOpen(false);
+        // Remove the create param from URL
+        searchParams.delete('create');
+        setSearchParams(searchParams, { replace: true });
+    };
+
+    const handleInputChange = (field: keyof CreateProjectRequest, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        // Clear validation error for this field
+        if (validationErrors[field]) {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[field];
+                return newErrors;
+            });
+        }
+    };
+
+    const handleCreateProject = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setValidationErrors({});
+        setServerError('');
+        setIsSubmitting(true);
+
+        try {
+            const createdProject = await projectsApi.create(formData);
+            await loadProjects(); // Refresh the list
+            closeCreatePanel();
+            navigate(`/projects/${createdProject.id}`); // Navigate to the newly created project
+        } catch (err) {
+            const error = err as { status?: number; errors?: Record<string, string[]> };
+            if (error.status === 400 && error.errors) {
+                // Validation errors
+                setValidationErrors(error.errors);
+            } else if (error.status === 409) {
+                // Conflict error (duplicate name)
+                setServerError(typeof err === 'string' ? err : 'A project with this name already exists');
+            } else {
+                setServerError('Failed to create project. Please try again.');
+            }
+            console.error('Failed to create project', err);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -162,6 +240,93 @@ export function ProjectsListPage() {
                     )}
                 </div>
             </div>
+
+            {/* Create Project Side Panel */}
+            <SidePanel
+                isOpen={isCreateOpen}
+                onClose={closeCreatePanel}
+                title="Create New Project"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={closeCreatePanel}
+                            className="btn-secondary"
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            form="create-project-form"
+                            className="btn-primary"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Creating...' : 'Create Project'}
+                        </button>
+                    </>
+                }
+            >
+                <form id="create-project-form" onSubmit={handleCreateProject}>
+                    {serverError && (
+                        <div className="error-message" style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee', color: '#c00', borderRadius: '4px' }}>
+                            {serverError}
+                        </div>
+                    )}
+
+                    <div className="form-group">
+                        <label htmlFor="name" className="form-label">
+                            Project Name <span style={{ color: '#ef4444' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            className={`form-input ${validationErrors.Name ? 'error' : ''}`}
+                            value={formData.name}
+                            onChange={(e) => handleInputChange('name', e.target.value)}
+                            required
+                            maxLength={200}
+                        />
+                        {validationErrors.Name && (
+                            <div className="field-error">{validationErrors.Name[0]}</div>
+                        )}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="description" className="form-label">
+                            Description
+                        </label>
+                        <textarea
+                            id="description"
+                            className={`form-input ${validationErrors.Description ? 'error' : ''}`}
+                            value={formData.description || ''}
+                            onChange={(e) => handleInputChange('description', e.target.value)}
+                            rows={4}
+                            maxLength={2000}
+                        />
+                        {validationErrors.Description && (
+                            <div className="field-error">{validationErrors.Description[0]}</div>
+                        )}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="owner" className="form-label">
+                            Owner
+                        </label>
+                        <input
+                            type="text"
+                            id="owner"
+                            className={`form-input ${validationErrors.Owner ? 'error' : ''}`}
+                            value={formData.owner || ''}
+                            onChange={(e) => handleInputChange('owner', e.target.value)}
+                            maxLength={100}
+                        />
+                        {validationErrors.Owner && (
+                            <div className="field-error">{validationErrors.Owner[0]}</div>
+                        )}
+                    </div>
+                </form>
+            </SidePanel>
         </div>
     );
 }

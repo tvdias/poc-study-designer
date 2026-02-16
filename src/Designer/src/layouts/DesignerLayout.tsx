@@ -8,9 +8,8 @@ export function DesignerLayout() {
     const isProjectDetail = location.pathname.includes('/projects/') && location.pathname.split('/').length > 2;
 
     const handleCreateProject = () => {
-        // For now, just navigate to the list
-        // In a real app, this would open a modal
-        navigate('/');
+        // Navigate to home with create parameter to trigger the create modal
+        navigate('/?create=true');
     };
 
     return (
