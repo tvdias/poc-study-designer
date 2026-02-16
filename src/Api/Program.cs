@@ -9,6 +9,7 @@ using Api.Features.Products;
 using Api.Features.ProductTemplates;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
+using Api.Features.Projects;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -163,6 +164,13 @@ api.MapGetTagsEndpoint();
 api.MapGetTagByIdEndpoint();
 api.MapUpdateTagEndpoint();
 api.MapDeleteTagEndpoint();
+
+// Projects
+api.MapCreateProjectEndpoint();
+api.MapGetProjectsEndpoint();
+api.MapGetProjectByIdEndpoint();
+api.MapUpdateProjectEndpoint();
+api.MapDeleteProjectEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();
