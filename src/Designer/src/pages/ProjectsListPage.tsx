@@ -31,7 +31,14 @@ export function ProjectsListPage() {
     // Open create panel when URL param is set
     useEffect(() => {
         if (searchParams.get('create') === 'true') {
-            openCreatePanel();
+            setFormData({
+                name: '',
+                description: '',
+                owner: ''
+            });
+            setValidationErrors({});
+            setServerError('');
+            setIsCreateOpen(true);
         }
     }, [searchParams]);
 
@@ -68,17 +75,6 @@ export function ProjectsListPage() {
     const getInitials = (name?: string) => {
         if (!name) return '?';
         return name.charAt(0).toUpperCase();
-    };
-
-    const openCreatePanel = () => {
-        setFormData({
-            name: '',
-            description: '',
-            owner: ''
-        });
-        setValidationErrors({});
-        setServerError('');
-        setIsCreateOpen(true);
     };
 
     const closeCreatePanel = () => {
@@ -269,14 +265,14 @@ export function ProjectsListPage() {
             >
                 <form id="create-project-form" onSubmit={handleCreateProject}>
                     {serverError && (
-                        <div className="error-message" style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee', color: '#c00', borderRadius: '4px' }}>
+                        <div className="error-message">
                             {serverError}
                         </div>
                     )}
 
                     <div className="form-group">
                         <label htmlFor="name" className="form-label">
-                            Project Name <span style={{ color: '#ef4444' }}>*</span>
+                            Project Name <span className="required-asterisk">*</span>
                         </label>
                         <input
                             type="text"

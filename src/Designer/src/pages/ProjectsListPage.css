@@ -295,6 +295,10 @@
     margin-bottom: 0.5rem;
 }
 
+.required-asterisk {
+    color: #ef4444;
+}
+
 .form-input {
     display: block;
     width: 100%;
@@ -335,6 +339,7 @@ textarea.form-input {
 }
 
 .error-message {
+    margin-bottom: 1rem;
     padding: 0.75rem;
     background-color: #fee2e2;
     color: #991b1b;
