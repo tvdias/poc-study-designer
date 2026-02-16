@@ -1,0 +1,226 @@
+/* Designer Layout Styles */
+.designer-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #f0f2f5;
+}
+
+/* Header */
+.designer-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #0f172a;
+    color: white;
+    z-index: 50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 80px;
+    border-bottom: 1px solid #334155;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.service-name {
+    display: block;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #e2e8f0;
+    letter-spacing: -0.025em;
+    transition: all 0.3s;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Header Action Buttons */
+.header-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #1e293b;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.header-action-btn:hover {
+    background-color: #334155;
+}
+
+.header-action-btn .hidden {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .header-action-btn .hidden {
+        display: inline;
+    }
+}
+
+/* Dropdown */
+.dropdown-wrapper {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 0.25rem;
+    width: 14rem;
+    background: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    z-index: 50;
+    display: none;
+}
+
+.dropdown-wrapper:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-header {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    background-color: #f8fafc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #1e293b;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+.dropdown-divider {
+    border-top: 1px solid #f1f5f9;
+    margin: 0.25rem 0;
+}
+
+/* Create Button */
+.create-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.create-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.create-btn .hidden {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .create-btn .hidden {
+        display: inline;
+    }
+}
+
+/* Notification Button */
+.notification-btn {
+    position: relative;
+    padding: 0.5rem;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.notification-btn:hover {
+    color: white;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 0.375rem;
+    right: 0.375rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #ef4444;
+    border-radius: 9999px;
+}
+
+/* User Avatar */
+.user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid #475569;
+    background-color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.user-avatar:hover {
+    border-color: #94a3b8;
+}
+
+/* Main Layout */
+.main-layout {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 80px;
+    background-color: #f8fafc;
+}
+
+/* Utility Classes */
+.text-yellow-400 {
+    color: #facc15;
+}
+
+.text-slate-400 {
+    color: #94a3b8;
+}
+
+.ml-1 {
+    margin-left: 0.25rem;
+}
+
+@media (min-width: 640px) {
+    .sm\:inline {
+        display: inline;
+    }
+}
