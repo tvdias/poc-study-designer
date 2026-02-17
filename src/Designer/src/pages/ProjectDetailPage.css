@@ -294,7 +294,7 @@
 .form-textarea:focus {
     outline: none;
     border-color: #3b82f6;
-    ring: 1px solid #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
 }
 
 .form-textarea {
@@ -362,7 +362,7 @@
 .form-select.error:focus,
 .form-textarea.error:focus {
     border-color: #ef4444;
-    ring: 1px solid #ef4444;
+    box-shadow: 0 0 0 1px #ef4444;
 }
 
 .field-error {

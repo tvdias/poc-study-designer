@@ -287,7 +287,7 @@ export function ProjectDetailPage() {
                                     <div className="section-footer">
                                         <button 
                                             type="button" 
-                                            onClick={() => navigate('/')}
+                                            onClick={() => navigate('/projects')}
                                             className="cancel-btn"
                                             disabled={isSubmitting}
                                         >
