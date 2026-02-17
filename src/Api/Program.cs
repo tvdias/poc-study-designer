@@ -182,6 +182,7 @@ api.MapDeleteProjectEndpoint();
 // Project Questionnaires
 api.MapAddProjectQuestionnaireEndpoint();
 api.MapGetProjectQuestionnairesEndpoint();
+api.MapUpdateProjectQuestionnaireEndpoint();
 api.MapUpdateProjectQuestionnairesSortOrderEndpoint();
 api.MapDeleteProjectQuestionnaireEndpoint();
 

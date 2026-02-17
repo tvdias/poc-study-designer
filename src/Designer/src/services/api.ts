@@ -145,11 +145,38 @@ export interface ProjectQuestionnaire {
     projectId: string;
     questionBankItemId: string;
     sortOrder: number;
-    questionBankItem: QuestionBankItemSummary;
+    variableName: string;
+    version: number;
+    questionText?: string;
+    questionTitle?: string;
+    questionType?: string;
+    classification?: string;
+    questionRationale?: string;
+    scraperNotes?: string;
+    customNotes?: string;
+    rowSortOrder?: number;
+    columnSortOrder?: number;
+    answerMin?: number;
+    answerMax?: number;
+    questionFormatDetails?: string;
+    isDummy: boolean;
 }
 
 export interface AddProjectQuestionnaireRequest {
     questionBankItemId: string;
+}
+
+export interface UpdateProjectQuestionnaireRequest {
+    questionText?: string;
+    questionTitle?: string;
+    questionRationale?: string;
+    scraperNotes?: string;
+    customNotes?: string;
+    rowSortOrder?: number;
+    columnSortOrder?: number;
+    answerMin?: number;
+    answerMax?: number;
+    questionFormatDetails?: string;
 }
 
 export interface UpdateProjectQuestionnairesSortOrderRequest {
@@ -175,6 +202,20 @@ export const projectQuestionnairesApi = {
     add: async (projectId: string, data: AddProjectQuestionnaireRequest): Promise<ProjectQuestionnaire> => {
         const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (projectId: string, id: string, data: UpdateProjectQuestionnaireRequest): Promise<ProjectQuestionnaire> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires/${id}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });

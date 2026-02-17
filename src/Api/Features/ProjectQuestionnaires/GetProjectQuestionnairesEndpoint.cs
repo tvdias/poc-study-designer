@@ -21,7 +21,6 @@ public static class GetProjectQuestionnairesEndpoint
             }
 
             var questionnaires = await context.Set<ProjectQuestionnaire>()
-                .Include(pq => pq.QuestionBankItem)
                 .Where(pq => pq.ProjectId == projectId)
                 .OrderBy(pq => pq.SortOrder)
                 .Select(pq => new ProjectQuestionnaireDto(
@@ -29,15 +28,21 @@ public static class GetProjectQuestionnairesEndpoint
                     pq.ProjectId,
                     pq.QuestionBankItemId,
                     pq.SortOrder,
-                    new QuestionBankItemSummary(
-                        pq.QuestionBankItem.Id,
-                        pq.QuestionBankItem.VariableName,
-                        pq.QuestionBankItem.Version,
-                        pq.QuestionBankItem.QuestionText,
-                        pq.QuestionBankItem.QuestionType,
-                        pq.QuestionBankItem.Classification,
-                        pq.QuestionBankItem.QuestionRationale
-                    )
+                    pq.VariableName,
+                    pq.Version,
+                    pq.QuestionText,
+                    pq.QuestionTitle,
+                    pq.QuestionType,
+                    pq.Classification,
+                    pq.QuestionRationale,
+                    pq.ScraperNotes,
+                    pq.CustomNotes,
+                    pq.RowSortOrder,
+                    pq.ColumnSortOrder,
+                    pq.AnswerMin,
+                    pq.AnswerMax,
+                    pq.QuestionFormatDetails,
+                    pq.IsDummy
                 ))
                 .ToListAsync(cancellationToken);
 

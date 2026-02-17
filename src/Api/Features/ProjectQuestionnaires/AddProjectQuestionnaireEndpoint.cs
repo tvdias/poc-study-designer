@@ -55,12 +55,31 @@ public static class AddProjectQuestionnaireEndpoint
                 .Where(pq => pq.ProjectId == projectId)
                 .MaxAsync(pq => (int?)pq.SortOrder, cancellationToken) ?? -1;
 
+            // Copy fields from QuestionBankItem to ProjectQuestionnaire
             var projectQuestionnaire = new ProjectQuestionnaire
             {
                 Id = Guid.NewGuid(),
                 ProjectId = projectId,
                 QuestionBankItemId = request.QuestionBankItemId,
                 SortOrder = maxSortOrder + 1,
+                
+                // Copy editable fields from question bank
+                VariableName = questionBankItem.VariableName,
+                Version = questionBankItem.Version,
+                QuestionText = questionBankItem.QuestionText,
+                QuestionTitle = questionBankItem.QuestionTitle,
+                QuestionType = questionBankItem.QuestionType,
+                Classification = questionBankItem.Classification,
+                QuestionRationale = questionBankItem.QuestionRationale,
+                ScraperNotes = questionBankItem.ScraperNotes,
+                CustomNotes = questionBankItem.CustomNotes,
+                RowSortOrder = questionBankItem.RowSortOrder,
+                ColumnSortOrder = questionBankItem.ColumnSortOrder,
+                AnswerMin = questionBankItem.AnswerMin,
+                AnswerMax = questionBankItem.AnswerMax,
+                QuestionFormatDetails = questionBankItem.QuestionFormatDetails,
+                IsDummy = questionBankItem.IsDummy,
+                
                 CreatedOn = DateTime.UtcNow,
                 CreatedBy = "system" // TODO: Replace with actual user
             };
@@ -73,15 +92,13 @@ public static class AddProjectQuestionnaireEndpoint
                 projectQuestionnaire.ProjectId,
                 projectQuestionnaire.QuestionBankItemId,
                 projectQuestionnaire.SortOrder,
-                new QuestionBankItemSummary(
-                    questionBankItem.Id,
-                    questionBankItem.VariableName,
-                    questionBankItem.Version,
-                    questionBankItem.QuestionText,
-                    questionBankItem.QuestionType,
-                    questionBankItem.Classification,
-                    questionBankItem.QuestionRationale
-                )
+                projectQuestionnaire.VariableName,
+                projectQuestionnaire.Version,
+                projectQuestionnaire.QuestionText,
+                projectQuestionnaire.QuestionTitle,
+                projectQuestionnaire.QuestionType,
+                projectQuestionnaire.Classification,
+                projectQuestionnaire.QuestionRationale
             );
 
             return TypedResults.Created($"/api/projects/{projectId}/questionnaires/{projectQuestionnaire.Id}", response);

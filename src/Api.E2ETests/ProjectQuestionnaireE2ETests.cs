@@ -191,8 +191,8 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
             Assert.Equal(2, questionnaires.Count);
 
             // Verify the sort order values are updated (order should be swapped)
-            var firstQuestionnaireAfter = questionnaires.First(q => q.QuestionBankItem.VariableName == newFirstRowVariableName);
-            var secondQuestionnaireAfter = questionnaires.First(q => q.QuestionBankItem.VariableName == newSecondRowVariableName);
+            var firstQuestionnaireAfter = questionnaires.First(q => q.VariableName == newFirstRowVariableName);
+            var secondQuestionnaireAfter = questionnaires.First(q => q.VariableName == newSecondRowVariableName);
             Assert.Equal(0, firstQuestionnaireAfter.SortOrder);
             Assert.Equal(1, secondQuestionnaireAfter.SortOrder);
         }
@@ -361,6 +361,37 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
 // DTOs for API responses
 public record QuestionBankItemDto(Guid Id, string VariableName, int Version, string? QuestionText, string? QuestionType, string? Classification);
 public record ProjectDto(Guid Id, string Name, string? Description);
-public record ProjectQuestionnaireDto(Guid Id, Guid ProjectId, Guid QuestionBankItemId, int SortOrder, QuestionBankItemSummaryDto QuestionBankItem);
-public record QuestionBankItemSummaryDto(Guid Id, string VariableName, int Version, string? QuestionText, string? QuestionType, string? Classification);
-public record AddProjectQuestionnaireResponse(Guid Id, Guid ProjectId, Guid QuestionBankItemId, int SortOrder, QuestionBankItemSummaryDto QuestionBankItem);
+public record ProjectQuestionnaireDto(
+    Guid Id, 
+    Guid ProjectId, 
+    Guid QuestionBankItemId, 
+    int SortOrder, 
+    string VariableName, 
+    int Version, 
+    string? QuestionText, 
+    string? QuestionTitle, 
+    string? QuestionType, 
+    string? Classification, 
+    string? QuestionRationale,
+    string? ScraperNotes,
+    string? CustomNotes,
+    int? RowSortOrder,
+    int? ColumnSortOrder,
+    int? AnswerMin,
+    int? AnswerMax,
+    string? QuestionFormatDetails,
+    bool IsDummy
+);
+public record AddProjectQuestionnaireResponse(
+    Guid Id, 
+    Guid ProjectId, 
+    Guid QuestionBankItemId, 
+    int SortOrder, 
+    string VariableName, 
+    int Version, 
+    string? QuestionText, 
+    string? QuestionTitle, 
+    string? QuestionType, 
+    string? Classification, 
+    string? QuestionRationale
+);

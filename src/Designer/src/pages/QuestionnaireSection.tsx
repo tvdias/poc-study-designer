@@ -211,31 +211,31 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
                                                 </td>
                                                 <td>
                                                     <div className="variable-name-cell">
-                                                        {q.questionBankItem.variableName}
-                                                        {q.questionBankItem.questionRationale && (
+                                                        {q.variableName}
+                                                        {q.questionRationale && (
                                                             <div className="info-icon-wrapper">
                                                                 <Info size={14} className="info-icon" />
                                                                 <div className="info-tooltip">
                                                                     <div className="tooltip-row">
-                                                                        <strong>Version:</strong> {q.questionBankItem.version}
+                                                                        <strong>Version:</strong> {q.version}
                                                                     </div>
                                                                     <div className="tooltip-row">
-                                                                        <strong>Rationale:</strong> {q.questionBankItem.questionRationale}
+                                                                        <strong>Rationale:</strong> {q.questionRationale}
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td>v{q.questionBankItem.version}</td>
+                                                <td>v{q.version}</td>
                                                 <td className="question-text-col">
-                                                    {q.questionBankItem.questionText || '-'}
+                                                    {q.questionText || '-'}
                                                 </td>
-                                                <td>{q.questionBankItem.questionType || '-'}</td>
+                                                <td>{q.questionType || '-'}</td>
                                                 <td>
-                                                    {q.questionBankItem.classification && (
+                                                    {q.classification && (
                                                         <span className="classification-badge">
-                                                            {q.questionBankItem.classification}
+                                                            {q.classification}
                                                         </span>
                                                     )}
                                                 </td>
@@ -267,28 +267,34 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
                                                             <div className="detail-grid">
                                                                 <div className="detail-item">
                                                                     <span className="detail-label">Variable Name:</span>
-                                                                    <span className="detail-value">{q.questionBankItem.variableName}</span>
+                                                                    <span className="detail-value">{q.variableName}</span>
                                                                 </div>
                                                                 <div className="detail-item">
                                                                     <span className="detail-label">Version:</span>
-                                                                    <span className="detail-value">v{q.questionBankItem.version}</span>
+                                                                    <span className="detail-value">v{q.version}</span>
                                                                 </div>
                                                                 <div className="detail-item">
                                                                     <span className="detail-label">Question Type:</span>
-                                                                    <span className="detail-value">{q.questionBankItem.questionType || '-'}</span>
+                                                                    <span className="detail-value">{q.questionType || '-'}</span>
                                                                 </div>
                                                                 <div className="detail-item">
                                                                     <span className="detail-label">Classification:</span>
-                                                                    <span className="detail-value">{q.questionBankItem.classification || '-'}</span>
+                                                                    <span className="detail-value">{q.classification || '-'}</span>
                                                                 </div>
                                                                 <div className="detail-item full-width">
                                                                     <span className="detail-label">Question Text:</span>
-                                                                    <span className="detail-value">{q.questionBankItem.questionText || '-'}</span>
+                                                                    <span className="detail-value">{q.questionText || '-'}</span>
                                                                 </div>
-                                                                {q.questionBankItem.questionRationale && (
+                                                                {q.questionTitle && (
+                                                                    <div className="detail-item full-width">
+                                                                        <span className="detail-label">Question Title:</span>
+                                                                        <span className="detail-value">{q.questionTitle}</span>
+                                                                    </div>
+                                                                )}
+                                                                {q.questionRationale && (
                                                                     <div className="detail-item full-width">
                                                                         <span className="detail-label">Rationale:</span>
-                                                                        <span className="detail-value">{q.questionBankItem.questionRationale}</span>
+                                                                        <span className="detail-value">{q.questionRationale}</span>
                                                                     </div>
                                                                 )}
                                                             </div>
