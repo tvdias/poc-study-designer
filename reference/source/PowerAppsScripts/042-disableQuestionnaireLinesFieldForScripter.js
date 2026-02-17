@@ -1,0 +1,78 @@
+/**
+ * @file        042-disableQuestionnaireLinesFieldForScripter.js
+ * @description Manages Study form field editability based on status reason
+ *
+ * @date        2025-10-02
+ * @version     1.0
+ *
+ * @usage       This script is invoked on load of the Questionnaire Line Main form
+ * @notes       Implements form management logic based on user role.
+ */
+
+var DisableFields = (function () {
+    "use strict";
+    const control = {
+        isDummyQuestion: "ktr_isdummyquestion",
+    };
+    const tab = {
+        TabAnswer: "tab_2"
+    };
+    const section ={
+        AnswerDragNDrop: "tab_2_section_1",
+        AnswerWithoutDragNDrop: "tab_2_section_3"
+    }
+    
+    class DisableFields {
+
+        static onLoad(executionContext) {
+            console.log("DISABLING FIELDS FOR SCRIPTER");
+            
+            const formContext = executionContext.getFormContext();
+            const isScripter = DisableFields.getCurrentUserRoles();
+
+            if (isScripter) {
+                formContext.getControl(control.isDummyQuestion).setDisabled(true);
+                DisableFields.disableFieldsForScripter(formContext);
+            }
+        }
+
+        static disableFieldsForScripter(formContext) {
+            const isDummy = formContext.getAttribute(control.isDummyQuestion)?.getValue();
+            if (!isDummy) {
+                DisableFields.setAllFieldsEditability(formContext, true);
+                DisableFields.hideSection(formContext);
+            }
+        }
+
+        static getCurrentUserRoles() {
+            const roles = Xrm.Utility.getGlobalContext().userSettings.roles.getAll(); 
+            const disallowedRoleIds = ["3a27fcc5-cc0a-f011-bae2-000d3a2274a5"]; // scripter role GUID
+
+            if (!roles || roles.length === 0) {
+                return false;
+            }
+
+            // Check if user has only the disallowed role
+            const userRoleIds = roles.map(r => r.id.toLowerCase());
+            const matched = userRoleIds.filter(id => disallowedRoleIds.includes(id));
+
+            return matched.length > 0 && userRoleIds.length === 1;
+        }
+
+        static setAllFieldsEditability(formContext, disabled) {
+            formContext.ui.controls.forEach(function (control) {
+                if (["standard", "lookup", "optionset", "customcontrol:MscrmControls.RichTextEditor.RichTextEditorControl"].includes(control.getControlType())) {
+                    control.setDisabled(disabled);
+                }
+            });
+        }
+        static hideSection(formContext) {
+            const sectionWithDragNDrop = formContext.ui.tabs.get(tab.TabAnswer).sections.get(section.AnswerDragNDrop);
+            const sectionWithoutDragNDrop = formContext.ui.tabs.get(tab.TabAnswer).sections.get(section.AnswerWithoutDragNDrop);
+            
+            if (sectionWithDragNDrop && sectionWithoutDragNDrop ) {
+                sectionWithDragNDrop.setVisible(false); // hides the section
+                sectionWithoutDragNDrop.setVisible(true);
+            }
+        }
+    }  return DisableFields})()

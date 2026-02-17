@@ -1,0 +1,53 @@
+
+{
+    "Questionnaire": {
+        "AriaLabel": {
+            "QuestionText": "Rich Text Editor Control kt_questionnairelines kt_questiontext2",
+            "RowSortOrder":"Row Sort Order",
+            "QuestionFormatDetails":"Question Format Details",
+            "ManagedListLookup":"Managed List, Lookup",
+            "AddManagedListInQuestion" : "New Questionnaire Line Managed List. Add New Questionnaire Line Managed List",
+            "ScripterNotes":"Scripter Notes",
+            "DeleteTestProduct":"Delete Test Product"
+        },
+        "Text": {
+           "CategoryIntroduction":"Category Introduction",
+           "CAT_INTRO":"CAT_INTRO",
+           "RemoveModules":"Remove Modules",
+           "RemoveSelected":"Remove Selected",
+           "NoResultsMatching":"No results matching your Search. Please try again.",
+           "AnswerDest" :"Female",
+           "AnswerSrc" : "Male"
+        },
+        "placeholder": {
+           "SearchQuestionModule":"Search Questions and Modules"
+        },
+        "Tabs": {
+            "Questionnaire":"Questionnaire",
+            "Custom":"Custom",
+            "General":"General",
+            "QuestionProperties":"Question Properties",
+            "Questions":"Questions",
+            "ManagedLists":"Managed Lists",
+            "Answers":"Answers"
+        },
+        "CSS": {
+            "QuestionnaireCollapsedRecord":"div.fui-AccordionItem button[aria-expanded='false']",
+            "StrikeOutQuestion":"span.strikethrough",
+            "AnswerCode":"[data-automation-key='ktr_answercode']",
+            "AnswerTextInQuestionnaire":"div ~ table tbody tr td:first-child",
+            "scripterUserAnserCode":"[role='gridcell'][col-id='ktr_answercode']",
+            "QuestionButton":"button[value='questions']",
+            "CustomButton":"button[value='custom']"
+
+        },
+        "ByRole": {
+           "Save":"Save"
+        },
+         "TestDataId": {
+           "DeleteButton":"delete-button",
+           "ReactivateButton":"reactivate-button",
+           "EditButton":"edit-button"
+        }
+    }
+}

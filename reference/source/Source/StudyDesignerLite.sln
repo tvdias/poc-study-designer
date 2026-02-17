@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kantar.StudyDesignerLite.Plugins", "StudyDesignerPlugins\Kantar.StudyDesignerLite.Plugins.csproj", "{5CB09E0E-909E-4E7E-A94B-69BC1A749625}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kantar.StudyDesignerLite.Plugins.UnitTests", "Kantar.StudyDesignerLite.Plugins.Tests\Kantar.StudyDesignerLite.Plugins.UnitTests.csproj", "{BAA0CBC3-5538-4A46-9150-67374A401C5A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{C4A6916D-0657-4745-BF0C-CAA648ADD7CE}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigTx.Designer.FunctionApp", "DigTx.Designer.DesignerAssistant.FunctionApp\DigTx.Designer.FunctionApp.csproj", "{36207797-5727-4684-86A9-AE725605DA61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigTx.Designer.FunctionApp.Tests", "DigTx.Designer.FunctionApp.Tests\DigTx.Designer.FunctionApp.Tests.csproj", "{E97728C1-1885-453D-A1AF-D7644249AC5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kantar.StudyDesignerLite.Migrations", "Kantar.StudyDesignerLite.Migrations\Kantar.StudyDesignerLite.Migrations.csproj", "{41AFC93C-6713-4F52-B331-C2EF448CDB53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CB09E0E-909E-4E7E-A94B-69BC1A749625}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CB09E0E-909E-4E7E-A94B-69BC1A749625}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CB09E0E-909E-4E7E-A94B-69BC1A749625}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CB09E0E-909E-4E7E-A94B-69BC1A749625}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAA0CBC3-5538-4A46-9150-67374A401C5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAA0CBC3-5538-4A46-9150-67374A401C5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAA0CBC3-5538-4A46-9150-67374A401C5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAA0CBC3-5538-4A46-9150-67374A401C5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36207797-5727-4684-86A9-AE725605DA61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36207797-5727-4684-86A9-AE725605DA61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36207797-5727-4684-86A9-AE725605DA61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36207797-5727-4684-86A9-AE725605DA61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E97728C1-1885-453D-A1AF-D7644249AC5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E97728C1-1885-453D-A1AF-D7644249AC5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E97728C1-1885-453D-A1AF-D7644249AC5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E97728C1-1885-453D-A1AF-D7644249AC5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41AFC93C-6713-4F52-B331-C2EF448CDB53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41AFC93C-6713-4F52-B331-C2EF448CDB53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41AFC93C-6713-4F52-B331-C2EF448CDB53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41AFC93C-6713-4F52-B331-C2EF448CDB53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0F705459-8BEC-4D25-B265-0785C7AB6482}
+	EndGlobalSection
+	GlobalSection(CRMSolutionProperties) = preSolution
+		SolutionIsBoundToCRM = True
+	EndGlobalSection
+EndGlobal

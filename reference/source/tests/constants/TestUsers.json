@@ -1,0 +1,30 @@
+{
+    "TestUser": {
+        "LibrarianUser": "LibrarianUser",
+        "CSUser": "CSUser",
+        "ScripterUser": "ScripterUser",
+        "AdminUser": "AdminUser"
+    },
+    "AppName": {
+        "UC1": "UC1"
+    },
+    "AppId": {
+        "UC1": "c38c8672-c0c2-4c74-83f0-c626e97b763f"
+    },
+    "URLS": {
+        "UC1_Dev_URL": "https://uc1sd-dev.crm4.dynamics.com",
+        "UC1_Test_URL": "https://orgcdd54471.crm4.dynamics.com/",
+        "UC1_Dev_Candidate_URL": "https://uc1sd-dev-candidate.crm4.dynamics.com/",
+        "TOKEN_URL": "https://login.microsoftonline.com/"
+    },
+    "LoginDetails": {
+        "CSUserLoginDetails": "svc.DIGTX-SDLite-ClientService@kantar.com,",
+        "LibrarianLoginDetails": "svc.DIGTX-SDLite-ContentAdmin@kantar.com,",
+        "ScripterLoginDetails": "svc.DIGTX-SDLite-Operations@kantar.com,",
+        "AdminLoginDetails": ""
+    },
+    "Environment": {
+        "Env": "Test",
+        "Execution": "Local"
+    }
+}

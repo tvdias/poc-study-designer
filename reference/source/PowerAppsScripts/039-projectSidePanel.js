@@ -1,0 +1,179 @@
+/**
+ * @file        039-projectSidePanel.js
+ * @description Set the functionality for Project entity SidePanel form.
+ *
+ * @date        2025-08-07
+ * @version     1.0
+ *
+ * @usage       This script is used to set the onload functionality of the form.
+ * @notes       This script works onLoad and onChange of Project Form and its fields.
+ */
+
+
+var Kantar = Kantar || {};
+Kantar.ProjectSidePanelForm = (function () {
+
+
+    function addDelay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function loadDCPWebResource(resourceName) {
+        return new Promise((resolve, reject) => {
+            const scriptId = resourceName.replace(/\W/g, "_");
+
+            // If already loaded
+            if (document.getElementById(scriptId)) {
+                resolve();
+                return;
+            }
+
+            const clientUrl = Xrm.Utility.getGlobalContext().getClientUrl();
+            const script = document.createElement("script");
+            script.id = scriptId;
+            script.type = "text/javascript";
+            script.src = `${clientUrl}/WebResources/${resourceName}`;
+
+            script.onload = () => {
+                console.log(`${resourceName} loaded`);
+                resolve();
+            };
+
+            script.onerror = () => {
+                console.error(`Failed to load ${resourceName}`);
+                reject(new Error(`Failed to load ${resourceName}`));
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    async function setWebResourcesContextForHTML(formContext, webresourceControlName) {
+        let wrControl = formContext.getControl(webresourceControlName);
+        wrControl.setVisible(true);
+        let contentwindow = await wrControl.getContentWindow();
+
+        return new Promise((resolve) => {
+            let interval = setInterval(function () {
+                if (typeof contentwindow.setClientApiContext === "function") {
+                    clearInterval(interval);
+                    contentwindow.setClientApiContext(Xrm, formContext);
+                    resolve(contentwindow);
+                }
+            }, 100);
+        });
+    }
+
+    async function onFormLoad(executionParameter) {
+        var formContext = executionParameter.getFormContext();
+        formContext.ui.headerSection.setCommandBarVisible(false);
+        formContext.ui.headerSection.setBodyVisible(true);
+        formContext.ui.headerSection.setTabNavigatorVisible(false);
+
+        await setWebResourcesContextForHTML(formContext, "WebResource_new_3");
+        await loadDCPWebResource("ptm_globalambutton.min.js");
+    }
+
+    async function regenerateQuestionnaireHTML(formContext) {
+        const projectId = formContext.data.entity.getId().replace("{", "").replace("}", "");
+
+        const req = new XMLHttpRequest();
+        const clientUrl = Xrm.Utility.getGlobalContext().getClientUrl();
+        const url = `${clientUrl}/api/data/v9.2/ktr_project_questionnairelines_regenerate_html_unbound`;
+
+        return new Promise((resolve, reject) => {
+            req.open("POST", url, true);
+            req.setRequestHeader("Accept", "application/json");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+
+            req.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+
+                    if (this.status === 200 || this.status === 204) {
+                        console.log("Custom API executed successfully");
+                        resolve();
+                    } else {
+                        console.error("Error calling Custom API:", this.responseText);
+                        reject(new Error(this.responseText));
+                    }
+                }
+            };
+
+            const body = {
+                projectId: projectId
+            };
+
+            req.send(JSON.stringify(body));
+        });
+    }
+
+    async function generateWordDocument(formContext) {
+        const recordId = formContext.data.entity.getId().replace(/[{}]/g, "");
+
+        const data = {
+            "ktr_includeorexcludequestionrationale": formContext.getAttribute("ktr_includeorexcludequestionrationale").getValue(),
+            "ktr_includeorexcludequestionversion": formContext.getAttribute("ktr_includeorexcludequestionversion").getValue(),
+            "ktr_includeorexcludescriptornotes": formContext.getAttribute("ktr_includeorexcludescriptornotes").getValue(),
+            "ktr_includeorexcludestandardofcustom": formContext.getAttribute("ktr_includeorexcludestandardofcustom").getValue()
+        };
+
+        try {
+            await Xrm.WebApi.updateRecord("kt_project", recordId, data);
+
+
+            await loadDCPWebResource("ptm_globalambutton.min.js");
+
+            if (typeof ptm_openLookupDlg === "function") {
+
+
+                ptm_openLookupDlg();
+            } else {
+                alert("Please try after sometime.");
+            }
+
+            // Prevent auto-submission and dialogue box
+            const attributes = formContext.data.entity.attributes.get();
+            for (let i = 0; i < attributes.length; i++) {
+                attributes[i].setSubmitMode("never");
+            }
+
+            await addDelay(2000);
+            formContext.ui.close();
+        } catch (error) {
+            console.error("Error:", error.message);
+        }
+    }
+
+    async function openExportWordDocument(formContext) {
+        try {
+            // 1. Call Custom API BEFORE generating the document
+            await regenerateQuestionnaireHTML(formContext);
+            console.log("HTML regenerated — continuing to generate document...");
+
+            // 2. NOW run existing Word export logic
+            // (replace the line below with your actual document generation call)
+            await generateWordDocument(formContext);
+
+        } catch (error) {
+            console.error("Error in openExportWordDocument:", error);
+            Xrm.Utility.alertDialog("Failed to regenerate HTML before document generation.");
+        }
+    }
+
+    function closeSidePanelForm(formContext) {
+        formContext.ui.close();
+    }
+
+
+    return {
+        onFormLoad: onFormLoad,
+        openExportWordDocument: openExportWordDocument,
+        closeSidePanelForm: closeSidePanelForm
+    };
+
+})();
+window.openExportWordDocument = Kantar.ProjectSidePanelForm.openExportWordDocument;
+window.closeSidePanelForm = Kantar.ProjectSidePanelForm.closeSidePanelForm;

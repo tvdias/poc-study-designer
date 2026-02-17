@@ -1,0 +1,105 @@
+# Ignore node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Playwright test output
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+
+# Logs and temp files
+*.log
+*.lock
+*.tmp
+
+# VS Code settings (if using VS Code)
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+tests/playwright/.auth/user.json
+tests/.vs/**/*
+
+# Visual Studio-specific files
+.vs/
+*.user
+*.suo
+*.vssscc
+*.ncb
+*.sdf
+*.opensdf
+*.sln.docstates
+
+# Build output directories
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+TestResults/
+
+# NuGet-related files
+*.nupkg
+packages/
+project.lock.json
+project.assets.json
+*.nuspec
+*.snupkg
+
+# Resharper, Rider, and other IDE files
+*.DotSettings.user
+.idea/
+*.sln.iml
+
+# Web application related
+App_Data/
+App_Code/
+node_modules/
+bower_components/
+jspm_packages/
+
+# Debugging
+*.tlog
+*.log
+*.pdb
+
+# Generated files
+*.dll
+*.exe
+*.cache
+*.class
+*.csproj.user
+*.dbmdl
+*.jfm
+
+# Temporary files
+*.tmp
+*.bak
+~$*
+*.swp
+Thumbs.db
+.DS_Store
+
+# Azure & Deployment files
+.publish/
+*.pubxml
+*.publishsettings
+
+# Rider and JetBrains
+.idea/
+*.sln.iml
+
+# Windows-specific files
+desktop.ini
+$RECYCLE.BIN/
+Source/UpgradeLog.htm
+tf/*/secrets_temp.tfvars
+/tf/*/.terraform
+*.hcl

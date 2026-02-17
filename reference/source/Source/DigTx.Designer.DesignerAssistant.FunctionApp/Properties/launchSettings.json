@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "DigTx.Designer.DesignerAssistant.FunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7236",
+      "launchBrowser": false
+    }
+  }
+}
