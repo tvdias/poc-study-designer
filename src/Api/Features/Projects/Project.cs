@@ -1,4 +1,5 @@
 using Api.Features.Clients;
+using Api.Features.CommissioningMarkets;
 using Api.Features.Products;
 
 namespace Api.Features.Projects;
@@ -10,6 +11,9 @@ public class Project
     public string? Description { get; set; }
     public Guid? ClientId { get; set; }
     public Client? Client { get; set; }
+    public Guid? CommissioningMarketId { get; set; }
+    public CommissioningMarket? CommissioningMarket { get; set; }
+    public Methodology? Methodology { get; set; }
     public Guid? ProductId { get; set; }
     public Product? Product { get; set; }
     public string? Owner { get; set; }
@@ -26,4 +30,13 @@ public enum ProjectStatus
     Active,
     OnHold,
     Closed
+}
+
+public enum Methodology
+{
+    CATI,
+    CAPI,
+    CAWI,
+    Online,
+    Mixed
 }

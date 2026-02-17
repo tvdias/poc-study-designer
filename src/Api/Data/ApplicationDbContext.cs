@@ -284,11 +284,19 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Status)
                 .HasConversion<string>()
                 .HasMaxLength(50);
+            entity.Property(e => e.Methodology)
+                .HasConversion<string>()
+                .HasMaxLength(50);
             entity.HasIndex(e => e.Name).IsUnique(); // Ensure project names are unique
             
             entity.HasOne(e => e.Client)
                 .WithMany()
                 .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.CommissioningMarket)
+                .WithMany()
+                .HasForeignKey(e => e.CommissioningMarketId)
                 .OnDelete(DeleteBehavior.SetNull);
             
             entity.HasOne(e => e.Product)

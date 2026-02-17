@@ -10,6 +10,9 @@ public record GetProjectsResponse(
     string? Description,
     Guid? ClientId,
     string? ClientName,
+    Guid? CommissioningMarketId,
+    string? CommissioningMarketName,
+    Methodology? Methodology,
     Guid? ProductId,
     string? ProductName,
     string? Owner,
@@ -30,6 +33,7 @@ public static class GetProjectsEndpoint
         {
             var projectsQuery = db.Projects
                 .Include(p => p.Client)
+                .Include(p => p.CommissioningMarket)
                 .Include(p => p.Product)
                 .AsQueryable();
 
@@ -50,6 +54,9 @@ public static class GetProjectsEndpoint
                     p.Description,
                     p.ClientId,
                     p.Client != null ? p.Client.AccountName : null,
+                    p.CommissioningMarketId,
+                    p.CommissioningMarket != null ? p.CommissioningMarket.Name : null,
+                    p.Methodology,
                     p.ProductId,
                     p.Product != null ? p.Product.Name : null,
                     p.Owner,

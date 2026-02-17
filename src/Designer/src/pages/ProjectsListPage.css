@@ -186,7 +186,8 @@
 }
 
 .td-client,
-.td-product {
+.td-product,
+.td-methodology {
     color: #334155;
     white-space: nowrap;
 }

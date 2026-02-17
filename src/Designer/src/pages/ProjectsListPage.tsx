@@ -95,6 +95,7 @@ export function ProjectsListPage() {
                                         <th className="th-name">Project Name</th>
                                         <th className="th-client">Client</th>
                                         <th className="th-description">Description</th>
+                                        <th className="th-methodology">Methodology</th>
                                         <th className="th-product">Product</th>
                                         <th className="th-owner">Owner</th>
                                         <th className="th-modified">Last Modified</th>
@@ -117,6 +118,7 @@ export function ProjectsListPage() {
                                             <td className="td-description">
                                                 {project.description || '-'}
                                             </td>
+                                            <td className="td-methodology">{project.methodology || '-'}</td>
                                             <td className="td-product">{project.productName || '-'}</td>
                                             <td className="td-owner">
                                                 {project.owner ? (

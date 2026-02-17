@@ -10,6 +10,9 @@ public record GetProjectByIdResponse(
     string? Description,
     Guid? ClientId,
     string? ClientName,
+    Guid? CommissioningMarketId,
+    string? CommissioningMarketName,
+    Methodology? Methodology,
     Guid? ProductId,
     string? ProductName,
     string? Owner,
@@ -32,6 +35,7 @@ public static class GetProjectByIdEndpoint
         {
             var project = await db.Projects
                 .Include(p => p.Client)
+                .Include(p => p.CommissioningMarket)
                 .Include(p => p.Product)
                 .FirstOrDefaultAsync(p => p.Id == id, ct);
 
@@ -46,6 +50,9 @@ public static class GetProjectByIdEndpoint
                 project.Description,
                 project.ClientId,
                 project.Client?.AccountName,
+                project.CommissioningMarketId,
+                project.CommissioningMarket?.Name,
+                project.Methodology,
                 project.ProductId,
                 project.Product?.Name,
                 project.Owner,
