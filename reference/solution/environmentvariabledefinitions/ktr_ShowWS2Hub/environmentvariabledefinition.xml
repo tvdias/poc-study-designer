@@ -1,0 +1,14 @@
+<environmentvariabledefinition schemaname="ktr_ShowWS2Hub">
+  <defaultvalue>false</defaultvalue>
+  <description default="If ShowWS2Hub=true then shows the WS2 Hub Icon else hide the icon">
+    <label description="If ShowWS2Hub=true then shows the WS2 Hub Icon else hide the icon" languagecode="1033" />
+  </description>
+  <displayname default="ShowWS2Hub">
+    <label description="ShowWS2Hub" languagecode="1033" />
+  </displayname>
+  <introducedversion>20260112.2</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

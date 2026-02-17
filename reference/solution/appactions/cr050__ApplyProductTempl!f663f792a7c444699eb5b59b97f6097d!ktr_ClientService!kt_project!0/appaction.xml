@@ -1,0 +1,37 @@
+<appaction uniquename="cr050__ApplyProductTempl!f663f792a7c444699eb5b59b97f6097d!ktr_ClientService!kt_project!0">
+  <appmoduleid>
+    <uniquename>ktr_ClientService</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Apply Product Template">
+    <label description="Apply Product Template" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>kt_project</logicalname>
+  </contextentity>
+  <contextvalue>kt_project</contextvalue>
+  <fonticon>$clientsvg:Accept</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>0</location>
+  <name>ApplyProductTempl!f663f792a7c444699eb5b59b97f6097d</name>
+  <onclickeventjavascriptfunctionname>applyTemplateButton.main</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>d09a72cb-e20f-f011-998a-000d3abecbb6</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100005.5000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>cr050_clientservicedefaultcommandlibrary_41b30</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>75e94edce59a483598b1ab8917f50c45</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

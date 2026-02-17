@@ -1,0 +1,37 @@
+<appaction uniquename="ktr__ExportStudyasXML!c8b37d0d272d4ef9a51fbfdfff07be16!kt_UC1!kt_study!0">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Export Study as XML">
+    <label description="Export Study as XML" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>kt_study</logicalname>
+  </contextentity>
+  <contextvalue>kt_study</contextvalue>
+  <fonticon>CreateQuote</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>0</location>
+  <name>ExportStudyasXML!c8b37d0d272d4ef9a51fbfdfff07be16</name>
+  <onclickeventjavascriptfunctionname>Kantar.StudyExportXml.openExportXMLDocument</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5},{"type":10},{"type":21,"value":"c3a250a8-d224-f011-8c4e-6045bd89389a"}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>50055f85-dfca-f011-bbd3-7ced8d137c2b</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100039.3750000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>cradb_uc1defaultcommandlibrary_28f3e</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>f896e6892340429cb76f218a4bcffffb</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

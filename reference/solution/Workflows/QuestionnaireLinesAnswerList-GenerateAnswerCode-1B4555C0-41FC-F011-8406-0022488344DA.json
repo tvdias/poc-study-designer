@@ -1,0 +1,838 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "impersonation": {},
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ktr_sharedcommondataserviceforapps_822a4"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_a_new_record_created_for_questionnaire_lines_answer_list": {
+          "metadata": {
+            "operationMetadataId": "5f9d3af9-07d6-4d5f-9828-54d0d59d54e6"
+          },
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 4,
+              "subscriptionRequest/entityname": "ktr_questionnairelinesanswerlist",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filteringattributes": "ktr_answertext",
+              "subscriptionRequest/name": "dcd6e9ec-7bcf-f011-bbd3-7ced8d5c7125"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "Generate_answer_code_works_when_lock_answer_code_is_false": {
+          "actions": {
+            "Get_a_question_text_of_Questionnaire_lines": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "4bad36d9-53dc-4eea-a72a-b5dabc40a6e7"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "GetItem"
+                },
+                "parameters": {
+                  "entityName": "kt_questionnairelineses",
+                  "recordId": "@triggerOutputs()?['body/_ktr_questionnaireline_value']",
+                  "$select": "kt_questiontext2, kt_standardorcustom"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Condition_to_check_whether_question_is_Standard_or_Custom": {
+              "actions": {
+                "Question_bank_and_Answer_Text_values_should_be_present": {
+                  "actions": {
+                    "Get_Answer_code_from_Question_Answer_List": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "39689a0d-e0e7-4cbb-ab2a-d1775de4d8db"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                          "connectionName": "shared_commondataserviceforapps",
+                          "operationId": "ListRecords"
+                        },
+                        "parameters": {
+                          "entityName": "ktr_questionanswerlists",
+                          "$select": "ktr_name",
+                          "$filter": "_ktr_kt_questionbank_value eq @{triggerOutputs()?['body/_ktr_questionbank_value']} and ktr_answertext eq '@{triggerOutputs()?['body/ktr_answertext']}'"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Apply_to_each_2": {
+                      "foreach": "@outputs('Get_Answer_code_from_Question_Answer_List')?['body/value']",
+                      "actions": {
+                        "Condition": {
+                          "actions": {
+                            "Apply_to_each": {
+                              "foreach": "@outputs('Get_Answer_code_from_Question_Answer_List')?['body/value']",
+                              "actions": {
+                                "Update_a_row": {
+                                  "runAfter": {},
+                                  "metadata": {
+                                    "operationMetadataId": "5d076812-a883-4001-822b-841da4b1246c"
+                                  },
+                                  "type": "OpenApiConnection",
+                                  "inputs": {
+                                    "host": {
+                                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                      "connectionName": "shared_commondataserviceforapps",
+                                      "operationId": "UpdateOnlyRecord"
+                                    },
+                                    "parameters": {
+                                      "entityName": "ktr_questionnairelinesanswerlists",
+                                      "recordId": "@triggerOutputs()?['body/ktr_questionnairelinesanswerlistid']",
+                                      "item/ktr_name": "@items('Apply_to_each')?['ktr_name']",
+                                      "item/ktr_answercode": "@items('Apply_to_each')?['ktr_name']"
+                                    },
+                                    "authentication": "@parameters('$authentication')"
+                                  }
+                                }
+                              },
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "d565f3ad-47e3-4080-b6ae-406f18cc2499"
+                              },
+                              "type": "Foreach"
+                            }
+                          },
+                          "runAfter": {},
+                          "expression": {
+                            "not": {
+                              "equals": [
+                                "@items('Apply_to_each_2')?['ktr_name']",
+                                "@null"
+                              ]
+                            }
+                          },
+                          "metadata": {
+                            "operationMetadataId": "56f2da67-acf6-4f0b-a3bb-ab952a63830f"
+                          },
+                          "type": "If"
+                        }
+                      },
+                      "runAfter": {
+                        "Get_Answer_code_from_Question_Answer_List": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "f8a28a30-19ca-4203-b4f6-23c2e0ecf5d4"
+                      },
+                      "type": "Foreach"
+                    }
+                  },
+                  "runAfter": {},
+                  "else": {
+                    "actions": {
+                      "Check_if_Custom_Answer": {
+                        "actions": {
+                          "Store_Existing_answer_codes_2": {
+                            "foreach": "@outputs('List_Existing_QL_Answer_List')?['body/value']",
+                            "actions": {
+                              "Condition_5": {
+                                "actions": {
+                                  "Append_to_array_variable_2": {
+                                    "runAfter": {},
+                                    "metadata": {
+                                      "operationMetadataId": "00e155ed-7b0a-4446-ad9e-22166275a071"
+                                    },
+                                    "type": "AppendToArrayVariable",
+                                    "inputs": {
+                                      "name": "PreviousCodes",
+                                      "value": "@items('Store_Existing_answer_codes_2')?['ktr_answercode']"
+                                    }
+                                  }
+                                },
+                                "runAfter": {},
+                                "expression": {
+                                  "not": {
+                                    "equals": [
+                                      "@items('Store_Existing_answer_codes_2')?['ktr_answercode']",
+                                      "@null"
+                                    ]
+                                  }
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "a8a2a01e-fa53-4c51-ac43-a63ee0258fc0"
+                                },
+                                "type": "If"
+                              }
+                            },
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "63dd8c5d-1b55-4125-a2d1-9e1935bb3e5e"
+                            },
+                            "type": "Foreach"
+                          },
+                          "Run_a_prompt_2": {
+                            "runAfter": {
+                              "Store_Existing_answer_codes_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "metadata": {
+                              "operationMetadataId": "89559952-ba2c-4854-9e32-1a47f61eacc7",
+                              "flowSystemMetadata": {
+                                "portalOperationId": "aibuilderpredict_customprompt",
+                                "portalOperationGroup": "aibuilder",
+                                "portalOperationApiDisplayNameOverride": "AI Builder",
+                                "portalOperationIconOverride": "https://content.powerapps.com/resource/makerx/static/pauto/images/designeroperations/aiBuilderNew.51dbdb6b.png",
+                                "portalOperationBrandColorOverride": "#0A76C4",
+                                "portalOperationApiTierOverride": "Standard"
+                              }
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                "connectionName": "shared_commondataserviceforapps",
+                                "operationId": "aibuilderpredict_customprompt"
+                              },
+                              "parameters": {
+                                "recordId": "c001134f-6568-4ac0-a1c8-8e4c636732ed",
+                                "item/requestv2/AnswerCodeInput": "{\n  \"previousCodes\": @{variables('PreviousCodes')},\n  \"questionText\": \"@{outputs('Get_a_question_text_of_Questionnaire_lines')?['body/kt_questiontext2']}\",\n  \"answerText\": \"@{triggerOutputs()?['body/ktr_answertext']}\"\n}"
+                              },
+                              "authentication": "@parameters('$authentication')"
+                            }
+                          },
+                          "Set_ai_prompt_output_variable_2": {
+                            "runAfter": {
+                              "Run_a_prompt_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "metadata": {
+                              "operationMetadataId": "72183ad5-a853-4b72-9399-3e37cd5bcf12"
+                            },
+                            "type": "SetVariable",
+                            "inputs": {
+                              "name": "Answer Code Output",
+                              "value": "@outputs('Run_a_prompt_2')?['body/responsev2/predictionOutput/text']"
+                            }
+                          },
+                          "Condition_to_check_answer_code_output_2": {
+                            "actions": {
+                              "Update_a_answer_code_in_Questionnaire_Lines_Answer_Lists_2": {
+                                "runAfter": {},
+                                "metadata": {
+                                  "operationMetadataId": "62be08f3-97f4-450c-bdb1-5a7c76906b45"
+                                },
+                                "type": "OpenApiConnection",
+                                "inputs": {
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                    "connectionName": "shared_commondataserviceforapps",
+                                    "operationId": "UpdateOnlyRecord"
+                                  },
+                                  "parameters": {
+                                    "entityName": "ktr_questionnairelinesanswerlists",
+                                    "recordId": "@triggerOutputs()?['body/ktr_questionnairelinesanswerlistid']",
+                                    "item/ktr_name": "@variables('Answer Code Output')",
+                                    "item/ktr_answercode": "@variables('Answer Code Output')"
+                                  },
+                                  "authentication": "@parameters('$authentication')"
+                                }
+                              },
+                              "Scope_2": {
+                                "actions": {
+                                  "Increment_variable_3": {
+                                    "runAfter": {},
+                                    "metadata": {
+                                      "operationMetadataId": "dea89f2c-8ed7-4d8b-8943-a69e83f70bf5"
+                                    },
+                                    "type": "IncrementVariable",
+                                    "inputs": {
+                                      "name": "DuplicateCounter",
+                                      "value": 1
+                                    }
+                                  },
+                                  "Do_until_2": {
+                                    "actions": {
+                                      "Condition_4": {
+                                        "actions": {
+                                          "Increment_variable_4": {
+                                            "runAfter": {},
+                                            "metadata": {
+                                              "operationMetadataId": "f40d031a-e342-4961-8ba9-34f2e3528eca"
+                                            },
+                                            "type": "IncrementVariable",
+                                            "inputs": {
+                                              "name": "DuplicateCounter",
+                                              "value": 1
+                                            }
+                                          },
+                                          "Update_a_row_3": {
+                                            "runAfter": {
+                                              "Increment_variable_4": [
+                                                "Succeeded"
+                                              ]
+                                            },
+                                            "metadata": {
+                                              "operationMetadataId": "eb030ed2-646f-4e8c-a593-a4a5eea81983"
+                                            },
+                                            "type": "OpenApiConnection",
+                                            "inputs": {
+                                              "host": {
+                                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                                "connectionName": "shared_commondataserviceforapps",
+                                                "operationId": "UpdateOnlyRecord"
+                                              },
+                                              "parameters": {
+                                                "entityName": "ktr_questionnairelinesanswerlists",
+                                                "recordId": "@triggerOutputs()?['body/ktr_questionnairelinesanswerlistid']",
+                                                "item/ktr_name": "@concat(variables('Answer Code Output'), '_', string(variables('DuplicateCounter')))",
+                                                "item/ktr_answercode": "@concat(variables('Answer Code Output'), '_', string(variables('DuplicateCounter')))"
+                                              },
+                                              "authentication": "@parameters('$authentication')"
+                                            }
+                                          }
+                                        },
+                                        "runAfter": {},
+                                        "expression": {
+                                          "equals": [
+                                            "@contains(variables('PreviousCodes'), variables('Answer Code Output'))",
+                                            true
+                                          ]
+                                        },
+                                        "metadata": {
+                                          "operationMetadataId": "62402684-3030-4966-b747-a88205147940"
+                                        },
+                                        "type": "If"
+                                      },
+                                      "Set_variable_2": {
+                                        "runAfter": {
+                                          "Condition_4": [
+                                            "Succeeded"
+                                          ]
+                                        },
+                                        "metadata": {
+                                          "operationMetadataId": "95e031a4-d982-4ab0-af65-9a14a9e5c8a8"
+                                        },
+                                        "type": "SetVariable",
+                                        "inputs": {
+                                          "name": "Suceeded",
+                                          "value": true
+                                        }
+                                      }
+                                    },
+                                    "runAfter": {
+                                      "Increment_variable_3": [
+                                        "Succeeded"
+                                      ]
+                                    },
+                                    "expression": "@equals(variables('Suceeded'), true)",
+                                    "limit": {
+                                      "count": 60,
+                                      "timeout": "PT1H"
+                                    },
+                                    "metadata": {
+                                      "operationMetadataId": "e626a9fc-3660-4495-a5d7-da13a57dee56"
+                                    },
+                                    "type": "Until"
+                                  }
+                                },
+                                "runAfter": {
+                                  "Update_a_answer_code_in_Questionnaire_Lines_Answer_Lists_2": [
+                                    "Skipped",
+                                    "Failed"
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "6d6a0dd8-38c5-4459-ad69-8ef4247ee452"
+                                },
+                                "type": "Scope"
+                              }
+                            },
+                            "runAfter": {
+                              "Set_ai_prompt_output_variable_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "expression": {
+                              "not": {
+                                "equals": [
+                                  "@variables('Answer Code Output')",
+                                  "@null"
+                                ]
+                              }
+                            },
+                            "metadata": {
+                              "operationMetadataId": "100a3d90-4aaa-4a1c-9d5b-2c8d813b56a3"
+                            },
+                            "type": "If"
+                          }
+                        },
+                        "runAfter": {},
+                        "expression": {
+                          "equals": [
+                            "@triggerOutputs()?['body/_ktr_questionbank_value']",
+                            "@null"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "dd41906f-6543-4287-bd32-4048548b48bf"
+                        },
+                        "type": "If"
+                      }
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "not": {
+                          "equals": [
+                            "@triggerOutputs()?['body/_ktr_questionbank_value']",
+                            "@null"
+                          ]
+                        }
+                      },
+                      {
+                        "not": {
+                          "equals": [
+                            "@triggerOutputs()?['body/ktr_answertext']",
+                            "@null"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "356a2f90-3624-49a2-87e1-01416d4af42a"
+                  },
+                  "type": "If"
+                }
+              },
+              "runAfter": {
+                "Get_a_question_text_of_Questionnaire_lines": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Set_ai_prompt_output_variable": {
+                    "runAfter": {
+                      "Run_a_prompt": [
+                        "Succeeded"
+                      ]
+                    },
+                    "metadata": {
+                      "operationMetadataId": "72183ad5-a853-4b72-9399-3e37cd5bcf12"
+                    },
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "Answer Code Output",
+                      "value": "@outputs('Run_a_prompt')?['body/responsev2/predictionOutput/text']"
+                    }
+                  },
+                  "Condition_to_check_answer_code_output": {
+                    "actions": {
+                      "Update_a_answer_code_in_Questionnaire_Lines_Answer_Lists": {
+                        "runAfter": {},
+                        "metadata": {
+                          "operationMetadataId": "62be08f3-97f4-450c-bdb1-5a7c76906b45"
+                        },
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "connectionName": "shared_commondataserviceforapps",
+                            "operationId": "UpdateOnlyRecord"
+                          },
+                          "parameters": {
+                            "entityName": "ktr_questionnairelinesanswerlists",
+                            "recordId": "@triggerOutputs()?['body/ktr_questionnairelinesanswerlistid']",
+                            "item/ktr_name": "@variables('Answer Code Output')",
+                            "item/ktr_answercode": "@variables('Answer Code Output')"
+                          },
+                          "authentication": "@parameters('$authentication')"
+                        }
+                      },
+                      "Scope": {
+                        "actions": {
+                          "Increment_variable": {
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "dea89f2c-8ed7-4d8b-8943-a69e83f70bf5"
+                            },
+                            "type": "IncrementVariable",
+                            "inputs": {
+                              "name": "DuplicateCounter",
+                              "value": 1
+                            }
+                          },
+                          "Do_until": {
+                            "actions": {
+                              "Condition_3": {
+                                "actions": {
+                                  "Increment_variable_2": {
+                                    "runAfter": {},
+                                    "metadata": {
+                                      "operationMetadataId": "f40d031a-e342-4961-8ba9-34f2e3528eca"
+                                    },
+                                    "type": "IncrementVariable",
+                                    "inputs": {
+                                      "name": "DuplicateCounter",
+                                      "value": 1
+                                    }
+                                  },
+                                  "Update_a_row_2": {
+                                    "runAfter": {
+                                      "Increment_variable_2": [
+                                        "Succeeded"
+                                      ]
+                                    },
+                                    "metadata": {
+                                      "operationMetadataId": "eb030ed2-646f-4e8c-a593-a4a5eea81983"
+                                    },
+                                    "type": "OpenApiConnection",
+                                    "inputs": {
+                                      "host": {
+                                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                                        "connectionName": "shared_commondataserviceforapps",
+                                        "operationId": "UpdateOnlyRecord"
+                                      },
+                                      "parameters": {
+                                        "entityName": "ktr_questionnairelinesanswerlists",
+                                        "recordId": "@triggerOutputs()?['body/ktr_questionnairelinesanswerlistid']",
+                                        "item/ktr_name": "@concat(variables('Answer Code Output'),'_',string(variables('DuplicateCounter')))",
+                                        "item/ktr_answercode": "@concat(variables('Answer Code Output'),'_',string(variables('DuplicateCounter')))"
+                                      },
+                                      "authentication": "@parameters('$authentication')"
+                                    }
+                                  }
+                                },
+                                "runAfter": {},
+                                "expression": {
+                                  "equals": [
+                                    "@contains(variables('PreviousCodes'),variables('Answer Code Output'))",
+                                    true
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "62402684-3030-4966-b747-a88205147940"
+                                },
+                                "type": "If"
+                              },
+                              "Set_variable": {
+                                "runAfter": {
+                                  "Condition_3": [
+                                    "Succeeded"
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "95e031a4-d982-4ab0-af65-9a14a9e5c8a8"
+                                },
+                                "type": "SetVariable",
+                                "inputs": {
+                                  "name": "Suceeded",
+                                  "value": true
+                                }
+                              }
+                            },
+                            "runAfter": {
+                              "Increment_variable": [
+                                "Succeeded"
+                              ]
+                            },
+                            "expression": "@equals(variables('Suceeded'), true)",
+                            "limit": {
+                              "count": 60,
+                              "timeout": "PT1H"
+                            },
+                            "metadata": {
+                              "operationMetadataId": "e626a9fc-3660-4495-a5d7-da13a57dee56"
+                            },
+                            "type": "Until"
+                          }
+                        },
+                        "runAfter": {
+                          "Update_a_answer_code_in_Questionnaire_Lines_Answer_Lists": [
+                            "Skipped",
+                            "Failed"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "6d6a0dd8-38c5-4459-ad69-8ef4247ee452"
+                        },
+                        "type": "Scope"
+                      }
+                    },
+                    "runAfter": {
+                      "Set_ai_prompt_output_variable": [
+                        "Succeeded"
+                      ]
+                    },
+                    "expression": {
+                      "not": {
+                        "equals": [
+                          "@variables('Answer Code Output')",
+                          "@null"
+                        ]
+                      }
+                    },
+                    "metadata": {
+                      "operationMetadataId": "100a3d90-4aaa-4a1c-9d5b-2c8d813b56a3"
+                    },
+                    "type": "If"
+                  },
+                  "Store_Existing_answer_codes": {
+                    "foreach": "@outputs('List_Existing_QL_Answer_List')?['body/value']",
+                    "actions": {
+                      "Condition_2": {
+                        "actions": {
+                          "Append_to_array_variable": {
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "00e155ed-7b0a-4446-ad9e-22166275a071"
+                            },
+                            "type": "AppendToArrayVariable",
+                            "inputs": {
+                              "name": "PreviousCodes",
+                              "value": "@items('Store_Existing_answer_codes')?['ktr_answercode']"
+                            }
+                          }
+                        },
+                        "runAfter": {},
+                        "expression": {
+                          "not": {
+                            "equals": [
+                              "@items('Store_Existing_answer_codes')?['ktr_answercode']",
+                              "@null"
+                            ]
+                          }
+                        },
+                        "metadata": {
+                          "operationMetadataId": "a8a2a01e-fa53-4c51-ac43-a63ee0258fc0"
+                        },
+                        "type": "If"
+                      }
+                    },
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "63dd8c5d-1b55-4125-a2d1-9e1935bb3e5e"
+                    },
+                    "type": "Foreach"
+                  },
+                  "Run_a_prompt": {
+                    "runAfter": {
+                      "Store_Existing_answer_codes": [
+                        "Succeeded"
+                      ]
+                    },
+                    "metadata": {
+                      "operationMetadataId": "89559952-ba2c-4854-9e32-1a47f61eacc7",
+                      "flowSystemMetadata": {
+                        "portalOperationId": "aibuilderpredict_customprompt",
+                        "portalOperationGroup": "aibuilder",
+                        "portalOperationApiDisplayNameOverride": "AI Builder",
+                        "portalOperationIconOverride": "https://content.powerapps.com/resource/makerx/static/pauto/images/designeroperations/aiBuilderNew.51dbdb6b.png",
+                        "portalOperationBrandColorOverride": "#0A76C4",
+                        "portalOperationApiTierOverride": "Standard"
+                      }
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "connectionName": "shared_commondataserviceforapps",
+                        "operationId": "aibuilderpredict_customprompt"
+                      },
+                      "parameters": {
+                        "recordId": "c001134f-6568-4ac0-a1c8-8e4c636732ed",
+                        "item/requestv2/AnswerCodeInput": "{\n  \"previousCodes\": @{variables('PreviousCodes')},\n  \"questionText\": \"@{outputs('Get_a_question_text_of_Questionnaire_lines')?['body/kt_questiontext2']}\",\n  \"answerText\": \"@{triggerOutputs()?['body/ktr_answertext']}\"\n}"
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "equals": [
+                  "@outputs('Get_a_question_text_of_Questionnaire_lines')?['body/kt_standardorcustom']",
+                  0
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "a1cf0700-200b-444b-86e3-85477910dd15"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "List_Existing_QL_Answer_List": [
+              "Succeeded"
+            ]
+          },
+          "expression": {
+            "equals": [
+              "@triggerOutputs()?['body/ktr_lockanswercode']",
+              "@false"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3e251b2a-7be1-47d9-8e1c-59914c9d0321"
+          },
+          "type": "If"
+        },
+        "Initialize_Answer_Code_Output_Variable": {
+          "runAfter": {
+            "Store_Questionnaire_Line_ID": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "099f75cb-244e-4436-b0af-e964b7648e44"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Answer Code Output",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Store_Questionnaire_Line_ID": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "a27bc8fe-aca0-4b6f-a5a5-a2ddf423b024"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "QuestionnaireLineId",
+                "type": "string",
+                "value": "@triggerOutputs()?['body/_ktr_questionnaireline_value']"
+              }
+            ]
+          }
+        },
+        "List_Existing_QL_Answer_List": {
+          "runAfter": {
+            "Initialize_variable_2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7b8c387b-3a0d-4c71-8b9c-db2dc1513cdb"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords"
+            },
+            "parameters": {
+              "entityName": "ktr_questionnairelinesanswerlists",
+              "$select": "ktr_answercode, _ktr_questionnaireline_value, ktr_questionnairelinesanswerlistid",
+              "$filter": "_ktr_questionnaireline_value eq @{variables('QuestionnaireLineId')}"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Initialize_Array_of_existing_Answer_codes": {
+          "runAfter": {
+            "Initialize_Answer_Code_Output_Variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6470ca51-f1ab-4754-900d-10cb5cb4ae19"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "PreviousCodes",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Initialize_variable": {
+          "runAfter": {
+            "Initialize_Array_of_existing_Answer_codes": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fd3776a9-6c90-4247-8cd8-52744470b3e2"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "DuplicateCounter",
+                "type": "integer",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "Initialize_variable_2": {
+          "runAfter": {
+            "Initialize_variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "74e24f92-f928-423d-bbe6-259b7909c439"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Suceeded",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

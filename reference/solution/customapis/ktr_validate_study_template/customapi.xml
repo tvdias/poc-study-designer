@@ -1,0 +1,18 @@
+<customapi uniquename="ktr_validate_study_template">
+  <allowedcustomprocessingsteptype>2</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Validate Study Template of Study Managed List Entities">
+    <label description="Validate Study Template of Study Managed List Entities" languagecode="1033" />
+  </description>
+  <displayname default="Validate Study Template">
+    <label description="Validate Study Template" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>ktr_validate_study_template</name>
+  <plugintypeid>
+    <plugintypeexportkey>428237a4-6070-4e5e-9a67-29df97969920</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

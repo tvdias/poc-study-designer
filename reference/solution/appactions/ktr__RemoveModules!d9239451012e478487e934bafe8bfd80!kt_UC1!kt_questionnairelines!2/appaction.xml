@@ -1,0 +1,32 @@
+<appaction uniquename="ktr__RemoveModules!d9239451012e478487e934bafe8bfd80!kt_UC1!kt_questionnairelines!2">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Remove Modules">
+    <label description="Remove Modules" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>kt_questionnairelines</logicalname>
+  </contextentity>
+  <contextvalue>kt_questionnairelines</contextvalue>
+  <fonticon>$clientsvg:Delete</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>2</location>
+  <name>RemoveModules!d9239451012e478487e934bafe8bfd80</name>
+  <onclickeventjavascriptfunctionname>openRemoveModuleCustomPage</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5},{"type":12}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>ff9b5a2c-9005-f011-bae2-6045bd987224</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100035.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>0</visibilitytype>
+</appaction>

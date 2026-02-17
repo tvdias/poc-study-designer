@@ -1,0 +1,15 @@
+<duplicaterule uniquename="draf71251a7b5088c7ada008622e09634ac2d2ae7f53daf871e2f170752088e8e7">
+  <baseentityname>ktr_tag</baseentityname>
+  <excludeinactiverecords>0</excludeinactiverecords>
+  <iscasesensitive>0</iscasesensitive>
+  <iscustomizable>1</iscustomizable>
+  <matchingentityname>ktr_tag</matchingentityname>
+  <name>Check Duplicate Tags Names</name>
+  <duplicateruleconditions>
+    <duplicaterulecondition baseattributename="ktr_name" matchingattributename="ktr_name" operatorcode="1" uniquerulename="draf71251a7b5088c7ada008622e09634ac2d2ae7f53daf871e2f170752088e8e7">
+      <ignoreblankvalues>0</ignoreblankvalues>
+      <iscustomizable>1</iscustomizable>
+      <operatorparam>700</operatorparam>
+    </duplicaterulecondition>
+  </duplicateruleconditions>
+</duplicaterule>

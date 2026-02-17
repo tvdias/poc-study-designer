@@ -1,0 +1,18 @@
+<customapi uniquename="ktr_create_project_unbound">
+  <allowedcustomprocessingsteptype>2</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Create Project Unbound">
+    <label description="Create Project Unbound" languagecode="1033" />
+  </description>
+  <displayname default="Create Project Unbound">
+    <label description="Create Project Unbound" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>ktr_create_project_unbound</name>
+  <plugintypeid>
+    <plugintypeexportkey>34a6e8b7-7f04-4848-b5b5-3536893320d1</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

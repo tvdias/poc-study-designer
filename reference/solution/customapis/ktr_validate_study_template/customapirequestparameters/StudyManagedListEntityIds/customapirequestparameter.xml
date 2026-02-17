@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="StudyManagedListEntityIds">
+  <description default="JSON list of GUIDs representing StudyManagedListEntityIds">
+    <label description="JSON list of GUIDs representing StudyManagedListEntityIds" languagecode="1033" />
+  </description>
+  <displayname default="Validate Study Template - StudyManagedListEntityIds">
+    <label description="Validate Study Template - StudyManagedListEntityIds" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>StudyManagedListEntityIds</name>
+  <type>10</type>
+</customapirequestparameter>

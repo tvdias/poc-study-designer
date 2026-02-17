@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="ktr_new_reworkstudy">
+  <description default="ktr_new_reworkstudy">
+    <label description="ktr_new_reworkstudy" languagecode="1033" />
+  </description>
+  <displayname default="ktr_new_reworkstudy">
+    <label description="ktr_new_reworkstudy" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>ktr_new_reworkstudy</name>
+  <type>10</type>
+</customapiresponseproperty>
