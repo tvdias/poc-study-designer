@@ -27,44 +27,46 @@ public static class SeedDataEndpoint
             }
 
             // 1. Tags
+            var now = DateTime.UtcNow;
+            const string seedUser = "SeedData";
             var tags = new[]
             {
-                new Tag { Name = "Global" },
-                new Tag { Name = "Retail" },
-                new Tag { Name = "Technology" },
-                new Tag { Name = "Healthcare" },
-                new Tag { Name = "Finance" }
+                new Tag { Name = "Global", CreatedOn = now, CreatedBy = seedUser },
+                new Tag { Name = "Retail", CreatedOn = now, CreatedBy = seedUser },
+                new Tag { Name = "Technology", CreatedOn = now, CreatedBy = seedUser },
+                new Tag { Name = "Healthcare", CreatedOn = now, CreatedBy = seedUser },
+                new Tag { Name = "Finance", CreatedOn = now, CreatedBy = seedUser }
             };
             db.Tags.AddRange(tags);
 
             // 2. Commissioning Markets
             var commMarkets = new[]
             {
-                new CommissioningMarket { Name = "United Kingdom", IsoCode = "GB" },
-                new CommissioningMarket { Name = "United States", IsoCode = "US" },
-                new CommissioningMarket { Name = "Germany", IsoCode = "DE" },
-                new CommissioningMarket { Name = "France", IsoCode = "FR" }
+                new CommissioningMarket { Name = "United Kingdom", IsoCode = "GB", CreatedOn = now, CreatedBy = seedUser },
+                new CommissioningMarket { Name = "United States", IsoCode = "US", CreatedOn = now, CreatedBy = seedUser },
+                new CommissioningMarket { Name = "Germany", IsoCode = "DE", CreatedOn = now, CreatedBy = seedUser },
+                new CommissioningMarket { Name = "France", IsoCode = "FR", CreatedOn = now, CreatedBy = seedUser }
             };
             db.CommissioningMarkets.AddRange(commMarkets);
 
             // 3. Fieldwork Markets
             var fieldMarkets = new[]
             {
-                new FieldworkMarket { Name = "United Kingdom", IsoCode = "GB" },
-                new FieldworkMarket { Name = "United States", IsoCode = "US" },
-                new FieldworkMarket { Name = "Germany", IsoCode = "DE" },
-                new FieldworkMarket { Name = "China", IsoCode = "CN" },
-                new FieldworkMarket { Name = "Japan", IsoCode = "JP" }
+                new FieldworkMarket { Name = "United Kingdom", IsoCode = "GB", CreatedOn = now, CreatedBy = seedUser },
+                new FieldworkMarket { Name = "United States", IsoCode = "US", CreatedOn = now, CreatedBy = seedUser },
+                new FieldworkMarket { Name = "Germany", IsoCode = "DE", CreatedOn = now, CreatedBy = seedUser },
+                new FieldworkMarket { Name = "China", IsoCode = "CN", CreatedOn = now, CreatedBy = seedUser },
+                new FieldworkMarket { Name = "Japan", IsoCode = "JP", CreatedOn = now, CreatedBy = seedUser }
             };
             db.FieldworkMarkets.AddRange(fieldMarkets);
 
             // 4. Metric Groups
             var metricGroups = new[]
             {
-                new MetricGroup { Name = "Brand Awareness" },
-                new MetricGroup { Name = "Ad Recall" },
-                new MetricGroup { Name = "Purchase Intent" },
-                new MetricGroup { Name = "NPS" }
+                new MetricGroup { Name = "Brand Awareness", CreatedOn = now, CreatedBy = seedUser },
+                new MetricGroup { Name = "Ad Recall", CreatedOn = now, CreatedBy = seedUser },
+                new MetricGroup { Name = "Purchase Intent", CreatedOn = now, CreatedBy = seedUser },
+                new MetricGroup { Name = "NPS", CreatedOn = now, CreatedBy = seedUser }
             };
             db.MetricGroups.AddRange(metricGroups);
             await db.SaveChangesAsync(); // Save to get IDs for relationships
@@ -80,7 +82,9 @@ public static class SeedDataEndpoint
                 Status = "Active",
                 Methodology = "Quantitative",
                 Version = 1,
-                MetricGroupId = metricGroups[0].Id
+                MetricGroupId = metricGroups[0].Id,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             
             var qOpen = new QuestionBankItem
@@ -93,7 +97,9 @@ public static class SeedDataEndpoint
                 Status = "Active",
                 Methodology = "Quantitative",
                 Version = 1,
-                MetricGroupId = metricGroups[3].Id
+                MetricGroupId = metricGroups[3].Id,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
 
             db.QuestionBankItems.AddRange(qGrid, qOpen);
@@ -102,10 +108,10 @@ public static class SeedDataEndpoint
             // Answers for Q_BRAND_AWARENESS
             var answers = new[]
             {
-                new QuestionAnswer { QuestionBankItemId = qGrid.Id, AnswerText = "Brand A", AnswerCode = "1", AnswerLocation = "Row" },
-                new QuestionAnswer { QuestionBankItemId = qGrid.Id, AnswerText = "Brand B", AnswerCode = "2", AnswerLocation = "Row" },
-                new QuestionAnswer { QuestionBankItemId = qGrid.Id, AnswerText = "Brand C", AnswerCode = "3", AnswerLocation = "Row" },
-                new QuestionAnswer { QuestionBankItemId = qGrid.Id, AnswerText = "None of the above", AnswerCode = "99", AnswerLocation = "Row" }
+                new QuestionAnswer { Id = Guid.NewGuid(), QuestionBankItemId = qGrid.Id, AnswerText = "Brand A", AnswerCode = "1", AnswerLocation = "Row", CreatedOn = now, CreatedBy = seedUser },
+                new QuestionAnswer { Id = Guid.NewGuid(), QuestionBankItemId = qGrid.Id, AnswerText = "Brand B", AnswerCode = "2", AnswerLocation = "Row", CreatedOn = now, CreatedBy = seedUser },
+                new QuestionAnswer { Id = Guid.NewGuid(), QuestionBankItemId = qGrid.Id, AnswerText = "Brand C", AnswerCode = "3", AnswerLocation = "Row", CreatedOn = now, CreatedBy = seedUser },
+                new QuestionAnswer { Id = Guid.NewGuid(), QuestionBankItemId = qGrid.Id, AnswerText = "None of the above", AnswerCode = "99", AnswerLocation = "Row", CreatedOn = now, CreatedBy = seedUser }
             };
             db.QuestionAnswers.AddRange(answers);
 
@@ -115,14 +121,18 @@ public static class SeedDataEndpoint
                 AccountName = "Acme Corp", 
                 CompanyNumber = "12345678", 
                 CustomerNumber = "CUST001", 
-                CompanyCode = "ACME" 
+                CompanyCode = "ACME",
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             var clientB = new Client 
             { 
                 AccountName = "Globex Corporation", 
                 CompanyNumber = "87654321", 
                 CustomerNumber = "CUST002", 
-                CompanyCode = "GLOBEX" 
+                CompanyCode = "GLOBEX",
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.Clients.AddRange(clientA, clientB);
 
@@ -130,20 +140,24 @@ public static class SeedDataEndpoint
             var configQ1 = new ConfigurationQuestion
             {
                 Question = "Is this a tracking study?",
-                RuleType = Api.Features.ConfigurationQuestions.RuleType.SingleCoded
+                RuleType = Api.Features.ConfigurationQuestions.RuleType.SingleCoded,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.ConfigurationQuestions.Add(configQ1);
             await db.SaveChangesAsync();
 
-            var configA1 = new ConfigurationAnswer { Name = "Yes", ConfigurationQuestionId = configQ1.Id };
-            var configA2 = new ConfigurationAnswer { Name = "No", ConfigurationQuestionId = configQ1.Id };
+            var configA1 = new ConfigurationAnswer { Id = Guid.NewGuid(), Name = "Yes", ConfigurationQuestionId = configQ1.Id, CreatedOn = now, CreatedBy = seedUser };
+            var configA2 = new ConfigurationAnswer { Id = Guid.NewGuid(), Name = "No", ConfigurationQuestionId = configQ1.Id, CreatedOn = now, CreatedBy = seedUser };
             db.ConfigurationAnswers.AddRange(configA1, configA2);
 
             // 8. Products
             var product = new Product
             {
                 Name = "Brand Tracker Standard",
-                Description = "Standard monthly brand tracking survey"
+                Description = "Standard monthly brand tracking survey",
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.Products.Add(product);
             await db.SaveChangesAsync();
@@ -151,8 +165,11 @@ public static class SeedDataEndpoint
             // Product Config Questions
             var prodConfigQ = new ProductConfigQuestion
             {
+                Id = Guid.NewGuid(),
                 ProductId = product.Id,
-                ConfigurationQuestionId = configQ1.Id
+                ConfigurationQuestionId = configQ1.Id,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.ProductConfigQuestions.Add(prodConfigQ);
 
@@ -162,7 +179,9 @@ public static class SeedDataEndpoint
                 VariableName = "SEC_DEMO",
                 Label = "Demographics",
                 Description = "Standard demographic questions",
-                Instructions = "Ask all respondents"
+                Instructions = "Ask all respondents",
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.Modules.Add(section1);
             await db.SaveChangesAsync();
@@ -172,7 +191,9 @@ public static class SeedDataEndpoint
                 VariableName = "SUB_AGE_GENDER",
                 Label = "Age and Gender",
                 ParentModuleId = section1.Id,
-                Description = "Basic demographics"
+                Description = "Basic demographics",
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.Modules.Add(subModule);
             await db.SaveChangesAsync();
@@ -180,8 +201,11 @@ public static class SeedDataEndpoint
             // Link Question to Module
             var modQ = new ModuleQuestion
             {
+                Id = Guid.NewGuid(),
                 ModuleId = subModule.Id,
-                QuestionBankItemId = qGrid.Id
+                QuestionBankItemId = qGrid.Id,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.ModuleQuestions.Add(modQ);
 
@@ -190,7 +214,9 @@ public static class SeedDataEndpoint
             {
                 Name = "2024 Base Template",
                 Version = 1,
-                ProductId = product.Id
+                ProductId = product.Id,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             db.ProductTemplates.Add(template);
             await db.SaveChangesAsync();
@@ -198,10 +224,13 @@ public static class SeedDataEndpoint
             // Template Lines
             db.ProductTemplateLines.Add(new ProductTemplateLine
             {
+                Id = Guid.NewGuid(),
                 ProductTemplateId = template.Id,
                 Name = "Demographics Section",
                 Type = "Module",
-                ModuleId = section1.Id
+                ModuleId = section1.Id,
+                CreatedOn = now,
+                CreatedBy = seedUser
             });
 
             // 11. Projects
@@ -212,7 +241,9 @@ public static class SeedDataEndpoint
                 ClientId = clientA.Id,
                 ProductId = product.Id,
                 Owner = "john.doe@example.com",
-                Status = Api.Features.Projects.ProjectStatus.OnHold
+                Status = Api.Features.Projects.ProjectStatus.OnHold,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
             
             var project2 = new Project
@@ -222,7 +253,9 @@ public static class SeedDataEndpoint
                 ClientId = clientB.Id,
                 ProductId = product.Id,
                 Owner = "jane.smith@example.com",
-                Status = Api.Features.Projects.ProjectStatus.Active
+                Status = Api.Features.Projects.ProjectStatus.Active,
+                CreatedOn = now,
+                CreatedBy = seedUser
             };
 
             db.Projects.AddRange(project1, project2);
