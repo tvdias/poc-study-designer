@@ -8,6 +8,7 @@ using Api.Features.Products;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
+using Api.Features.ProjectQuestionnaires;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -36,6 +37,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<QuestionAnswer> QuestionAnswers => Set<QuestionAnswer>();
     public DbSet<MetricGroup> MetricGroups => Set<MetricGroup>();
     public DbSet<Project> Projects => Set<Project>();
+    public DbSet<ProjectQuestionnaire> ProjectQuestionnaires => Set<ProjectQuestionnaire>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -295,6 +297,23 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ProjectQuestionnaire>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId }).IsUnique();
+            
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.QuestionBankItem)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionBankItemId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
     }
