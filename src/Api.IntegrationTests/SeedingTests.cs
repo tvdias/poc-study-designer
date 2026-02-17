@@ -38,8 +38,8 @@ public class SeedingTests(IntegrationTestFixture fixture)
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
-        var clientsIndex = await db.Clients.CountAsync();
-        Assert.Equal(2, clientsIndex);
+        var clientsCount = await db.Clients.CountAsync();
+        Assert.Equal(2, clientsCount);
         
         var projectsCount = await db.Projects.CountAsync();
         Assert.Equal(2, projectsCount);
