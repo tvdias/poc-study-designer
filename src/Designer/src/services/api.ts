@@ -95,3 +95,21 @@ export const projectsApi = {
         if (!response.ok) throw new Error('Failed to delete project');
     }
 };
+
+export interface Client {
+    id: string;
+    accountName: string;
+    companyNumber?: string;
+    customerNumber?: string;
+    companyCode?: string;
+    createdOn: string;
+}
+
+export const clientsApi = {
+    getAll: async (query?: string): Promise<Client[]> => {
+        const url = query ? `${API_BASE}/clients?query=${encodeURIComponent(query)}` : `${API_BASE}/clients`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch clients');
+        return response.json();
+    }
+};
