@@ -19,12 +19,14 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
             await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             // Assert - verify the React app rendered with expected content
-            var heading = page.GetByRole(AriaRole.Heading, new() { Name = "Study Designer" });
-            await heading.WaitForAsync(new() { Timeout = 10000 });
-            Assert.True(await heading.IsVisibleAsync(), "Expected 'Study Designer' heading to be visible");
+            // Check for "Study Designer" text in the header (not necessarily a heading)
+            var serviceNameElement = page.Locator("text=Study Designer").First;
+            await serviceNameElement.WaitForAsync(new() { Timeout = 10000 });
+            Assert.True(await serviceNameElement.IsVisibleAsync(), "Expected 'Study Designer' text to be visible");
 
-            var welcomeMessage = page.Locator("text=Welcome to the PoC Study Designer application.");
-            Assert.True(await welcomeMessage.IsVisibleAsync(), "Expected welcome message to be visible");
+            // Verify the projects list page loads (search input should be present)
+            var searchInput = page.GetByPlaceholder("Search projects...");
+            Assert.True(await searchInput.IsVisibleAsync(), "Expected search input to be visible");
         }
         finally
         {
@@ -33,7 +35,7 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
     }
 
     [Fact]
-    public async Task DesignerApp_ShouldHaveWorkingNavigation()
+    public async Task DesignerApp_ShouldHaveCreateProjectButton()
     {
         // Arrange
         var page = await fixture.CreatePageAsync();
@@ -44,14 +46,10 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
             // Act
             await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Assert - verify footer navigation elements exist
-            var footerNav = page.Locator("footer nav");
-            await footerNav.WaitForAsync(new() { Timeout = 10000 });
-            Assert.True(await footerNav.IsVisibleAsync(), "Expected footer navigation to be visible");
-
-            // Verify the Aspire link is present
-            var aspireLink = footerNav.GetByRole(AriaRole.Link, new() { Name = "Learn more about Aspire" });
-            Assert.True(await aspireLink.IsVisibleAsync(), "Expected 'Learn more about Aspire' link to be visible");
+            // Assert - verify the Create Project button is visible
+            var createButton = page.Locator("text=Create Project").First;
+            await createButton.WaitForAsync(new() { Timeout = 10000 });
+            Assert.True(await createButton.IsVisibleAsync(), "Expected 'Create Project' button to be visible");
         }
         finally
         {
@@ -78,9 +76,9 @@ public class DesignerAppE2ETests(E2ETestFixture fixture)
             // Act
             await page.GotoAsync(designerUrl, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
-            // Wait for the app to fully render
-            var heading = page.GetByRole(AriaRole.Heading, new() { Name = "Study Designer" });
-            await heading.WaitForAsync(new() { Timeout = 10000 });
+            // Wait for the app to fully render by checking for the search input
+            var searchInput = page.GetByPlaceholder("Search projects...");
+            await searchInput.WaitForAsync(new() { Timeout = 10000 });
 
             // Assert - no uncaught page errors
             Assert.Empty(pageErrors);

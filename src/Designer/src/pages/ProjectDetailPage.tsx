@@ -1,22 +1,48 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
-import { projectsApi, type Project } from '../services/api';
+import { projectsApi, clientsApi, type Project, type Client, type CreateProjectRequest } from '../services/api';
 import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState('details');
     const [studiesExpanded, setStudiesExpanded] = useState(false);
 
+    // Creation mode state
+    const isCreateMode = id === 'new';
+    const [clients, setClients] = useState<Client[]>([]);
+    const [formData, setFormData] = useState<CreateProjectRequest>({
+        name: '',
+        description: '',
+        clientId: undefined
+    });
+    const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+    const [serverError, setServerError] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     useEffect(() => {
-        if (id) {
+        if (isCreateMode) {
+            // In create mode, load clients for the dropdown
+            loadClients();
+            setLoading(false);
+        } else if (id) {
             loadProject(id);
         }
-    }, [id]);
+    }, [id, isCreateMode]);
+
+    const loadClients = async () => {
+        try {
+            const data = await clientsApi.getAll();
+            setClients(data);
+        } catch (err) {
+            console.error('Failed to load clients', err);
+        }
+    };
 
     const loadProject = async (projectId: string) => {
         try {
@@ -32,11 +58,50 @@ export function ProjectDetailPage() {
         }
     };
 
+    const handleInputChange = (field: keyof CreateProjectRequest, value: string | undefined) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        // Clear validation error for this field
+        if (validationErrors[field]) {
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[field];
+                return newErrors;
+            });
+        }
+    };
+
+    const handleCreateProject = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setValidationErrors({});
+        setServerError('');
+        setIsSubmitting(true);
+
+        try {
+            const createdProject = await projectsApi.create(formData);
+            // Navigate to the newly created project
+            navigate(`/projects/${createdProject.id}`, { replace: true });
+        } catch (err) {
+            const error = err as { status?: number; errors?: Record<string, string[]> };
+            if (error.status === 400 && error.errors) {
+                // Validation errors
+                setValidationErrors(error.errors);
+            } else if (error.status === 409) {
+                // Conflict error (duplicate name)
+                setServerError(typeof err === 'string' ? err : 'A project with this name already exists');
+            } else {
+                setServerError('Failed to create project. Please try again.');
+            }
+            console.error('Failed to create project', err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     if (loading) {
         return <div className="loading-container">Loading project...</div>;
     }
 
-    if (error || !project) {
+    if (error || (!project && !isCreateMode)) {
         return <div className="error-container">{error || 'Project not found'}</div>;
     }
 
@@ -44,8 +109,8 @@ export function ProjectDetailPage() {
         <div className="project-detail-page">
             {/* Project Header Info */}
             <div className="project-header-info">
-                <h1 className="project-title">{project.name}</h1>
-                {project.clientName && (
+                <h1 className="project-title">{isCreateMode ? 'New Project' : project?.name}</h1>
+                {!isCreateMode && project?.clientName && (
                     <span className="client-badge">{project.clientName}</span>
                 )}
             </div>
@@ -65,78 +130,84 @@ export function ProjectDetailPage() {
                                     <span>Details</span>
                                 </button>
                             </li>
-                            <li>
-                                <button
-                                    className={`nav-item ${activeSection === 'questionnaire' ? 'active' : ''}`}
-                                    onClick={() => setActiveSection('questionnaire')}
-                                >
-                                    <FileQuestion size={16} />
-                                    <span>Questionnaire</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    className={`nav-item-accordion ${studiesExpanded ? 'expanded' : ''}`}
-                                    onClick={() => setStudiesExpanded(!studiesExpanded)}
-                                >
-                                    <div className="nav-item-content">
-                                        <FlaskConical size={16} />
-                                        <span>Studies</span>
-                                    </div>
-                                    <ChevronDown size={14} className={`chevron ${studiesExpanded ? 'rotated' : ''}`} />
-                                </button>
-                                {studiesExpanded && (
-                                    <ul className="sub-nav-list">
-                                        <li>
-                                            <button
-                                                className={`sub-nav-item ${activeSection === 'studies' ? 'active' : ''}`}
-                                                onClick={() => setActiveSection('studies')}
-                                            >
-                                                All Studies Overview
-                                            </button>
-                                        </li>
-                                    </ul>
-                                )}
-                            </li>
-                            <li>
-                                <button
-                                    className={`nav-item ${activeSection === 'lists' ? 'active' : ''}`}
-                                    onClick={() => setActiveSection('lists')}
-                                >
-                                    <List size={16} />
-                                    <span>Managed Lists</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
-                                    onClick={() => setActiveSection('users')}
-                                >
-                                    <Users size={16} />
-                                    <span>Access Team</span>
-                                </button>
-                            </li>
+                            {!isCreateMode && (
+                                <>
+                                    <li>
+                                        <button
+                                            className={`nav-item ${activeSection === 'questionnaire' ? 'active' : ''}`}
+                                            onClick={() => setActiveSection('questionnaire')}
+                                        >
+                                            <FileQuestion size={16} />
+                                            <span>Questionnaire</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            className={`nav-item-accordion ${studiesExpanded ? 'expanded' : ''}`}
+                                            onClick={() => setStudiesExpanded(!studiesExpanded)}
+                                        >
+                                            <div className="nav-item-content">
+                                                <FlaskConical size={16} />
+                                                <span>Studies</span>
+                                            </div>
+                                            <ChevronDown size={14} className={`chevron ${studiesExpanded ? 'rotated' : ''}`} />
+                                        </button>
+                                        {studiesExpanded && (
+                                            <ul className="sub-nav-list">
+                                                <li>
+                                                    <button
+                                                        className={`sub-nav-item ${activeSection === 'studies' ? 'active' : ''}`}
+                                                        onClick={() => setActiveSection('studies')}
+                                                    >
+                                                        All Studies Overview
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        )}
+                                    </li>
+                                    <li>
+                                        <button
+                                            className={`nav-item ${activeSection === 'lists' ? 'active' : ''}`}
+                                            onClick={() => setActiveSection('lists')}
+                                        >
+                                            <List size={16} />
+                                            <span>Managed Lists</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
+                                            onClick={() => setActiveSection('users')}
+                                        >
+                                            <Users size={16} />
+                                            <span>Access Team</span>
+                                        </button>
+                                    </li>
+                                </>
+                            )}
                         </ul>
                     </nav>
 
                     {/* Utilities */}
-                    <div className="utilities-section">
-                        <div className="utilities-header">Utilities</div>
-                        <ul className="utilities-list">
-                            <li>
-                                <button className="utility-btn">
-                                    <FileDown size={16} />
-                                    <span>Generate Document</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button className="utility-btn">
-                                    <History size={16} />
-                                    <span>Audit Log</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+                    {!isCreateMode && (
+                        <div className="utilities-section">
+                            <div className="utilities-header">Utilities</div>
+                            <ul className="utilities-list">
+                                <li>
+                                    <button className="utility-btn">
+                                        <FileDown size={16} />
+                                        <span>Generate Document</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button className="utility-btn">
+                                        <History size={16} />
+                                        <span>Audit Log</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                 </aside>
 
                 {/* Main Content */}
@@ -144,9 +215,97 @@ export function ProjectDetailPage() {
                     {activeSection === 'details' && (
                         <section className="detail-section">
                             <div className="section-header">
-                                <h2 className="section-title">Project Details</h2>
-                                <span className="project-id">ID: {project.id.substring(0, 13)}</span>
+                                <h2 className="section-title">{isCreateMode ? 'Create Project' : 'Project Details'}</h2>
+                                {!isCreateMode && project && (
+                                    <span className="project-id">ID: {project.id.substring(0, 13)}</span>
+                                )}
                             </div>
+                            
+                            {isCreateMode ? (
+                                /* Creation Form */
+                                <form onSubmit={handleCreateProject}>
+                                    {serverError && (
+                                        <div className="error-message">
+                                            {serverError}
+                                        </div>
+                                    )}
+                                    
+                                    <div className="section-content">
+                                        <div className="form-grid">
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">
+                                                    Project Name <span className="required-asterisk">*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.name}
+                                                    onChange={(e) => handleInputChange('name', e.target.value)}
+                                                    className={`form-input ${validationErrors.Name ? 'error' : ''}`}
+                                                    required
+                                                    maxLength={200}
+                                                    autoFocus
+                                                />
+                                                {validationErrors.Name && (
+                                                    <div className="field-error">{validationErrors.Name[0]}</div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Client Account</label>
+                                                <select
+                                                    value={formData.clientId || ''}
+                                                    onChange={(e) => handleInputChange('clientId', e.target.value || undefined)}
+                                                    className={`form-select ${validationErrors.ClientId ? 'error' : ''}`}
+                                                >
+                                                    <option value="">Select a client (optional)</option>
+                                                    {clients.map(client => (
+                                                        <option key={client.id} value={client.id}>
+                                                            {client.accountName}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {validationErrors.ClientId && (
+                                                    <div className="field-error">{validationErrors.ClientId[0]}</div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Description</label>
+                                                <textarea
+                                                    rows={3}
+                                                    value={formData.description || ''}
+                                                    onChange={(e) => handleInputChange('description', e.target.value)}
+                                                    className={`form-textarea ${validationErrors.Description ? 'error' : ''}`}
+                                                    maxLength={2000}
+                                                />
+                                                {validationErrors.Description && (
+                                                    <div className="field-error">{validationErrors.Description[0]}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="section-footer">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => navigate('/projects')}
+                                            className="cancel-btn"
+                                            disabled={isSubmitting}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            type="submit"
+                                            className="save-btn"
+                                            disabled={isSubmitting}
+                                        >
+                                            <Save size={14} />
+                                            <span>{isSubmitting ? 'Creating...' : 'Create Project'}</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : project ? (
+                                /* View Mode */
+                                <>
                             <div className="section-content">
                                 <div className="form-grid">
                                     <div className="form-group col-span-2">
@@ -215,10 +374,12 @@ export function ProjectDetailPage() {
                                     <span>Save Details</span>
                                 </button>
                             </div>
+                                </>
+                            ) : null}
                         </section>
                     )}
 
-                    {activeSection === 'questionnaire' && (
+                    {!isCreateMode && activeSection === 'questionnaire' && (
                         <section className="detail-section">
                             <div className="section-header">
                                 <h2 className="section-title">Questionnaire Structure</h2>
@@ -229,7 +390,7 @@ export function ProjectDetailPage() {
                         </section>
                     )}
 
-                    {activeSection === 'studies' && (
+                    {!isCreateMode && activeSection === 'studies' && (
                         <section className="detail-section">
                             <div className="section-header">
                                 <h2 className="section-title">Studies</h2>
