@@ -113,3 +113,96 @@ export const clientsApi = {
         return response.json();
     }
 };
+
+export interface QuestionBankItemSummary {
+    id: string;
+    variableName: string;
+    version: number;
+    questionText?: string;
+    questionType?: string;
+    classification?: string;
+    questionRationale?: string;
+}
+
+export interface QuestionBankItem {
+    id: string;
+    variableName: string;
+    version: number;
+    questionText?: string;
+    questionTitle?: string;
+    questionType?: string;
+    classification?: string;
+    status?: string;
+    methodology?: string;
+    questionRationale?: string;
+    scaleType?: string;
+    displayType?: string;
+    instructionText?: string;
+}
+
+export interface ProjectQuestionnaire {
+    id: string;
+    projectId: string;
+    questionBankItemId: string;
+    sortOrder: number;
+    questionBankItem: QuestionBankItemSummary;
+}
+
+export interface AddProjectQuestionnaireRequest {
+    questionBankItemId: string;
+}
+
+export interface UpdateProjectQuestionnairesSortOrderRequest {
+    items: { id: string; sortOrder: number }[];
+}
+
+export const questionBankApi = {
+    getAll: async (query?: string): Promise<QuestionBankItem[]> => {
+        const url = query ? `${API_BASE}/question-bank-items?query=${encodeURIComponent(query)}` : `${API_BASE}/question-bank-items`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch question bank items');
+        return response.json();
+    }
+};
+
+export const projectQuestionnairesApi = {
+    getAll: async (projectId: string): Promise<ProjectQuestionnaire[]> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires`);
+        if (!response.ok) throw new Error('Failed to fetch project questionnaires');
+        return response.json();
+    },
+
+    add: async (projectId: string, data: AddProjectQuestionnaireRequest): Promise<ProjectQuestionnaire> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    updateSortOrder: async (projectId: string, data: UpdateProjectQuestionnairesSortOrderRequest): Promise<void> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires/sort-order`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+    },
+
+    delete: async (projectId: string, id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete project questionnaire');
+    }
+};
