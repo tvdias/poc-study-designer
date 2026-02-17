@@ -158,7 +158,7 @@ export interface UpdateProjectQuestionnairesSortOrderRequest {
 
 export const questionBankApi = {
     getAll: async (query?: string): Promise<QuestionBankItem[]> => {
-        const url = query ? `${API_BASE}/question-bank-items?query=${encodeURIComponent(query)}` : `${API_BASE}/question-bank-items`;
+        const url = query ? `${API_BASE}/question-bank?query=${encodeURIComponent(query)}` : `${API_BASE}/question-bank`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch question bank items');
         return response.json();
