@@ -1,0 +1,83 @@
+<!--
+ * @file        02-exportDCPButtons.html
+ * @description Set the buttons on the Side Panel form.
+ *
+ * @date        2025-08-07
+ * @version     1.0
+ *
+ * @usage       This script is used to set the buttons on the Side Panel form and call document core pack.
+ * @notes       This is being used in SidePanel Form on Project entity.
+ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+    <script>
+ function setClientApiContext(xrm, formContext) {
+            "use strict";
+            // Optionally set Xrm and formContext as global variables on the page.
+            window.Xrm = xrm;
+            window._formContext = formContext;
+
+        }
+        function loadUtilities(callback) {
+            const utilScript = "ktr_039_projectSidePanel";
+            const fullUrl = Xrm.Utility.getGlobalContext().getClientUrl() + "/WebResources/" + utilScript;
+
+            if (!document.getElementById(utilScript)) {
+                const script = document.createElement("script");
+                script.id = utilScript;
+                script.src = fullUrl;
+                script.onload = function () {
+                    console.log("Utility script loaded.");
+                    if (callback) callback(); // Call any function after script load
+                };
+                script.onerror = function () {
+                    alert("Failed to load utilities.");
+                };
+                document.head.appendChild(script);
+            } else {
+                // If already loaded
+                if (callback) callback();
+            }
+        }
+
+        function dynamicallyLoadScriptAndCallFunction() {
+          
+            loadUtilities(function () {
+                if (typeof openExportWordDocument === "function") {
+                      Kantar.ProjectSidePanelForm.openExportWordDocument(window._formContext);
+                } else {
+                    alert("Function openExportWordDocument not found.");
+                }
+            });
+        }
+
+        function callCloseForm() {
+            loadUtilities(function () {
+                if (typeof closeSidePanelForm=== "function") {
+                    Kantar.ProjectSidePanelForm.closeSidePanelForm(window._formContext);
+                } else {
+                    alert("Function closeForm not found.");
+                }
+            });
+        }
+
+        window.onload = function () {
+            // Optionally pre-load the script early
+            loadUtilities();
+        };
+    </script>
+</head>
+<body>
+    <button onclick="dynamicallyLoadScriptAndCallFunction()" style="background-color:royalblue; color: white; padding:10px 20px; font-size:14px; border-radius: 2px;font-weight: bold; border: 0px;">
+        Export Word Document
+    </button>
+    <button onclick="callCloseForm()" style="padding:10px 20px; font-size:14px; border-radius: 2px;font-weight: bold;border: 0px;">
+        Cancel
+    </button>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+    "Products": {
+        "AriaLabel": {
+            "ProductName": "Product Name",
+            "ProductTemplateName": "Product Template Name",
+            "Version": "Version",
+            "IncludeByDefault": "Include By Default",
+            "Type": "Type",
+            "QuestionLookUp": "Question Bank, Lookup",
+            "ConfigurationQuestionLookup": "Configuration Question, Lookup",
+            "LockedProductConfigQuestion": "Locked Product Config Question",
+            "LockedRuleConfigQuestion": "Locked Rule Config Question",
+            "RuleConfigAnswerLookup": "Rule Config Answer, Lookup",
+            "DisplaySettings": "Display Settings",
+            "ImpactedConfigQuestionLookup": "Impacted Config Question, Lookup",
+            "DeactivationMessage1":"This action will change the status of the selected Product Template Lines to Inactive.",
+            "DeactivationMessage2":"Do you want to deactivate the selected 2 Product Template Lines? You can reactivate it later, if you wish."
+        },
+        "Buttons": {
+            "NewProductTemplate": "New Product Template. Add New Product Template",
+            "NewProductTemplateLine": "New Product Template Line. Add New Product Template Line",
+            "NewProductConfigQuestion": "New Product Config Question. Add New Product Config Question",
+            "NewProductConfigQuestionDisplayRule": "New Product Config Question Display Rule. Add New Product Config Question Display Rule"
+        },
+        "Views": {
+            "InactiveProductTemplateLines": "Inactive Product Template Lines"
+        },
+        "Tabs": {
+            "ProductTemplates": "Product Templates",
+            "TemplateLines": "Template Lines",
+            "ConfigurationQuestions": "Configuration Questions"
+        },
+        "Title": {
+            "ProductName": "Product Name - Primary Name of the Product record",
+            "ProductDescription": "Product Description - Product Description"
+        }
+    }
+}

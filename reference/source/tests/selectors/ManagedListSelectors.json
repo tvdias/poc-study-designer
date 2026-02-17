@@ -1,0 +1,56 @@
+{
+    "ManagedList": {
+        "AriaLabel": {
+            "Managedlist": "Managed Lists",
+            "NewManagedList": "New Managed List. Add New Managed List",
+            "ManageListNameTextBox": "Name",
+            "NewQuestionAddButton": "New Questionnaire Line Managed List. Add New Questionnaire Line Managed List",
+            "SearchQLSearchIcon": "Search records for Questionnaire Line, Lookup field",
+            "SearchMLQuestionList": "Questionnaire Line Lookup results",
+            "Location": "Location",
+            "NewManagedListEntity": "New Managed List Entity. Add New Managed List Entity",
+            "AnswerText": "Answer Text",
+            "AnswerCode": "Answer Code",
+            "SaveAndCloseOptions": "Save and Close Options",
+            "SaveCreateNew": "Save & Create New",
+            "ActiveManagedListEntities": "Active Managed List Entities",
+            "Name": "Name",
+            "DeleteQuestionnaireLineManagedList": "Delete Questionnaire Line Managed List",
+            "ProjectLookup": "Project, Lookup",
+            "AnswerCodeEditable_No": "Answer Code Editable: No",
+            "MoreCommandsForManagedList": "More commands for Managed List"
+        },
+        "Tabs": {
+            "ManagedList": "Managed Lists",
+            "Entities": "Entities",
+            "StudyAllocation": "Study Allocation"
+        },
+        "Button": {
+            "NewManagedList": "New Managed List",
+            "SaveChanges": "Save Changes",
+            "AddNewAnswer": "Add Answers. Add New Questionnaire Lines Answer List"
+        },
+        "CSS": {
+            "ManagedListName": "[data-automation-key='ktr_managedlist']>button",
+            "StudyAllocationEntites": "div[title^='Click to view']"
+        },
+        "Text": {
+            "NewQuestionnaireLineManagedList": "New Questionnaire Line Managed List",
+            "NewManagedList": "New Managed List",
+            "InactiveManagedListEntities": "Inactive Managed List Entities",
+            "AllManagedListEntities": "All Managed List Entities",
+            "QuickCreate": "Quick Create: Managed List Entity",
+            "Saved": "- Saved"
+        },
+        "Title": {
+            "DropdownColumn": "Column",
+            "NewManagedList": "New Managed List"
+        },
+        "TestDataId": {
+            "SaveAndClose": "quickCreateSaveAndCloseBtn"
+        },
+        "Placeholder": {
+            "SearchMLEntities": "Search Managed List Entities"
+        }
+    }
+}
