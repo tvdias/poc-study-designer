@@ -1,0 +1,18 @@
+<customapi uniquename="ktr_apply_template_unbound">
+  <allowedcustomprocessingsteptype>2</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Apply Template Unbound">
+    <label description="Apply Template Unbound" languagecode="1033" />
+  </description>
+  <displayname default="Apply Template Unbound">
+    <label description="Apply Template Unbound" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>ktr_apply_template_unbound</name>
+  <plugintypeid>
+    <plugintypeexportkey>54f119c3-e9f7-4a60-9ccf-4e9f3e904a68</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

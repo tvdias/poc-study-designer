@@ -1,0 +1,46 @@
+<appaction uniquename="ktr__Mscrm.Form.{!EntityLogicalName}.SaveAsComplete!kt_UC1!kt_study!0">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonaccessibilitytext default="Mark Complete">
+    <label description="Mark Complete" languagecode="1033" />
+  </buttonaccessibilitytext>
+  <buttonlabeltext default="Mark Complete">
+    <label description="Mark Complete" languagecode="1033" />
+  </buttonlabeltext>
+  <buttontooltipdescription default="Save the {EntityLogicalNameMarker} and change the status to Completed.">
+    <label description="Save the {EntityLogicalNameMarker} and change the status to Completed." languagecode="1033" />
+  </buttontooltipdescription>
+  <buttontooltiptitle default="Mark Complete">
+    <label description="Mark Complete" languagecode="1033" />
+  </buttontooltiptitle>
+  <context>1</context>
+  <contextentity>
+    <logicalname>kt_study</logicalname>
+  </contextentity>
+  <contextvalue>kt_study</contextvalue>
+  <fonticon>$clientsvg:Accept</fonticon>
+  <hidden>1</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>0</location>
+  <name>Mscrm.Form.{!EntityLogicalName}.SaveAsComplete</name>
+  <onclickeventjavascriptfunctionname>markAsComplete</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>ba195f1d-3c24-f011-8c4d-6045bd9637eb</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>2</origin>
+  <sequence>100100020.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>cradb_uc1defaultcommandlibrary_28f3e</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>351fcb10896748a18f009bea2d32c6eb</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

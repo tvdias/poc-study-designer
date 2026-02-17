@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="ktr_AIFrontDoorBaseURL">
+  <defaultvalue>https://sc-uiwebapp-uc1-ai-dev.azurewebsites.net</defaultvalue>
+  <displayname default="AI Front Door Base URL">
+    <label description="AI Front Door Base URL" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.2.5.1</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

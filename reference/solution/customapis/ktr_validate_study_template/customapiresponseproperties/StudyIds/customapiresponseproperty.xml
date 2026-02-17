@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="StudyIds">
+  <description default="Validate Study Template - StudyIds">
+    <label description="Validate Study Template - StudyIds" languagecode="1033" />
+  </description>
+  <displayname default="Validate Study Template - StudyIds">
+    <label description="Validate Study Template - StudyIds" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>StudyIds</name>
+  <type>10</type>
+</customapiresponseproperty>

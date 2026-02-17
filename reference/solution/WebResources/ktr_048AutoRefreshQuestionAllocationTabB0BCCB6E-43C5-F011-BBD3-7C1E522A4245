@@ -1,0 +1,24 @@
+function onTabStateChange(executionContext) {
+    var tab = executionContext.getEventSource();
+
+    if (tab.getDisplayState() === "expanded") {
+        var control = Xrm.Page.getControl("Subgrid_new_3");
+
+        if (!control) {
+            console.log("Subgrid_new_3 control not found yet.");
+            return;
+        }
+
+        console.log("Tab expanded. Scheduling PCF refresh...");
+
+        // Delay to allow PCF to initialize fully
+        setTimeout(function () {
+            if (control && control.refresh) {
+                console.log("Refreshing PCF subgrid after delay...");
+                control.refresh();
+            } else {
+                console.log("Control found but refresh() not available.");
+            }
+        }, 400); 
+    }
+}

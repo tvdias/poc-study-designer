@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="projectUrl">
+  <description default="projectUrl">
+    <label description="projectUrl" languagecode="1033" />
+  </description>
+  <displayname default="CreateProjectUnbound - projectUrl">
+    <label description="CreateProjectUnbound - projectUrl" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>projectUrl</name>
+  <type>10</type>
+</customapiresponseproperty>

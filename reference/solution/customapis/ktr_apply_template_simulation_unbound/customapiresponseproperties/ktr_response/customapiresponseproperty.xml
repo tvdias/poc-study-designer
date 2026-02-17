@@ -1,0 +1,11 @@
+<customapiresponseproperty uniquename="ktr_response">
+  <description default="ktr_response">
+    <label description="ktr_response" languagecode="1033" />
+  </description>
+  <displayname default="ApplyTemplateSimulation - ktr_response">
+    <label description="ApplyTemplateSimulation - ktr_response" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>ktr_response</name>
+  <type>10</type>
+</customapiresponseproperty>

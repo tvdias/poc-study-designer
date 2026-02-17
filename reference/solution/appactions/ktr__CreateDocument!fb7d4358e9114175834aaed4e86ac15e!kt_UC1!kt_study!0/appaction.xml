@@ -1,0 +1,37 @@
+<appaction uniquename="ktr__CreateDocument!fb7d4358e9114175834aaed4e86ac15e!kt_UC1!kt_study!0">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Create Document">
+    <label description="Create Document" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>kt_study</logicalname>
+  </contextentity>
+  <contextvalue>kt_study</contextvalue>
+  <fonticon>CreateQuote</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>0</location>
+  <name>CreateDocument!fb7d4358e9114175834aaed4e86ac15e</name>
+  <onclickeventjavascriptfunctionname>Kantar.StudyExportWordDraft.openExportWordDraftDocument</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5},{"type":10},{"type":21,"value":"63368871-4b20-f011-9989-6045bd9637eb"}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>c4c184a7-8ece-f011-bbd3-7ced8d137c2b</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100042.1875000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>cradb_uc1defaultcommandlibrary_28f3e</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>84bfc6607cd3496f89055c29deaeddbd</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

@@ -1,0 +1,95 @@
+var KTR = KTR || {};
+KTR.WS2HubRibbon = (function () {
+
+    const CFG = {
+        paneId: "ktr_ws2hubpane",
+        title: "WS2 Hub",
+        icon: "WebResources/ktr_HubButtonIconSVG",
+        hostWebResource: "ktr_048iframeWS2.html",
+        hubUrlEnvVar: "ktr_HubUrl",
+        visibilityEnvVar: "ktr_ShowWS2Hub",
+        widthPct: 0.75,
+        minPanePx: 320,
+        minMainPx: 480
+    };
+
+    async function initialize() {
+
+      // Visibility check – affects ONLY WS2 Hub
+
+        const isVisible = await getBooleanEnvVar(CFG.visibilityEnvVar);
+	console.log("isVisible", isVisible );
+        if (!isVisible) {         
+document.querySelector('div[data-id="sidepane-tab-button-ktr_ws2hubpane"]').style.display = "none";
+ 
+        }
+
+        // Check only our pane
+        const pane = Xrm.App.sidePanes.getPane && Xrm.App.sidePanes.getPane(CFG.paneId);
+
+        if (pane) {
+            return false;
+        }
+
+        await initializePane();
+        return false;
+    }
+
+    async function initializePane() {
+
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const desired = Math.floor(vw * CFG.widthPct);
+        const widthPx = Math.max(CFG.minPanePx, Math.min(desired, vw - CFG.minMainPx));
+
+        const pane = await Xrm.App.sidePanes.createPane({
+            title: CFG.title,
+            imageSrc: CFG.icon,
+            paneId: CFG.paneId,
+            canClose: false,
+            width: widthPx,
+            isSelected: false
+        });
+
+        const hubUrl = await getTextEnvVar(CFG.hubUrlEnvVar);
+        if (!hubUrl) return;
+
+        await pane.navigate({
+            pageType: "webresource",
+            webresourceName: CFG.hostWebResource,
+            data: encodeURIComponent(hubUrl)
+        });
+	
+	  
+    }
+
+    // ---------- ENV VAR HELPERS ----------
+
+    async function getTextEnvVar(schemaName) {
+
+        const defRes = await Xrm.WebApi.retrieveMultipleRecords(
+            "environmentvariabledefinition",
+            `?$select=environmentvariabledefinitionid,defaultvalue&$filter=schemaname eq '${schemaName}'`
+        );
+
+        if (!defRes.entities.length) return null;
+
+        const def = defRes.entities[0];
+
+        const valRes = await Xrm.WebApi.retrieveMultipleRecords(
+            "environmentvariablevalue",
+            `?$select=value&$filter=_environmentvariabledefinitionid_value eq ${def.environmentvariabledefinitionid}`
+        );
+
+        return (valRes.entities[0] && valRes.entities[0].value) || def.defaultvalue || null;
+    }
+
+    async function getBooleanEnvVar(schemaName) {
+        const value = await getTextEnvVar(schemaName);
+        return value === "true";
+    }
+
+    return {
+        initialize: initialize
+    };
+
+})();

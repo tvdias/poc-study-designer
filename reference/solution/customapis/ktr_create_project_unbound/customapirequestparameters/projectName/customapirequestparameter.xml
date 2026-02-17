@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="projectName">
+  <description default="projectName">
+    <label description="projectName" languagecode="1033" />
+  </description>
+  <displayname default="CreateProjectUnbound - projectName">
+    <label description="CreateProjectUnbound - projectName" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>projectName</name>
+  <type>10</type>
+</customapirequestparameter>

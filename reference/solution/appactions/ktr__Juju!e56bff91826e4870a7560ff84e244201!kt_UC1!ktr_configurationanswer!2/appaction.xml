@@ -1,0 +1,32 @@
+<appaction uniquename="ktr__Juju!e56bff91826e4870a7560ff84e244201!kt_UC1!ktr_configurationanswer!2">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Add Answers">
+    <label description="Add Answers" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>ktr_configurationanswer</logicalname>
+  </contextentity>
+  <contextvalue>ktr_configurationanswer</contextvalue>
+  <fonticon>$clientsvg:Add</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>2</location>
+  <name>Juju!e56bff91826e4870a7560ff84e244201</name>
+  <onclickeventformulacomponentlibraryid>
+    <name>cradb_uc1defaultcommandlibrary_28f3e</name>
+  </onclickeventformulacomponentlibraryid>
+  <onclickeventformulacomponentname>c3fc16bbff684e62b688679251e9c70e</onclickeventformulacomponentname>
+  <onclickeventformulafunctionname>OnSelect</onclickeventformulafunctionname>
+  <onclickeventtype>1</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100045.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>0</visibilitytype>
+</appaction>

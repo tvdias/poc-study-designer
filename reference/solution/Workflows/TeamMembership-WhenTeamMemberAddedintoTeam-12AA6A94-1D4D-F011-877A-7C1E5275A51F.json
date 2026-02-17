@@ -1,0 +1,212 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ktr_sharedcommondataserviceforapps_ab3e2"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Trigger_when_Team_member_gets_added_into_Team": {
+          "metadata": {
+            "operationMetadataId": "194a7d06-70c1-4dba-be81-0ba1219cfcab"
+          },
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 4,
+              "subscriptionRequest/entityname": "team",
+              "subscriptionRequest/scope": 4
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "Get_associated_business_Role_From_Business_Role_Mapping": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "d7258040-9930-4890-a31c-d499eb30a818"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "ktr_businessrolemappings",
+              "$select": "ktr_businessrolemappingid, ktr_kantarbusinessrole",
+              "$filter": "_ktr_team_value eq '@{triggerOutputs()?['body/teamid']}'"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Condition_to_check_Business_Role_Mapping_Record_exist": {
+          "actions": {
+            "Apply_to_each": {
+              "foreach": "@outputs('Get_associated_business_Role_From_Business_Role_Mapping')?['body/value']",
+              "actions": {
+                "Business_Role": {
+                  "runAfter": {},
+                  "cases": {
+                    "Case_For_Cs_User": {
+                      "case": 847610000,
+                      "actions": {
+                        "Update_a_User_With_CS_User_Business_Role": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "435ad6d6-2eba-4266-b9dd-0e3ab8bbe6f4"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps",
+                              "operationId": "UpdateOnlyRecord",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "systemusers",
+                              "recordId": "@triggerOutputs()?['body/systemuserid']",
+                              "item/ktr_businessrole": 847610000
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        }
+                      }
+                    },
+                    "Case_For_Librarian": {
+                      "case": 847610001,
+                      "actions": {
+                        "Update_a_User_With_Librarian_Business_Role": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "f7a7e317-3309-4da1-8ebe-341f41aa81b2"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps",
+                              "operationId": "UpdateOnlyRecord",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "systemusers",
+                              "recordId": "@triggerOutputs()?['body/systemuserid']",
+                              "item/ktr_businessrole": 847610001
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        }
+                      }
+                    },
+                    "Case_Scripter": {
+                      "case": 847610002,
+                      "actions": {
+                        "Update_a_User_With_Scripter_Business_Role": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "e34690d9-cd76-4fc8-b132-9cb73ed947e4"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps",
+                              "operationId": "UpdateOnlyRecord",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "systemusers",
+                              "recordId": "@triggerOutputs()?['body/systemuserid']",
+                              "item/ktr_businessrole": 847610002
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "actions": {
+                      "Case_For_Other": {
+                        "runAfter": {},
+                        "metadata": {
+                          "operationMetadataId": "b635267b-ccd4-4075-b801-e6e5af5b3771"
+                        },
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "host": {
+                            "connectionName": "shared_commondataserviceforapps",
+                            "operationId": "UpdateRecord",
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                          },
+                          "parameters": {
+                            "entityName": "systemusers",
+                            "recordId": "@triggerOutputs()?['body/systemuserid']",
+                            "item/ktr_businessrole": 847610003
+                          },
+                          "authentication": "@parameters('$authentication')"
+                        }
+                      }
+                    }
+                  },
+                  "expression": "@items('Apply_to_each')?['ktr_kantarbusinessrole']",
+                  "metadata": {
+                    "operationMetadataId": "3bb30957-b2e9-4daf-9d1a-19e1f167137c"
+                  },
+                  "type": "Switch"
+                }
+              },
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "0810af18-5e7d-4d91-9fef-fda0532b6d72"
+              },
+              "type": "Foreach"
+            }
+          },
+          "runAfter": {
+            "Get_associated_business_Role_From_Business_Role_Mapping": [
+              "Succeeded"
+            ]
+          },
+          "expression": {
+            "greater": [
+              "@length(outputs('Get_associated_business_Role_From_Business_Role_Mapping')?['body']['value'])",
+              0
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d21f73cc-149e-4494-abc8-39adb5104e5f"
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

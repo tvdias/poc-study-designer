@@ -1,0 +1,34 @@
+function fixNestedGridHeight() {
+
+    const wrapper = document.getElementById("7b3c2d0f-da93-45d6-a23b-33706d652419");
+    if (!wrapper) return;
+
+    // Run anytime something changes inside the wrapper (grid loads, expands, collapses)
+    const observer = new MutationObserver(() => {
+        adjustHeight(wrapper);
+    });
+
+    observer.observe(wrapper, { childList: true, subtree: true });
+
+    // Also call once onload
+    setTimeout(() => adjustHeight(wrapper), 1200);
+}
+
+function adjustHeight(wrapper) {
+
+    // Detect the nested grid (AG grid container)
+    const nestedGrid = wrapper.querySelector(".nestedDataSetGridContainer-243, .ag-root, .ag-center-cols-viewport");
+    if (!nestedGrid) return;
+
+    // Measure nested grid full size
+    const gridHeight = nestedGrid.scrollHeight;
+
+    // Collapsed vs expanded logic
+    if (gridHeight < 150) {
+        // collapsed
+        wrapper.style.height = "84px";
+    } else {
+        // expanded – give enough room for full nested grid
+        wrapper.style.height = (gridHeight + 40) + "px";
+    }
+}

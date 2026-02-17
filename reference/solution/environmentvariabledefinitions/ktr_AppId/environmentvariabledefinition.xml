@@ -1,0 +1,13 @@
+<environmentvariabledefinition schemaname="ktr_AppId">
+  <description default="ApplicationId of the MDA">
+    <label description="ApplicationId of the MDA" languagecode="1033" />
+  </description>
+  <displayname default="AppId">
+    <label description="AppId" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.2.5.1</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

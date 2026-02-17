@@ -1,0 +1,18 @@
+<customapi uniquename="ktr_project_questionnairelines_regenerate_html_unbound">
+  <allowedcustomprocessingsteptype>2</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Regenerate HTML for QuestionnaireLine in Project">
+    <label description="Regenerate HTML for QuestionnaireLine in Project" languagecode="1033" />
+  </description>
+  <displayname default="Regenerate HTML for QuestionnaireLines in Project">
+    <label description="Regenerate HTML for QuestionnaireLines in Project" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>ktr_project_questionnairelines_regenerate_html_unbound</name>
+  <plugintypeid>
+    <plugintypeexportkey>64437918-59f2-4f3a-9aa7-42bb407f9386</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>
