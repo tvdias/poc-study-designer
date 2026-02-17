@@ -10,6 +10,7 @@ using Api.Features.ProductTemplates;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
+using Api.Features.Seed;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -37,7 +38,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
@@ -48,6 +49,11 @@ if (app.Environment.IsDevelopment())
 }
 
 var api = app.MapGroup("/api");
+
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+{
+    api.MapSeedDataEndpoint();
+}
 
 // Clients
 api.MapCreateClientEndpoint();
