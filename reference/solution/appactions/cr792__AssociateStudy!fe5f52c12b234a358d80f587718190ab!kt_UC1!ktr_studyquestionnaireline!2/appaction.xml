@@ -1,0 +1,32 @@
+<appaction uniquename="cr792__AssociateStudy!fe5f52c12b234a358d80f587718190ab!kt_UC1!ktr_studyquestionnaireline!2">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Associate Study">
+    <label description="Associate Study" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>ktr_studyquestionnaireline</logicalname>
+  </contextentity>
+  <contextvalue>ktr_studyquestionnaireline</contextvalue>
+  <fonticon>AssociateChildCase</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>2</location>
+  <name>AssociateStudy!fe5f52c12b234a358d80f587718190ab</name>
+  <onclickeventjavascriptfunctionname>associateStudyButton.main</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>db8f981d-cafd-ef11-bae3-000d3a2274a5</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100045.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilitytype>0</visibilitytype>
+</appaction>

@@ -1,0 +1,18 @@
+<customapi uniquename="ktr_detect_or_create_subset">
+  <allowedcustomprocessingsteptype>2</allowedcustomprocessingsteptype>
+  <bindingtype>0</bindingtype>
+  <description default="Detect Or Create Subset Definition">
+    <label description="Detect Or Create Subset Definition" languagecode="1033" />
+  </description>
+  <displayname default="Detect Or Create Subset Definition">
+    <label description="Detect Or Create Subset Definition" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>ktr_detect_or_create_subset</name>
+  <plugintypeid>
+    <plugintypeexportkey>c12c73db-003e-4751-804e-03d014482921</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

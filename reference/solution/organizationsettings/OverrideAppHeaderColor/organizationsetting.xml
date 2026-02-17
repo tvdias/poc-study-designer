@@ -1,0 +1,4 @@
+<organizationsetting settingdefinitionid.uniquename="OverrideAppHeaderColor">
+  <iscustomizable>1</iscustomizable>
+  <value>ktr_/themes/KantarThemeConfig.xml</value>
+</organizationsetting>

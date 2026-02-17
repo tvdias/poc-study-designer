@@ -1,0 +1,532 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "ktr_sharedcommondataserviceforapps_ab3e2"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "When_a_row_is_added,_modified_or_deleted": {
+          "metadata": {
+            "operationMetadataId": "a5aad9da-e0d1-4e36-90d0-0d8003449b77"
+          },
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps-1",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 1,
+              "subscriptionRequest/entityname": "kt_questionnairelines",
+              "subscriptionRequest/scope": 4
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          }
+        }
+      },
+      "actions": {
+        "QuestionVariableName": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "969d672e-f575-42df-9243-e986825dc3be"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "QuestionVariableName",
+                "type": "string",
+                "value": "@triggerOutputs()?['body/kt_questionvariablename']"
+              }
+            ]
+          }
+        },
+        "ProjectId": {
+          "runAfter": {
+            "QuestionVariableName": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4984e572-3b3c-4212-901c-1aa636a48900"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ProjectId",
+                "type": "string",
+                "value": "@triggerOutputs()?['body/_ktr_project_value']"
+              }
+            ]
+          }
+        },
+        "SharedListReferences": {
+          "runAfter": {
+            "Initialize_variable_2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "541a9cc8-fa07-4193-a87d-a4eab99f51b5"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "SharedListReferences",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "UniqueSharedLists": {
+          "runAfter": {
+            "SharedListReferences": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "14dd27f8-414a-4649-b0d8-b6d07cf6e3ef"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "UniqueSharedLists",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "CurrentSharedListId": {
+          "runAfter": {
+            "UniqueSharedLists": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "72a6cad1-5a44-41c8-a8d5-b5ccf52354a2"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "CurrentSharedListId",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_2": {
+          "runAfter": {
+            "ProjectId": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ceeb150c-8836-4bff-b88f-876c49153d2f"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "QuestionnaireLineId",
+                "type": "string",
+                "value": "@triggerOutputs()?['body/kt_questionnairelinesid']"
+              }
+            ]
+          }
+        },
+        "Main_Processing": {
+          "actions": {
+            "List_rows_Question_bank": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "b1fcc2b0-8838-42bc-a4dd-66c485cd9e22"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps-1",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "kt_questionbanks",
+                  "$select": "kt_questionbankid, kt_name, ktr_sharedlistreferences",
+                  "$filter": "kt_name eq '@{variables('QuestionVariableName')}'"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Set_variable": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "703b426f-a16e-420a-b198-596b2fa7a8ab"
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "SharedListReferences",
+                    "value": "@{first(outputs('List_rows_Question_bank')?['body/value'])?['ktr_sharedlistreferences']}"
+                  }
+                },
+                "Condition_2": {
+                  "actions": {
+                    "Parse_JSON": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "75e224f2-a7ce-40c6-9a8f-9c18fea20c29"
+                      },
+                      "type": "ParseJson",
+                      "inputs": {
+                        "content": "@variables('SharedListReferences')",
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "sharedLists": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "location": {
+                                    "type": "string"
+                                  },
+                                  "displayOrder": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "location",
+                                  "displayOrder"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "Select": {
+                      "runAfter": {
+                        "Parse_JSON": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "d8162e17-3d63-4f40-ae96-b91407ada368"
+                      },
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@body('Parse_JSON')?['sharedLists']",
+                        "select": "@item()['name']"
+                      }
+                    },
+                    "Compose": {
+                      "runAfter": {
+                        "Select": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "20459174-4d61-4bd0-aaef-edc9b635673d"
+                      },
+                      "type": "Compose",
+                      "inputs": "@union(body('Select'), body('Select'))"
+                    },
+                    "Apply_to_each": {
+                      "foreach": "@outputs('Compose')",
+                      "actions": {
+                        "List_rows": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "02f82783-fe5d-44f1-ad21-7235daf19e2d"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connectionName": "shared_commondataserviceforapps-1",
+                              "operationId": "ListRecords",
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                            },
+                            "parameters": {
+                              "entityName": "ktr_managedlists",
+                              "$select": "ktr_managedlistid, ktr_name",
+                              "$filter": "_ktr_project_value eq '@{variables('ProjectId')}' and ktr_name eq '@{items('Apply_to_each')}'",
+                              "$top": 1
+                            },
+                            "authentication": "@parameters('$authentication')"
+                          }
+                        },
+                        "Condition_3": {
+                          "actions": {
+                            "Add_a_new_row": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "4123507d-ea54-4223-9257-c08bd04069bd"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "host": {
+                                  "connectionName": "shared_commondataserviceforapps-1",
+                                  "operationId": "CreateRecord",
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                                },
+                                "parameters": {
+                                  "entityName": "ktr_managedlists",
+                                  "item/ktr_name": "@items('Apply_to_each')",
+                                  "item/ktr_Project@odata.bind": "/kt_projects(@{variables('ProjectId')})",
+                                  "item/ktr_everinsnapshot": false,
+                                  "item/ktr_isautogenerated": true,
+                                  "item/ownerid@odata.bind": "/systemusers(@{triggerOutputs()?['body/_createdby_value']})",
+                                  "item/ktr_sourcetype": 100000000
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            },
+                            "Set_CurrentSharedListId": {
+                              "runAfter": {
+                                "Add_a_new_row": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "3b664a48-98bf-496c-9963-f88e4578b4e4"
+                              },
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "CurrentSharedListId",
+                                "value": "@outputs('Add_a_new_row')?['body/ktr_managedlistid']"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "List_rows": [
+                              "Succeeded"
+                            ]
+                          },
+                          "else": {
+                            "actions": {
+                              "Set_variable_2": {
+                                "runAfter": {},
+                                "metadata": {
+                                  "operationMetadataId": "9372ae12-05e9-4bbe-8c34-15a54778e879"
+                                },
+                                "type": "SetVariable",
+                                "inputs": {
+                                  "name": "CurrentSharedListId",
+                                  "value": "@{first(body('List_rows')?['value'])?['ktr_managedlistid']\r\n}"
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "equals": [
+                              "@length(outputs('List_rows')?['body/value'])",
+                              0
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "ac754ecb-2d50-4b21-9991-c6aafc210d5d"
+                          },
+                          "type": "If"
+                        },
+                        "Filter_array": {
+                          "runAfter": {
+                            "Condition_3": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "b8e8c8f9-1a21-4aa1-b511-b9ca51c312c7"
+                          },
+                          "type": "Query",
+                          "inputs": {
+                            "from": "@body('Parse_JSON')?['sharedLists']",
+                            "where": "@equals(item()['name'], items('Apply_to_each'))"
+                          }
+                        },
+                        "Apply_to_each_3": {
+                          "foreach": "@body('Filter_array')",
+                          "actions": {
+                            "Add_a_new_row_2": {
+                              "runAfter": {},
+                              "metadata": {
+                                "operationMetadataId": "8c1d4b92-04cf-4c9c-8975-617b344e3352"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "host": {
+                                  "connectionName": "shared_commondataserviceforapps-1",
+                                  "operationId": "CreateRecord",
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                                },
+                                "parameters": {
+                                  "entityName": "ktr_questionnairelinesharedlists",
+                                  "item/ktr_location": "@if(equals(items('Apply_to_each_3')?['location'], 'Row'), 100000000, 100000001)",
+                                  "item/ktr_ManagedList@odata.bind": "/ktr_managedlists(@{variables('CurrentSharedListId')})",
+                                  "item/ktr_QuestionnaireLine@odata.bind": "/kt_questionnairelineses(@{variables('QuestionnaireLineId')})",
+                                  "item/ktr_ProjectId@odata.bind": "/kt_projects(@{variables('ProjectId')})",
+                                  "item/ktr_displayorder": "@items('Apply_to_each_3')?['displayOrder']",
+                                  "item/ktr_name": "@concat(\r\n  items('Apply_to_each'), \r\n  ' - ', \r\n  if(equals(items('Apply_to_each_3')?['location'], 'Row'), 'Row', 'Column'),\r\n  ' Association'\r\n)",
+                                  "item/ownerid@odata.bind": "/systemusers(@{triggerOutputs()?['body/_createdby_value']})"
+                                },
+                                "authentication": "@parameters('$authentication')"
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Filter_array": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "a5c45390-9bf9-4df7-a471-dc848a9526a3"
+                          },
+                          "type": "Foreach",
+                          "runtimeConfiguration": {
+                            "concurrency": {
+                              "repetitions": 1
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Compose": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "0cc3258d-fb9b-46ee-9d5b-ed601643056e"
+                      },
+                      "type": "Foreach",
+                      "runtimeConfiguration": {
+                        "concurrency": {
+                          "repetitions": 1
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Set_variable": [
+                      "Succeeded"
+                    ]
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "not": {
+                          "equals": [
+                            "@variables('SharedListReferences')",
+                            "@null"
+                          ]
+                        }
+                      },
+                      {
+                        "not": {
+                          "equals": [
+                            "@variables('SharedListReferences')",
+                            ""
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "fc7e1431-f3ff-49c4-bf85-8b03407a6673"
+                  },
+                  "type": "If"
+                }
+              },
+              "runAfter": {
+                "List_rows_Question_bank": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "greater": [
+                  "@length(outputs('List_rows_Question_bank')?['body/value'])",
+                  0
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "a934c1f6-b61e-43d2-9ae8-27062fd9d675"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "CurrentSharedListId": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "79329537-da68-42a8-b1c0-ccda82aa8989"
+          },
+          "type": "Scope"
+        },
+        "Error_Handling": {
+          "actions": {
+            "Condition_4": {
+              "actions": {},
+              "runAfter": {},
+              "expression": {
+                "equals": [
+                  "@result('Main_Processing')",
+                  "Failed"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "ec036adc-5dea-425c-8af2-308d17e75f5a"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Main_Processing": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d38c19be-a5e6-43c1-9adc-c9ceee46d595"
+          },
+          "type": "Scope"
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

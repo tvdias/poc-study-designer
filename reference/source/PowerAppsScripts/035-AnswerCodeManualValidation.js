@@ -1,0 +1,80 @@
+/**
+* @file        035-AnswerCodeManualValidation.js
+* @description Will validate Answer code when manually edited by Scripter.
+*
+* @date        2025-07-23
+* @version     1.0
+*
+* @usage       This script is invoked on change of Answer code field on Questionnaire line Answer list 
+               and setting answer code as required or not required based on Questionnaire Lines value
+* @notes       
+*/
+function validateAnswerCode(executionContext) {
+    const field = executionContext.getEventSource();
+    const formContext = executionContext.getFormContext();
+    const value = field.getValue();
+
+    // Clear previous notification
+    formContext.getControl(field.getName()).clearNotification("answercode_validation");
+
+    if (!value) return;
+
+    // Rule 1: Only capital letters, numbers, and underscores
+    if (!/^[A-Z0-9_]+$/.test(value)) {
+        formContext.getControl(field.getName()).setNotification(
+            "Answer Code must only contain capital letters (A-Z), numbers, and underscores.",
+            "answercode_validation"
+        );
+        return;
+    }
+
+    // Rule 2: First character must be a letter
+    if (!/^[A-Z]/.test(value)) {
+        formContext.getControl(field.getName()).setNotification(
+            "The first character of the Answer Code must be a letter (A-Z).",
+            "answercode_validation"
+        );
+        return;
+    }
+
+    // Rule 3: Length must be between 1 and 20
+    if (value.length < 1 || value.length > 20) {
+        formContext.getControl(field.getName()).setNotification(
+            "Answer Code must be between 1 and 20 characters long.",
+            "answercode_validation"
+        );
+        return;
+    }
+
+    // If all validations pass, clear any existing notification and save value into ktr_name field
+    formContext.getControl(field.getName()).clearNotification("answercode_validation");
+     
+    // Set the field value to name field
+    formContext.getAttribute("ktr_name").setValue(value);
+
+    // Save the form
+    formContext.data.entity.save();
+}
+
+function setAnswerCodeRequiredNotRequired(executionContext)
+{
+    var formContext = executionContext.getFormContext();
+    var questionnaireLine = formContext.getAttribute("ktr_questionnaireline");
+    if (questionnaireLine != null) {
+        var questionnaireLineValue = questionnaireLine.getValue();
+        if (questionnaireLineValue != null && questionnaireLineValue.length > 0) {
+            var questionnaireLineValueId = questionnaireLineValue[0].id; // GUID of the questionnaire Line
+            //Get value of standardorcustom from Questionnairelines record
+            Xrm.WebApi.retrieveRecord("kt_questionnairelines", questionnaireLineValueId, "?$select=kt_standardorcustom").then(function (result) {
+            var standardorcustomValue = result.kt_standardorcustom;
+                if (standardorcustomValue == 0)
+                {
+                    // make answer code field mandatory
+                    formContext.getAttribute("ktr_answercode").setRequiredLevel("required");
+                }
+            }).catch(function (error) {
+                    console.error("Error retrieving kt_questionnaireline:", error.message);
+            });
+        }
+    }
+}

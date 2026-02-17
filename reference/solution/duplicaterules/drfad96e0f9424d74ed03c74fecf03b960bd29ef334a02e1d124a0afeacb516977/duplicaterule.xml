@@ -1,0 +1,15 @@
+<duplicaterule uniquename="drfad96e0f9424d74ed03c74fecf03b960bd29ef334a02e1d124a0afeacb516977">
+  <baseentityname>kt_questionbank</baseentityname>
+  <excludeinactiverecords>0</excludeinactiverecords>
+  <iscasesensitive>0</iscasesensitive>
+  <iscustomizable>1</iscustomizable>
+  <matchingentityname>kt_questionbank</matchingentityname>
+  <name>QuestionVariableNameDuplicatePrevention</name>
+  <duplicateruleconditions>
+    <duplicaterulecondition baseattributename="kt_name" matchingattributename="kt_name" operatorcode="1" uniquerulename="drfad96e0f9424d74ed03c74fecf03b960bd29ef334a02e1d124a0afeacb516977">
+      <ignoreblankvalues>0</ignoreblankvalues>
+      <iscustomizable>1</iscustomizable>
+      <operatorparam>300</operatorparam>
+    </duplicaterulecondition>
+  </duplicateruleconditions>
+</duplicaterule>

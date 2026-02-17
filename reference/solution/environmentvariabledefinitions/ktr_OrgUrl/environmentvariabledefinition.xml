@@ -1,0 +1,13 @@
+<environmentvariabledefinition schemaname="ktr_OrgUrl">
+  <description default="OrganizationUrl">
+    <label description="OrganizationUrl" languagecode="1033" />
+  </description>
+  <displayname default="OrgUrl">
+    <label description="OrgUrl" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.2.5.1</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

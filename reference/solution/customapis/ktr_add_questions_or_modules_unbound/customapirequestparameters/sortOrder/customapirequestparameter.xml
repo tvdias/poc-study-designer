@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="sortOrder">
+  <description default="Add Questions or Modules - sortOrder">
+    <label description="Add Questions or Modules - sortOrder" languagecode="1033" />
+  </description>
+  <displayname default="Add Questions or Modules - sortOrder">
+    <label description="Add Questions or Modules - sortOrder" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>sortOrder</name>
+  <type>7</type>
+</customapirequestparameter>

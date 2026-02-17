@@ -1,0 +1,39 @@
+jobs:
+  - job: test
+    timeoutInMinutes: 60
+    pool:
+      name: digtx-linux-build-pool-test
+
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "22.x"
+        displayName: "Install Node.js"
+
+      - script: npm ci && npm install && npx playwright install
+        workingDirectory: "$(Build.SourcesDirectory)/tests"
+        displayName: "Install Dependencies"
+    
+      - script: npx playwright test --grep RegressionTesting
+        workingDirectory: "$(Build.SourcesDirectory)/tests"
+        displayName: "Run Playwright Tests"
+        env:
+          AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+          CI: "true"
+
+      - task: PublishBuildArtifacts@1
+        condition: succeededOrFailed()
+        inputs:
+          PathtoPublish: "$(Build.SourcesDirectory)/tests/playwright-report"
+          ArtifactName: "PlaywrightHTMLReport"
+          publishLocation: "Container"
+
+      - task: PublishTestResults@2
+        displayName: "Publish XML test results"
+        condition: succeededOrFailed()
+        inputs:
+          testRunner: JUnit
+          testResultsFiles: "$(Build.SourcesDirectory)/tests/junit-test-report.xml"
+          mergeTestResults: true
+          failTaskOnFailedTests: true
+          testRunTitle: Playwright Tests

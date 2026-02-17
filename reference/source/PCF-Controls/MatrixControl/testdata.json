@@ -1,0 +1,20 @@
+{
+  "questions": [
+    {"questionid": "q1", "name": "Industry Screener"},
+    {"questionid": "q2", "name": "Gender"},
+    {"questionid": "q3", "name": "Chief Shopper"},
+    {"questionid": "q4", "name": "Category Usage"},
+    {"questionid": "q5", "name": "Customer Typology"}
+  ],
+  "studies": [
+    {"studyid": "s1", "title": "FRANCE CARE"},
+    {"studyid": "s2", "title": "PORTUGAL - v.5"},
+    {"studyid": "s3", "title": "PHILIPPINES"},
+    {"studyid": "s4", "title": "SPAIN - v.3"}
+  ],
+  "junctions": [
+    {"questionid": "q1", "studyid": "s1"},
+    {"questionid": "q2", "studyid": "s2"},
+    {"questionid": "q3", "studyid": "s3"}
+  ]
+}

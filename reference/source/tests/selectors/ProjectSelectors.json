@@ -1,0 +1,73 @@
+
+{
+    "Project": {
+        "AriaLabel": {
+            "ProjectName": "Project Name",
+            "Description": "Description",
+            "ClientLookUp": "Client, Lookup",
+            "CommissioningMarketLookUp": "Commissioning Market, Lookup",
+            "Methodology": "Methodology",
+            "ProductLookUp": "Product, Lookup",
+            "AddExistingUserLookUp":"Select record, Multiple Selection Lookup",
+            "NewQuestionnaireLinesAnswerList":"New Questionnaire Lines Answer List. Add New Questionnaire Lines Answer List",
+            "AddAnswer":"Add Answers. Add New Questionnaire Lines Answer List",
+            "AnswerText":"Answer Text",
+            "AnswerCode":"Answer Code",
+            "QuestionVariableName":"Question Variable Name",
+            "ShowAs":"Show As",
+            "ReadOnlyGrid":"Read Only Grid",
+            "MoreCommandsForQuestionnaireLinesAnswerList":"More commands for Questionnaire Lines Answer List",
+            "AddQuestions":"Add Questions",
+            "AddModules":"Add Modules",
+            "DragToReorder":"Drag to reorder",
+            "IsOpenYes":"Is Open: Yes",
+            "IsExclusiveYes":"Is Exclusive: Yes",
+            "IsFixedYes":"Is Fixed: Yes",
+            "IsActiveYes":"Is Active: Yes",
+            "QuestionTitle": "Question Title"
+
+        },
+        "Text": {
+            "Projects": "Projects",
+            "ReadOnly":"Read-only: You don't have access to edit this record.",
+            "Questions":"Questions"
+        },
+        "Button": {
+            "ClientLookup": "Search records for Client,",
+            "CommissioningMarketLookup": "Search records for Commissioning Market, Lookup field",
+            "ApplyProductTemplate": "Apply Product Template",
+            "Edit":"Edit"
+        },
+        "Tabs": {
+            "Product": "Product",
+            "ProjectDetails": "Project Details",
+            "Studies": "Studies",
+            "UserManagement":"User Management",
+            "Answers": "Answers",
+            "ChangeLog":"Change Log"
+        },
+        "CSS": {
+            "MasterQuestionsCount":"[class='fui-AccordionItem']>div>button",
+            "ConfigQuestionsAppIframe1":"iframe[name='webPlayer-iFrame-1']",
+            "ConfigQuestionsAppIframe2":".player-app-frame",
+            "ConfigQuestions":"[data-control-name='ConfigQuestion']",
+            "QuestionnaireVariable":"div.fui-AccordionItem button[aria-expanded='false']",
+            "QuestionnaireVariableNames":"div.fui-AccordionItem button[aria-expanded='false'] >> div >> div >> span:last-child >> span",
+            "FirstCheckBox":".ms-Stack > .ms-Checkbox",
+            "FirstQuestionnaireVariableName":"[aria-label='Questionnaire Lines Associated View'] [aria-label='Press SPACE to select this row.'] [aria-colindex='2']",
+            "fourthRowQuestionnaire":"[data-list-index='3']",
+            "firstRowQuestionnaire":"[data-list-index='0']",
+            "firstRowQuestionVariableName":"div.fui-AccordionItem button[aria-expanded='false']>div>div>span>span",
+            "prodcutTemplateDialogue":"[data-id='dialogMessageText']"
+        },
+        "ByRole": {
+            "TeamMembers": "TEAM MEMBERS",
+            "AddExistingUser":"Add Existing User",
+            "Add":"Add",
+            "ScripterUserName":"SVC svc.DIGTX-SDLite-Operations",
+            "LibrarianUserName":"svc.DIGTX-SDLite-ContentAdmin",
+            "MoreCommands":"More commands for Questionnaire Lines",
+            "SeeAssociatedRecords":"See associated records. See"
+        }
+    }
+}

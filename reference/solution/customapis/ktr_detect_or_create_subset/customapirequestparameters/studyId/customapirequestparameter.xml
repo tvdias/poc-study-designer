@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="studyId">
+  <description default="DetectOrCreateSubset - Study Identifier">
+    <label description="DetectOrCreateSubset - Study Identifier" languagecode="1033" />
+  </description>
+  <displayname default="DetectOrCreateSubset - Study Identifier">
+    <label description="DetectOrCreateSubset - Study Identifier" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>Study Id</name>
+  <type>12</type>
+</customapirequestparameter>

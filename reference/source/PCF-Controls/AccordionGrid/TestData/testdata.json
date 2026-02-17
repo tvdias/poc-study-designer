@@ -1,0 +1,9 @@
+{ 
+  "rows": [
+    {"id": "q1", "text": "What is your Fav color?"},
+    {"id": "q2", "text": "What is your age?"},
+    {"id": "q3", "text": "Are you familiar with any of these brands?"},
+    {"id": "q4", "text": "Which gender are you?"},
+    {"id": "q5", "text": "What type of Product you want to study?"}
+  ]
+}

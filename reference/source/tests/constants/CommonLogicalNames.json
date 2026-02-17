@@ -1,0 +1,9 @@
+{
+    "EntityLogicalNames": {
+        "Projects": "kt_projects",
+        "ConfigQuestions": "ktr_configurationquestions",
+        "Products": "ktr_products",
+        "QuestionBanks":"kt_questionbanks",
+        "Study":"kt_studies"
+    }
+}

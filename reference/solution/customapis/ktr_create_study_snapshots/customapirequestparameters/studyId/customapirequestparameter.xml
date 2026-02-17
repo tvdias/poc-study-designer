@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="studyId">
+  <description default="Create Study Snapshots - studyId">
+    <label description="Create Study Snapshots - studyId" languagecode="1033" />
+  </description>
+  <displayname default="Create Study Snapshots - studyId">
+    <label description="Create Study Snapshots - studyId" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>studyId</name>
+  <type>12</type>
+</customapirequestparameter>

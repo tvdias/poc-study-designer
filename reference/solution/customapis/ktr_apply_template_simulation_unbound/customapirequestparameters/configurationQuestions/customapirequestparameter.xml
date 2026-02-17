@@ -1,0 +1,12 @@
+<customapirequestparameter uniquename="configurationQuestions">
+  <description default="configurationQuestions">
+    <label description="configurationQuestions" languagecode="1033" />
+  </description>
+  <displayname default="ApplyTemplateSimulation - configurationQuestions">
+    <label description="ApplyTemplateSimulation - configurationQuestions" languagecode="1033" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>configurationQuestions</name>
+  <type>10</type>
+</customapirequestparameter>

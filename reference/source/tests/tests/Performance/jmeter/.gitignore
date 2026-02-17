@@ -1,0 +1,10 @@
+# JMeter generated files
+results/*.jtl
+reports/report_*
+*.log
+
+# JMeter backup files
+*.jmx.bak
+
+# Temporary files
+*.tmp

@@ -1,0 +1,120 @@
+/**
+ * @file        046-QuestionnaireLinesAnswerList.js
+ * @description Enable / disable ktr_answercode based on:
+ *              1. Business role (OptionSet) - Scripter or CS User
+ *              2. If ktr_questionbank populated -> disable, else enable
+ *              3. Study based toggles.
+ *
+ * NOTE: User role check uses systemuser.ktr_businessrole (OptionSet) instead of security role GUIDs.
+ */
+
+var KTR_SCRIPTER_ROLE_VALUE = 847610002;        // Business role OptionSet value
+var KTR_CS_ROLE_VALUE = 847610000;
+
+var KTR_FIELD_ANSWER = "ktr_answercode";
+var KTR_FIELD_QBANK = "ktr_questionbank";
+var FIELD_LOCK_ANSWER = "ktr_lockanswercode";
+var FIELD_ENABLE_EDIT = "ktr_enablecustomanswercodeediting";
+
+/**
+ * OnLoad handler
+ * @param {*} executionContext
+ */
+function onQuestionnaireLinesAnswerListLoad(executionContext) {
+    var formContext = executionContext.getFormContext();
+    var answerCtrl = formContext.getControl(KTR_FIELD_ANSWER);
+    if (!answerCtrl) return;
+
+    // Disable field if record is inactive
+    var stateAttr = formContext.getAttribute("statecode");
+    var stateValue = stateAttr ? stateAttr.getValue() : null;
+
+    if (stateValue === 1) {      // 1 = Inactive
+        answerCtrl.setDisabled(true);
+        return;
+    }
+
+    // Check question bank populated -  Custom Answer
+    if (ktrLookupHasValue(formContext, KTR_FIELD_QBANK)) {
+        answerCtrl.setDisabled(true);
+        return;
+    }
+
+    // Check business role
+    ktrGetBusinessRole().then(function (roleValue) {
+
+        // Unknown role ? do nothing
+        if (roleValue === null || roleValue === undefined) return;
+
+        // Logic based on role
+        if (roleValue === KTR_SCRIPTER_ROLE_VALUE) {
+            handleScripterLogic(formContext, answerCtrl);
+        }
+        else if (roleValue === KTR_CS_ROLE_VALUE) {
+            handleCSLogic(formContext, answerCtrl);
+        }
+        else {
+            return;
+        }
+
+    }).catch(function (e) {
+        console.error("Error in role evaluation:", e);
+    });
+}
+
+/**
+ * Scripter Logic - only check if answer has not been in Study gone Approved for Launch
+ */
+function handleScripterLogic(formContext, answerCtrl) {
+    var lockAttr = formContext.getAttribute(FIELD_LOCK_ANSWER);
+    var isLocked = lockAttr ? lockAttr.getValue() : false;
+
+    if (isLocked) answerCtrl.setDisabled(true);
+    else answerCtrl.setDisabled(false);
+}
+
+/**
+ * CS Logic - First check Answer level toggle (cascaded from QL Toggle) - then check if answer has not been in Study gone Approved for Launch 
+ */
+function handleCSLogic(formContext, answerCtrl) {
+    var enableEdit = formContext.getAttribute(FIELD_ENABLE_EDIT)?.getValue() || false;
+    var isLocked = formContext.getAttribute(FIELD_LOCK_ANSWER)?.getValue() || false;
+
+    // Must satisfy BOTH conditions
+    if (enableEdit === true && isLocked !== true) {
+        answerCtrl.setDisabled(false);
+    } else {
+        answerCtrl.setDisabled(true);
+    }
+}
+
+/**
+ * Fetch business role of logged-in user
+ */
+function ktrGetBusinessRole() {
+    var userId = Xrm.Utility.getGlobalContext().userSettings.userId.replace(/[{}]/g, "");
+
+    var query = "?$select=ktr_businessrole&$filter=systemuserid eq " + userId;
+
+    return Xrm.WebApi.retrieveMultipleRecords("systemuser", query)
+        .then(function (res) {
+            if (!res.entities || res.entities.length !== 1) return null;
+
+            var raw = res.entities[0].ktr_businessrole;
+            if (raw && typeof raw === "object") {
+                return raw.value || raw.Value || null;
+            }
+            return raw || null;
+        });
+}
+
+/* -------------- Helpers -------------- */
+function ktrLookupHasValue(formContext, fieldName) {
+    var a = formContext.getAttribute(fieldName);
+    var v = a ? a.getValue() : null;
+    return Array.isArray(v) && v.length > 0;
+}
+
+function ktrStripGuid(id) {
+    return id ? id.replace(/[{}]/g, "") : id;
+}

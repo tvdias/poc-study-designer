@@ -1,0 +1,37 @@
+<appaction uniquename="ktr__AddModules!cef91f11a81d414480665d37005b91a3!kt_UC1!kt_project!0">
+  <appmoduleid>
+    <uniquename>kt_UC1</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Add Modules">
+    <label description="Add Modules" languagecode="1033" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>kt_project</logicalname>
+  </contextentity>
+  <contextvalue>kt_project</contextvalue>
+  <fonticon>$clientsvg:Add</fonticon>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>0</location>
+  <name>AddModules!cef91f11a81d414480665d37005b91a3</name>
+  <onclickeventjavascriptfunctionname>projectAddModulesButton.main</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":5}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>510fce8e-3ff8-ef11-bae2-6045bd95d1de</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>100100041.2500000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>cradb_uc1defaultcommandlibrary_28f3e</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>ec17bae592ac45d583c71e9e166d3c90</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

@@ -1,0 +1,36 @@
+{
+  "preprodEnvironment": {
+    "baseUrl": "https://uc1sdpre-prod.crm4.dynamics.com/main.aspx?appid=5a72304e-f941-f011-877a-6045bda0da75&forceUCI=1&perf=true",
+    "appId": "5a72304e-f941-f011-877a-6045bda0da75",
+    "environment": "pre-prod"
+  },
+  "testEnviornments":{
+    "baseUrl":"https://orgcdd54471.crm4.dynamics.com/main.aspx?appid=1a2c4f60-e23a-f011-b4cc-6045bd8cc06c&forceUCI=1",
+     "appId":"1a2c4f60-e23a-f011-b4cc-6045bd8cc06c",
+     "environment":"Test"
+  },
+  "performanceThresholds": {
+    "excellent": {
+      "pageLoadTime": 2000,
+      "timeToInteractive": 2500
+    },
+    "good": {
+      "pageLoadTime": 3000,
+      "timeToInteractive": 3800
+    },
+    "acceptable": {
+      "pageLoadTime": 5000,
+      "timeToInteractive": 5000
+    }
+  },
+  "authentication": {
+    "clientServiceAccount": {
+      "usernameSecret": "CS_USERNAME_SECRET",
+      "passwordSecret": "CS_PASS_SECRET"
+    }
+  },
+  "testConfiguration": {
+    "timeout": 60000,
+    "projectIdEnvVar": "PIPELINE_PROJECT_ID"
+  }
+}

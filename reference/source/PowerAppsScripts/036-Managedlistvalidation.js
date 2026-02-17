@@ -1,0 +1,149 @@
+/**
+* @file        036-Managedlistvalidation.js
+* @description Will validate Managed list name when manually edited by user.
+*
+* @date        2025-07-30
+* @version     1.0
+*
+* @usage       This script is invoked on change of Name field on Managed list
+* @notes       
+*/
+
+const MANAGED_LIST_MESSAGES = {
+    NAME_SPACES: "Spaces are not allowed in Managed List names. Use underscores (_) instead.",
+    NAME_LENGTH: "Managed List name cannot exceed 100 characters.",
+    NAME_REQUIRED: "Managed List name is required.",
+    NAME_PATTERN_START: "Managed List name must start with a letter (a-z, A-Z).",
+    NAME_PATTERN_INVALID: "Managed List name can only contain letters, numbers, and underscores. No special characters or spaces allowed."
+};
+
+const DisallowedRoles = [847610002]; //Scripter
+
+function onManagedListFormLoad(executionContext) {
+    var formContext = executionContext.getFormContext();
+
+    var nameAttribute = formContext.getAttribute("ktr_name");
+    if (nameAttribute) {
+
+        nameAttribute.addOnChange(validateManagedListNameOnChange);
+
+        var nameControl = formContext.getControl("ktr_name");
+        if (nameControl) {
+            nameControl.addOnKeyPress(validateOnKeyPress);
+        }
+    }
+    formContext.data.entity.addOnSave(validateManagedListNameOnSave);
+}
+
+// Hide Variable Content tab from Scripter
+function hideTabForScripter(executionContext, tabName) {
+    var formContext = executionContext.getFormContext();
+    var userId = Xrm.Utility.getGlobalContext().userSettings.userId.replace("{", "").replace("}", "");
+
+    Xrm.WebApi.retrieveRecord("systemuser", userId, "?$select=ktr_businessrole").then(function (result) {
+        var userRoleValue = result.ktr_businessrole;
+        if (DisallowedRoles.includes(userRoleValue)) {
+            var tab = formContext.ui.tabs.get(tabName);
+            if (tab) {
+                tab.setVisible(false);
+            } else {
+                console.warn("Tab '" + tabName + "' not found on this form.");
+            }
+        }
+    }).catch(function (error) {
+        console.error("Error retrieving user business role:", error.message);
+    });
+}
+
+//onChange validation
+function validateManagedListNameOnChange(executionContext) {0
+
+    var formContext = executionContext.getFormContext();
+    var nameControl = formContext.getControl("ktr_name");
+    var nameValue = formContext.getAttribute("ktr_name").getValue();
+
+    // Clear previous notifications
+    nameControl.clearNotification();
+
+    if (nameValue) {
+        validateNamePattern(formContext, nameValue, nameControl);
+    }
+}
+
+// Add key press validation for immediate feedback
+function validateOnKeyPress(executionContext) {
+    // Small delay to allow the character to be entered
+    setTimeout(function () {
+        validateSharedListNameOnChange(executionContext);
+    }, 100);
+}
+
+function validateNamePattern(formContext, nameValue, nameControl) {
+
+    // Clear previous notifications
+    nameControl.clearNotification();
+
+    // Check for spaces first
+    if (nameValue.includes(" ")) {
+        nameControl.setNotification(
+            MANAGED_LIST_MESSAGES.NAME_SPACES,
+            "ERROR",
+            "NAME_SPACES"
+        );
+        return false;
+    }
+
+    // Check length
+    if (nameValue.length > 100) {
+        nameControl.setNotification(
+            MANAGED_LIST_MESSAGES.NAME_LENGTH,
+            "ERROR",
+            "NAME_LENGTH"
+        );
+        return false;
+    }
+
+    // Check pattern: must start with letter, then alphanumeric + underscore only
+    var pattern = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+    if (!pattern.test(nameValue)) {
+        var errorMessage = "";
+
+        // More specific error messages
+        var errorMessage = !/^[a-zA-Z]/.test(nameValue)
+            ? MANAGED_LIST_MESSAGES.NAME_PATTERN_START
+            : MANAGED_LIST_MESSAGES.NAME_PATTERN_INVALID;
+
+        nameControl.setNotification(errorMessage, "ERROR", "NAME_PATTERN");
+        return false;
+    }
+
+    // Validation passed - clear any notifications
+    nameControl.clearNotification();
+    return true;
+}
+
+function validateManagedListNameOnSave(executionContext) {
+    var formContext = executionContext.getFormContext();
+    var nameControl = formContext.getControl("ktr_name");
+    var nameValue = formContext.getAttribute("ktr_name").getValue();
+    var eventArgs = executionContext.getEventArgs();
+
+    // Check if name is provided
+    if (!nameValue || nameValue.trim() === "") {
+        eventArgs.preventDefault();
+        nameControl.setNotification(
+            MANAGED_LIST_MESSAGES.NAME_REQUIRED,
+            "ERROR",
+            "NAME_REQUIRED"
+        );
+        nameControl.setFocus();
+        return false;
+    }
+    // Validate pattern
+    if (!validateNamePattern(formContext, nameValue, nameControl)) {
+        eventArgs.preventDefault();
+        nameControl.setFocus();
+        return false;
+    }
+    return true;
+}
