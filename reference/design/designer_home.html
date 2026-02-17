@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Designer - Projects (Mass Data)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            color: #1e293b;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Header Dinâmico */
+        #main-header {
+            transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+        }
+
+        .header-expanded {
+            height: 80px;
+        }
+
+        .header-collapsed {
+            height: 50px;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        /* Ajuste de tamanho dos elementos no scroll */
+        .header-collapsed #service-name {
+            font-size: 1.125rem;
+            /* 18px */
+        }
+
+        .header-collapsed .header-avatar {
+            width: 28px;
+            height: 28px;
+            border-width: 1px;
+        }
+
+        .header-collapsed .header-action-btn {
+            padding-top: 2px;
+            padding-bottom: 2px;
+            font-size: 11px;
+        }
+
+        .header-collapsed .header-action-btn i {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Layout */
+        #layout-container {
+            padding-top: 80px;
+            transition: padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.scrolled #layout-container {
+            padding-top: 50px;
+        }
+
+        /* Tabelas Enterprise Compactas */
+        .enterprise-table th {
+            background-color: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+
+        .enterprise-table td {
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.8125rem;
+            /* 13px */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .enterprise-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Estilos de Paginação */
+        .pagination-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #cbd5e1;
+            background-color: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+            min-width: 2rem;
+            height: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .pagination-btn.active {
+            z-index: 10;
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            color: #2563eb;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8fafc;
+        }
+
+        .pagination-btn:first-child {
+            border-top-left-radius: 0.375rem;
+            border-bottom-left-radius: 0.375rem;
+        }
+
+        .pagination-btn:last-child {
+            border-top-right-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+        }
+
+        /* Remover bordas duplicadas */
+        .pagination-btn+.pagination-btn {
+            margin-left: -1px;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header id="main-header"
+        class="fixed top-0 w-full bg-slate-900 text-white z-50 shadow-md header-expanded flex items-center px-8 justify-between border-b border-slate-700">
+        <div class="flex items-center">
+            <span id="service-name"
+                class="block font-bold tracking-tight text-2xl leading-none text-slate-200 transition-all">Study
+                Designer</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Quick Actions Button -->
+            <div class="relative group">
+                <button
+                    class="header-action-btn flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-1.5 rounded text-sm transition-all text-slate-200">
+                    <i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>
+                    <span class="hidden sm:inline">Quick Actions</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-slate-400"></i>
+                </button>
+
+                <!-- Dropdown -->
+                <div
+                    class="absolute right-0 mt-1 w-56 bg-white rounded shadow-lg border border-slate-200 hidden group-hover:block text-slate-800 z-50">
+                    <div
+                        class="px-3 py-2 border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase">
+                        Recent Projects</div>
+                    <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700">Adidas Q3
+                        Survey</a>
+                    <a href="#" class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700">Diageo Brand
+                        Lift</a>
+                    <div class="border-t border-slate-100 my-1"></div>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 font-medium flex items-center">
+                        <i data-lucide="pin" class="w-3 h-3 mr-2 text-slate-400"></i> Pinned Items
+                    </a>
+                </div>
+            </div>
+
+            <!-- Create Project Button -->
+            <button
+                class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-medium transition-all shadow-sm flex items-center gap-2 header-action-btn">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Create Project</span>
+            </button>
+
+            <!-- Notifications -->
+            <button class="p-2 text-slate-400 hover:text-white transition-colors relative header-action-btn">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+
+            <!-- Avatar -->
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                class="header-avatar w-10 h-10 rounded-full border border-slate-600 bg-slate-700 hover:border-slate-400 cursor-pointer transition-all"
+                alt="User Profile">
+        </div>
+    </header>
+
+    <!-- LAYOUT CONTENT -->
+    <div id="layout-container" class="flex flex-1 overflow-hidden w-full h-full bg-slate-50">
+
+        <main class="flex-1 overflow-y-auto p-6 scroll-smooth" id="main-scroll">
+            <div class="max-w-7xl mx-auto space-y-4 pb-20">
+
+                <div class="bg-white border border-slate-300 rounded-sm shadow-sm">
+
+                    <!-- Toolbar -->
+                    <div
+                        class="px-4 py-3 border-b border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="relative w-full sm:w-80">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+                            </div>
+                            <input type="text" id="searchInput"
+                                class="block w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-sm leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="Search projects...">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button
+                                class="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-sm text-sm hover:bg-slate-50 transition-colors">
+                                <i data-lucide="filter" class="w-3 h-3"></i>
+                                <span>Filters</span>
+                            </button>
+                            <button
+                                class="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-sm text-sm hover:bg-slate-50 transition-colors">
+                                <i data-lucide="arrow-up-down" class="w-3 h-3"></i>
+                                <span>Sort</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto min-h-[400px]"> <!-- Altura mínima para evitar pulo de layout -->
+                        <table class="min-w-full enterprise-table">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 text-left tracking-wider">Project Name</th>
+                                    <th class="px-4 text-left tracking-wider">Client</th>
+                                    <th class="px-4 text-left tracking-wider w-1/3">Description</th>
+                                    <th class="px-4 text-left tracking-wider">Product</th>
+                                    <th class="px-4 text-left tracking-wider">Owner</th>
+                                    <th class="px-4 text-left tracking-wider">Last Modified</th>
+                                    <th class="relative px-4">
+                                        <span class="sr-only">Actions</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody" class="bg-white">
+                                <!-- Dados serão injetados via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Control -->
+                    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-slate-200">
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs text-slate-700" id="paginationInfo">
+                                    Showing <span class="font-medium">1</span> to <span class="font-medium">15</span> of
+                                    <span class="font-medium">2450</span> results
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                                    aria-label="Pagination" id="paginationControls">
+                                    <!-- Botões injetados via JS -->
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Inicializar ícones
+        lucide.createIcons();
+
+        // --- GERAÇÃO DE DADOS MOCK (SIMULAÇÃO) ---
+        const CLIENTS = ["BrandHealth Inc.", "Adidas Group", "Diageo PLC", "Nike Inc.", "Puma SE", "Coca-Cola Co.", "PepsiCo", "Samsung Electronics", "Apple Inc.", "Unilever", "Nestlé", "Procter & Gamble"];
+        const PRODUCTS = ["Core", "Spirits", "Sportswear", "Running", "Beverages", "Tech", "Home Care", "Nutrition"];
+        const OWNERS = ["Felix V.", "Sarah J.", "Mike R.", "Jessica T.", "Robert D.", "Emily W.", "David K."];
+        const DESCRIPTIONS = [
+            "Project aimed at analyzing brand sentiment across the APAC region.",
+            "Quarterly customer satisfaction survey for retail outlets.",
+            "Study regarding the impact of the new summer campaign.",
+            "Testing new footwear concepts with focus groups.",
+            "Pricing elasticity analysis for the 2026 collection.",
+            "Brand lift study following the Super Bowl ad.",
+            "Consumer behavior analysis in emerging markets.",
+            "Product usability testing for the new app version."
+        ];
+
+        function generateData(count) {
+            const data = [];
+            for (let i = 0; i < count; i++) {
+                const client = CLIENTS[Math.floor(Math.random() * CLIENTS.length)];
+                const id = Math.floor(1000 + Math.random() * 9000);
+
+                // Gerar data aleatória recente
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 60));
+                const formattedDate = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                data.push({
+                    id: `PRJ-2025-${id}`,
+                    name: `${client.split(' ')[0]} ${['Q3 Survey', 'Brand Lift', 'Concept Test', 'Tracking', 'Usage Study'][Math.floor(Math.random() * 5)]} ${2025}`,
+                    client: client,
+                    description: DESCRIPTIONS[Math.floor(Math.random() * DESCRIPTIONS.length)],
+                    product: PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)],
+                    owner: OWNERS[Math.floor(Math.random() * OWNERS.length)],
+                    modified: formattedDate
+                });
+            }
+            return data;
+        }
+
+        // Configurações
+        const TOTAL_ITEMS = 2450;
+        const ITEMS_PER_PAGE = 15;
+        let currentPage = 1;
+
+        // Gerar Dados
+        const projectsData = generateData(TOTAL_ITEMS);
+
+        // --- LÓGICA DE RENDERIZAÇÃO ---
+
+        function renderTable(page) {
+            const tbody = document.getElementById('projectsTableBody');
+            tbody.innerHTML = '';
+
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            const end = Math.min(start + ITEMS_PER_PAGE, TOTAL_ITEMS);
+            const pageData = projectsData.slice(start, end);
+
+            pageData.forEach(project => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 transition-colors group cursor-pointer border-b border-slate-100 last:border-0";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="font-medium text-blue-700 group-hover:underline text-sm">${project.name}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-700 text-sm">
+                        ${project.client}
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 truncate max-w-xs text-sm">
+                        ${project.description}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-700 text-sm">
+                        ${project.product}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="h-5 w-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300">
+                                ${project.owner.charAt(0)}
+                            </div>
+                            <span class="ml-2 text-slate-600 text-sm">${project.owner}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-slate-500 text-sm">
+                        ${project.modified}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right">
+                        <button class="text-slate-400 hover:text-blue-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Re-renderizar ícones inseridos dinamicamente
+            lucide.createIcons();
+
+            // Atualizar Paginação
+            renderPagination(page);
+            updateInfo(start, end);
+        }
+
+        function updateInfo(start, end) {
+            const info = document.getElementById('paginationInfo');
+            info.innerHTML = `Showing <span class="font-medium">${start + 1}</span> to <span class="font-medium">${end}</span> of <span class="font-medium">${TOTAL_ITEMS}</span> results`;
+        }
+
+        function renderPagination(page) {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            const totalPages = Math.ceil(TOTAL_ITEMS / ITEMS_PER_PAGE);
+
+            // Botão Primeiro
+            controls.appendChild(createButton('<<', 1, page === 1, 'First Page'));
+
+            // Botão Anterior
+            controls.appendChild(createButton('<', page - 1, page === 1, 'Previous Page'));
+
+            // Lógica de Janela (Mostrar 5 páginas ao redor da atual)
+            let startPage = Math.max(1, page - 2);
+            let endPage = Math.min(totalPages, page + 2);
+
+            // Ajuste para garantir sempre 5 botões se possível
+            if (endPage - startPage < 4) {
+                if (startPage === 1) {
+                    endPage = Math.min(totalPages, startPage + 4);
+                } else if (endPage === totalPages) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+            }
+
+            // Ellipsis inicial
+            if (startPage > 1) {
+                controls.appendChild(createEllipsis());
+            }
+
+            // Números
+            for (let i = startPage; i <= endPage; i++) {
+                controls.appendChild(createButton(i, i, false, `Page ${i}`, i === page));
+            }
+
+            // Ellipsis final
+            if (endPage < totalPages) {
+                controls.appendChild(createEllipsis());
+            }
+
+            // Botão Próximo
+            controls.appendChild(createButton('>', page + 1, page === totalPages, 'Next Page'));
+
+            // Botão Último
+            controls.appendChild(createButton('>>', totalPages, page === totalPages, 'Last Page'));
+        }
+
+        function createButton(label, targetPage, disabled, ariaLabel, isActive = false) {
+            const btn = document.createElement('button');
+            btn.className = `pagination-btn ${isActive ? 'active' : ''}`;
+            btn.innerHTML = label; // Pode ser ícone ou texto
+            btn.disabled = disabled;
+            btn.setAttribute('aria-label', ariaLabel);
+
+            if (!disabled) {
+                btn.onclick = () => {
+                    currentPage = targetPage;
+                    renderTable(currentPage);
+                    // Scroll suave para o topo da tabela
+                    document.getElementById('main-scroll').scrollTop = 0;
+                };
+            }
+            return btn;
+        }
+
+        function createEllipsis() {
+            const span = document.createElement('span');
+            span.className = "pagination-btn";
+            span.style.cursor = "default";
+            span.style.border = "none";
+            span.innerHTML = "...";
+            return span;
+        }
+
+        // --- INICIALIZAÇÃO ---
+        // Lógica de Header Compacto (Mantida)
+        const mainScroll = document.getElementById('main-scroll');
+        const header = document.getElementById('main-header');
+        const body = document.body;
+
+        mainScroll.addEventListener('scroll', () => {
+            if (mainScroll.scrollTop > 20) {
+                header.classList.remove('header-expanded');
+                header.classList.add('header-collapsed');
+                body.classList.add('scrolled');
+            } else {
+                header.classList.add('header-expanded');
+                header.classList.remove('header-collapsed');
+                body.classList.remove('scrolled');
+            }
+        });
+
+        // Inicializar Tabela
+        renderTable(currentPage);
+
+    </script>
+</body>
+
+</html>
