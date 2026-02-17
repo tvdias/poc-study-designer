@@ -13,7 +13,9 @@ var api = builder.AddProject<Projects.Api>("api")
     .WithReference(postgres)
     .WaitFor(postgres)
     .WithHttpHealthCheck("/health")
-    .WithExternalHttpEndpoints();
+    .WithExternalHttpEndpoints()
+    .WithHttpCommand("/api/seed", "Seed Database", commandName: "seed-db",
+        commandOptions: new() { Method = HttpMethod.Post, IconName = "DatabaseLightning" });
 
 // Add Admin and Designer Vite apps
 builder.AddViteApp("app-admin", "../Admin")

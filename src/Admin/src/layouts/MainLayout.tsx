@@ -6,7 +6,7 @@ export function MainLayout() {
         <div className="layout-container">
             <aside className="sidebar">
                 <div className="brand">
-                    <h2>Admin Center</h2>
+                    <h2>Studio Designer Admin</h2>
                 </div>
                 <nav className="nav-menu">
                     <NavLink to="/" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>

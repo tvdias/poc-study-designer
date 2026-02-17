@@ -18,7 +18,7 @@ export function DesignerLayout() {
             {/* Header */}
             <header className="designer-header" id="main-header">
                 <div className="header-left">
-                    <span className="service-name">Study Designer</span>
+                    <span className="service-name">Studio Designer</span>
                 </div>
 
                 <div className="header-right">

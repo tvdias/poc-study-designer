@@ -20,7 +20,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     private PostgreSqlContainer? _postgresContainer;
 
-    private WebApplicationFactory<Program>? _factory;
+    public WebApplicationFactory<Program> Factory { get; private set; } = null!;
 
     public HttpClient HttpClient { get; private set; } = null!;
     public JsonSerializerOptions JsonOptions { get; private set; } = null!;
@@ -39,7 +39,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 
 
         // Create WebApplicationFactory
-        _factory = new WebApplicationFactory<Program>()
+        Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
@@ -72,14 +72,14 @@ public class IntegrationTestFixture : IAsyncLifetime
             });
 
         // Create HttpClient
-        HttpClient = _factory.CreateClient();
+        HttpClient = Factory.CreateClient();
         
         // Configure JSON options
         JsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         JsonOptions.Converters.Add(new JsonStringEnumConverter());
 
         // Apply migrations
-        using var scope = _factory.Services.CreateScope();
+        using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await dbContext.Database.MigrateAsync();
     }
@@ -88,9 +88,9 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         HttpClient?.Dispose();
         
-        if (_factory != null)
+        if (Factory != null)
         {
-            await _factory.DisposeAsync();
+            await Factory.DisposeAsync();
         }
 
         if (_postgresContainer != null)

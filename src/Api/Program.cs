@@ -10,6 +10,7 @@ using Api.Features.ProductTemplates;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
+using Api.Features.Seed;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -48,6 +49,11 @@ if (app.Environment.IsDevelopment())
 }
 
 var api = app.MapGroup("/api");
+
+if (app.Environment.IsDevelopment())
+{
+    api.MapSeedDataEndpoint();
+}
 
 // Clients
 api.MapCreateClientEndpoint();
