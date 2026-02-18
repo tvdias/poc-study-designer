@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Info, X } from 'lucide-react';
 import { 
     projectQuestionnairesApi, 
@@ -24,11 +24,7 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
     const [importLoading, setImportLoading] = useState(false);
     const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadQuestionnaires();
-    }, [projectId]);
-
-    const loadQuestionnaires = async () => {
+    const loadQuestionnaires = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -40,7 +36,11 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [projectId]);
+
+    useEffect(() => {
+        loadQuestionnaires();
+    }, [loadQuestionnaires]);
 
     const loadQuestionBank = async () => {
         try {
@@ -65,8 +65,9 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
             setQuestionnaires([...questionnaires, newQuestionnaire]);
             setSelectedQuestion(null);
             setShowImportPanel(false);
-        } catch (err: any) {
-            if (err.status === 409) {
+        } catch (err: unknown) {
+            const error = err as { status?: number };
+            if (error.status === 409) {
                 alert('This question has already been added to the project questionnaire.');
             } else {
                 alert('Failed to add question. Please try again.');
