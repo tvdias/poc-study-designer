@@ -649,11 +649,29 @@ namespace Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("AnswerMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AnswerMin")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Classification")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ColumnSortOrder")
+                        .HasColumnType("integer");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomNotes")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDummy")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("text");
@@ -667,7 +685,35 @@ namespace Api.Migrations
                     b.Property<Guid>("QuestionBankItemId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("QuestionFormatDetails")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionRationale")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionType")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("RowSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ScraperNotes")
+                        .HasColumnType("text");
+
                     b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VariableName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Version")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
