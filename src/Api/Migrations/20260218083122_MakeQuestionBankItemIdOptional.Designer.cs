@@ -968,7 +968,7 @@ namespace Api.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("QuestionBankItemId")
+                    b.Property<Guid?>("QuestionBankItemId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("QuestionFormatDetails")
@@ -1248,8 +1248,7 @@ namespace Api.Migrations
                     b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
                         .WithMany()
                         .HasForeignKey("QuestionBankItemId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Project");
 
