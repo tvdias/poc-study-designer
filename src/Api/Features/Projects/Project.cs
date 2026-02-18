@@ -27,7 +27,10 @@ public class Project
 
 public enum ProjectStatus
 {
+    Draft,
     Active,
+    ReadyForScripting,
+    Approved,
     OnHold,
     Closed
 }
