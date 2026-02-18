@@ -13,6 +13,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     name: Build and Test Backend
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
