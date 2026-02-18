@@ -732,6 +732,9 @@ namespace Api.Migrations
                     b.Property<Guid?>("ClientId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CommissioningMarketId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("CostManagementEnabled")
                         .HasColumnType("boolean");
 
@@ -745,6 +748,10 @@ namespace Api.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Methodology")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("text");
@@ -772,6 +779,8 @@ namespace Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("CommissioningMarketId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -1199,12 +1208,19 @@ namespace Api.Migrations
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Api.Features.CommissioningMarkets.CommissioningMarket", "CommissioningMarket")
+                        .WithMany()
+                        .HasForeignKey("CommissioningMarketId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Api.Features.Products.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Client");
+
+                    b.Navigation("CommissioningMarket");
 
                     b.Navigation("Product");
                 });

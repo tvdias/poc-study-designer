@@ -19,6 +19,8 @@ namespace Api.Migrations
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
                     ClientId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CommissioningMarketId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Methodology = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: true),
                     Owner = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
@@ -38,6 +40,12 @@ namespace Api.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
+                        name: "FK_Projects_CommissioningMarkets_CommissioningMarketId",
+                        column: x => x.CommissioningMarketId,
+                        principalTable: "CommissioningMarkets",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_Projects_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
@@ -49,6 +57,11 @@ namespace Api.Migrations
                 name: "IX_Projects_ClientId",
                 table: "Projects",
                 column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_CommissioningMarketId",
+                table: "Projects",
+                column: "CommissioningMarketId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_Name",

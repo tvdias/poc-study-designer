@@ -5,6 +5,9 @@ export interface Project {
     description?: string;
     clientId?: string;
     clientName?: string;
+    commissioningMarketId?: string;
+    commissioningMarketName?: string;
+    methodology?: 'CATI' | 'CAPI' | 'CAWI' | 'Online' | 'Mixed';
     productId?: string;
     productName?: string;
     owner?: string;
@@ -18,6 +21,8 @@ export interface CreateProjectRequest {
     name: string;
     description?: string;
     clientId?: string;
+    commissioningMarketId?: string;
+    methodology?: 'CATI' | 'CAPI' | 'CAWI' | 'Online' | 'Mixed';
     productId?: string;
     owner?: string;
     status?: 'Active' | 'OnHold' | 'Closed';
@@ -28,6 +33,8 @@ export interface UpdateProjectRequest {
     name: string;
     description?: string;
     clientId?: string;
+    commissioningMarketId?: string;
+    methodology?: 'CATI' | 'CAPI' | 'CAWI' | 'Online' | 'Mixed';
     productId?: string;
     owner?: string;
     status: 'Active' | 'OnHold' | 'Closed';
@@ -103,6 +110,12 @@ export interface Client {
     customerNumber?: string;
     companyCode?: string;
     createdOn: string;
+}
+
+export interface CommissioningMarket {
+    id: string;
+    isoCode: string;
+    name: string;
 }
 
 export const clientsApi = {
@@ -245,5 +258,14 @@ export const projectQuestionnairesApi = {
             method: 'DELETE',
         });
         if (!response.ok) throw new Error('Failed to delete project questionnaire');
+    }
+};
+
+export const commissioningMarketsApi = {
+    getAll: async (query?: string): Promise<CommissioningMarket[]> => {
+        const url = query ? `${API_BASE}/commissioning-markets?query=${encodeURIComponent(query)}` : `${API_BASE}/commissioning-markets`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch commissioning markets');
+        return response.json();
     }
 };

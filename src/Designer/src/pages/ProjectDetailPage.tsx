@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
-import { projectsApi, clientsApi, type Project, type Client, type CreateProjectRequest } from '../services/api';
+import { projectsApi, clientsApi, commissioningMarketsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest } from '../services/api';
 import { QuestionnaireSection } from './QuestionnaireSection';
 import './ProjectDetailPage.css';
 
@@ -17,10 +17,13 @@ export function ProjectDetailPage() {
     // Creation mode state
     const isCreateMode = id === 'new';
     const [clients, setClients] = useState<Client[]>([]);
+    const [commissioningMarkets, setCommissioningMarkets] = useState<CommissioningMarket[]>([]);
     const [formData, setFormData] = useState<CreateProjectRequest>({
         name: '',
         description: '',
-        clientId: undefined
+        clientId: undefined,
+        commissioningMarketId: undefined,
+        methodology: undefined
     });
     const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
     const [serverError, setServerError] = useState<string>('');
@@ -28,8 +31,9 @@ export function ProjectDetailPage() {
 
     useEffect(() => {
         if (isCreateMode) {
-            // In create mode, load clients for the dropdown
+            // In create mode, load clients and commissioning markets for the dropdowns
             loadClients();
+            loadCommissioningMarkets();
             setLoading(false);
         } else if (id) {
             loadProject(id);
@@ -42,6 +46,15 @@ export function ProjectDetailPage() {
             setClients(data);
         } catch (err) {
             console.error('Failed to load clients', err);
+        }
+    };
+
+    const loadCommissioningMarkets = async () => {
+        try {
+            const data = await commissioningMarketsApi.getAll();
+            setCommissioningMarkets(data);
+        } catch (err) {
+            console.error('Failed to load commissioning markets', err);
         }
     };
 
@@ -271,6 +284,44 @@ export function ProjectDetailPage() {
                                             </div>
                                             
                                             <div className="form-group col-span-2">
+                                                <label className="form-label">Commissioning Market</label>
+                                                <select
+                                                    value={formData.commissioningMarketId || ''}
+                                                    onChange={(e) => handleInputChange('commissioningMarketId', e.target.value || undefined)}
+                                                    className={`form-select ${validationErrors.CommissioningMarketId ? 'error' : ''}`}
+                                                >
+                                                    <option value="">Select a market (optional)</option>
+                                                    {commissioningMarkets.map(market => (
+                                                        <option key={market.id} value={market.id}>
+                                                            {market.name} ({market.isoCode})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {validationErrors.CommissioningMarketId && (
+                                                    <div className="field-error">{validationErrors.CommissioningMarketId[0]}</div>
+                                                )}
+                                            </div>
+
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Methodology</label>
+                                                <select
+                                                    value={formData.methodology || ''}
+                                                    onChange={(e) => handleInputChange('methodology', e.target.value || undefined)}
+                                                    className={`form-select ${validationErrors.Methodology ? 'error' : ''}`}
+                                                >
+                                                    <option value="">Select methodology (optional)</option>
+                                                    <option value="CATI">CATI</option>
+                                                    <option value="CAPI">CAPI</option>
+                                                    <option value="CAWI">CAWI</option>
+                                                    <option value="Online">Online</option>
+                                                    <option value="Mixed">Mixed</option>
+                                                </select>
+                                                {validationErrors.Methodology && (
+                                                    <div className="field-error">{validationErrors.Methodology[0]}</div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="form-group col-span-2">
                                                 <label className="form-label">Description</label>
                                                 <textarea
                                                     rows={3}
@@ -345,6 +396,24 @@ export function ProjectDetailPage() {
                                         <input
                                             type="text"
                                             value={project.clientName || '-'}
+                                            className="form-input"
+                                            readOnly
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Commissioning Market</label>
+                                        <input
+                                            type="text"
+                                            value={project.commissioningMarketName || '-'}
+                                            className="form-input"
+                                            readOnly
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Methodology</label>
+                                        <input
+                                            type="text"
+                                            value={project.methodology || '-'}
                                             className="form-input"
                                             readOnly
                                         />
