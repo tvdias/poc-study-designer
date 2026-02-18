@@ -153,7 +153,7 @@ export interface QuestionBankItem {
     instructionText?: string;
 }
 
-export interface ProjectQuestionnaire {
+export interface QuestionnaireLine {
     id: string;
     projectId: string;
     questionBankItemId: string;
@@ -175,11 +175,11 @@ export interface ProjectQuestionnaire {
     isDummy: boolean;
 }
 
-export interface AddProjectQuestionnaireRequest {
+export interface AddQuestionnaireLineRequest {
     questionBankItemId: string;
 }
 
-export interface UpdateProjectQuestionnaireRequest {
+export interface UpdateQuestionnaireLineRequest {
     questionText?: string;
     questionTitle?: string;
     questionRationale?: string;
@@ -192,7 +192,7 @@ export interface UpdateProjectQuestionnaireRequest {
     questionFormatDetails?: string;
 }
 
-export interface UpdateProjectQuestionnairesSortOrderRequest {
+export interface UpdateQuestionnaireLinesSortOrderRequest {
     items: { id: string; sortOrder: number }[];
 }
 
@@ -205,15 +205,15 @@ export const questionBankApi = {
     }
 };
 
-export const projectQuestionnairesApi = {
-    getAll: async (projectId: string): Promise<ProjectQuestionnaire[]> => {
-        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires`);
-        if (!response.ok) throw new Error('Failed to fetch project questionnaires');
+export const questionnaireLinesApi = {
+    getAll: async (projectId: string): Promise<QuestionnaireLine[]> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnairelines`);
+        if (!response.ok) throw new Error('Failed to fetch questionnaire lines');
         return response.json();
     },
 
-    add: async (projectId: string, data: AddProjectQuestionnaireRequest): Promise<ProjectQuestionnaire> => {
-        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires`, {
+    add: async (projectId: string, data: AddQuestionnaireLineRequest): Promise<QuestionnaireLine> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnairelines`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -226,8 +226,8 @@ export const projectQuestionnairesApi = {
         return response.json();
     },
 
-    update: async (projectId: string, id: string, data: UpdateProjectQuestionnaireRequest): Promise<ProjectQuestionnaire> => {
-        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires/${id}`, {
+    update: async (projectId: string, id: string, data: UpdateQuestionnaireLineRequest): Promise<QuestionnaireLine> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnairelines/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -240,8 +240,8 @@ export const projectQuestionnairesApi = {
         return response.json();
     },
 
-    updateSortOrder: async (projectId: string, data: UpdateProjectQuestionnairesSortOrderRequest): Promise<void> => {
-        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires/sort-order`, {
+    updateSortOrder: async (projectId: string, data: UpdateQuestionnaireLinesSortOrderRequest): Promise<void> => {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnairelines/sort-order`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -254,10 +254,10 @@ export const projectQuestionnairesApi = {
     },
 
     delete: async (projectId: string, id: string): Promise<void> => {
-        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnaires/${id}`, {
+        const response = await fetch(`${API_BASE}/projects/${projectId}/questionnairelines/${id}`, {
             method: 'DELETE',
         });
-        if (!response.ok) throw new Error('Failed to delete project questionnaire');
+        if (!response.ok) throw new Error('Failed to delete questionnaire line');
     }
 };
 

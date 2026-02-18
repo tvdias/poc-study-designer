@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace Api.Features.ProjectQuestionnaires.Validators;
+namespace Api.Features.QuestionnaireLines.Validators;
 
-public class UpdateProjectQuestionnaireValidator : AbstractValidator<UpdateProjectQuestionnaireRequest>
+public class UpdateQuestionnaireLineValidator : AbstractValidator<UpdateQuestionnaireLineRequest>
 {
-    public UpdateProjectQuestionnaireValidator()
+    public UpdateQuestionnaireLineValidator()
     {
         RuleFor(x => x.QuestionText)
             .MaximumLength(2000).WithMessage("Question text must not exceed 2000 characters.");

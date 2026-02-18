@@ -1,10 +1,10 @@
-namespace Api.Features.ProjectQuestionnaires;
+namespace Api.Features.QuestionnaireLines;
 
-public record AddProjectQuestionnaireRequest(
+public record AddQuestionnaireLineRequest(
     Guid QuestionBankItemId
 );
 
-public record AddProjectQuestionnaireResponse(
+public record AddQuestionnaireLineResponse(
     Guid Id,
     Guid ProjectId,
     Guid QuestionBankItemId,
@@ -18,7 +18,7 @@ public record AddProjectQuestionnaireResponse(
     string? QuestionRationale
 );
 
-public record ProjectQuestionnaireDto(
+public record QuestionnaireLineDto(
     Guid Id,
     Guid ProjectId,
     Guid QuestionBankItemId,
@@ -40,7 +40,7 @@ public record ProjectQuestionnaireDto(
     bool IsDummy
 );
 
-public record UpdateProjectQuestionnaireRequest(
+public record UpdateQuestionnaireLineRequest(
     string? QuestionText,
     string? QuestionTitle,
     string? QuestionRationale,
@@ -53,11 +53,11 @@ public record UpdateProjectQuestionnaireRequest(
     string? QuestionFormatDetails
 );
 
-public record UpdateProjectQuestionnaireSortOrderRequest(
+public record UpdateQuestionnaireLineSortOrderRequest(
     Guid Id,
     int SortOrder
 );
 
-public record UpdateProjectQuestionnairesSortOrderRequest(
-    List<UpdateProjectQuestionnaireSortOrderRequest> Items
+public record UpdateQuestionnaireLinesSortOrderRequest(
+    List<UpdateQuestionnaireLineSortOrderRequest> Items
 );

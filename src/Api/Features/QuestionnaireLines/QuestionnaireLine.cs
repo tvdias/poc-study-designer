@@ -2,9 +2,9 @@ using Api.Features.Projects;
 using Api.Features.QuestionBank;
 using Api.Features.Shared;
 
-namespace Api.Features.ProjectQuestionnaires;
+namespace Api.Features.QuestionnaireLines;
 
-public class ProjectQuestionnaire : AuditableEntity
+public class QuestionnaireLine : AuditableEntity
 {
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }

@@ -2,13 +2,13 @@ using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Features.ProjectQuestionnaires;
+namespace Api.Features.QuestionnaireLines;
 
-public static class GetProjectQuestionnairesEndpoint
+public static class GetQuestionnaireLinesEndpoint
 {
-    public static void MapGetProjectQuestionnairesEndpoint(this IEndpointRouteBuilder app)
+    public static void MapGetQuestionnaireLinesEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/projects/{projectId:guid}/questionnaires", async Task<Results<Ok<List<ProjectQuestionnaireDto>>, NotFound>> (
+        app.MapGet("/projects/{projectId:guid}/questionnairelines", async Task<Results<Ok<List<QuestionnaireLineDto>>, NotFound>> (
             Guid projectId,
             ApplicationDbContext context,
             CancellationToken cancellationToken) =>
@@ -20,10 +20,10 @@ public static class GetProjectQuestionnairesEndpoint
                 return TypedResults.NotFound();
             }
 
-            var questionnaires = await context.Set<ProjectQuestionnaire>()
+            var questionnaires = await context.Set<QuestionnaireLine>()
                 .Where(pq => pq.ProjectId == projectId)
                 .OrderBy(pq => pq.SortOrder)
-                .Select(pq => new ProjectQuestionnaireDto(
+                .Select(pq => new QuestionnaireLineDto(
                     pq.Id,
                     pq.ProjectId,
                     pq.QuestionBankItemId,
@@ -48,7 +48,7 @@ public static class GetProjectQuestionnairesEndpoint
 
             return TypedResults.Ok(questionnaires);
         })
-        .WithName("GetProjectQuestionnaires")
-        .WithTags("ProjectQuestionnaires");
+        .WithName("GetQuestionnaireLines")
+        .WithTags("QuestionnaireLines");
     }
 }

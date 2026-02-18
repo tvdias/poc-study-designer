@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace Api.Features.ProjectQuestionnaires.Validators;
+namespace Api.Features.QuestionnaireLines.Validators;
 
-public class UpdateProjectQuestionnairesSortOrderValidator : AbstractValidator<UpdateProjectQuestionnairesSortOrderRequest>
+public class UpdateQuestionnaireLinesSortOrderValidator : AbstractValidator<UpdateQuestionnaireLinesSortOrderRequest>
 {
-    public UpdateProjectQuestionnairesSortOrderValidator()
+    public UpdateQuestionnaireLinesSortOrderValidator()
     {
         RuleFor(x => x.Items)
             .NotEmpty().WithMessage("At least one item is required.");

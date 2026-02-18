@@ -1,20 +1,20 @@
 using Api.Data;
-using Api.Features.ProjectQuestionnaires.Validators;
+using Api.Features.QuestionnaireLines.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Features.ProjectQuestionnaires;
+namespace Api.Features.QuestionnaireLines;
 
-public static class AddProjectQuestionnaireEndpoint
+public static class AddQuestionnaireLineEndpoint
 {
-    public static void MapAddProjectQuestionnaireEndpoint(this IEndpointRouteBuilder app)
+    public static void MapAddQuestionnaireLineEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/projects/{projectId:guid}/questionnaires", async Task<Results<Created<AddProjectQuestionnaireResponse>, ValidationProblem, NotFound, Conflict<string>>> (
+        app.MapPost("/projects/{projectId:guid}/questionnairelines", async Task<Results<Created<AddQuestionnaireLineResponse>, ValidationProblem, NotFound, Conflict<string>>> (
             Guid projectId,
-            AddProjectQuestionnaireRequest request,
+            AddQuestionnaireLineRequest request,
             ApplicationDbContext context,
-            IValidator<AddProjectQuestionnaireRequest> validator,
+            IValidator<AddQuestionnaireLineRequest> validator,
             CancellationToken cancellationToken) =>
         {
             // Validate request
@@ -42,7 +42,7 @@ public static class AddProjectQuestionnaireEndpoint
             }
 
             // Check if this question is already added to the project
-            var exists = await context.Set<ProjectQuestionnaire>()
+            var exists = await context.Set<QuestionnaireLine>()
                 .AnyAsync(pq => pq.ProjectId == projectId && pq.QuestionBankItemId == request.QuestionBankItemId, cancellationToken);
 
             if (exists)
@@ -51,12 +51,12 @@ public static class AddProjectQuestionnaireEndpoint
             }
 
             // Get the next sort order
-            var maxSortOrder = await context.Set<ProjectQuestionnaire>()
+            var maxSortOrder = await context.Set<QuestionnaireLine>()
                 .Where(pq => pq.ProjectId == projectId)
                 .MaxAsync(pq => (int?)pq.SortOrder, cancellationToken) ?? -1;
 
-            // Copy fields from QuestionBankItem to ProjectQuestionnaire
-            var projectQuestionnaire = new ProjectQuestionnaire
+            // Copy fields from QuestionBankItem to QuestionnaireLine
+            var questionnaireLine = new QuestionnaireLine
             {
                 Id = Guid.NewGuid(),
                 ProjectId = projectId,
@@ -84,26 +84,26 @@ public static class AddProjectQuestionnaireEndpoint
                 CreatedBy = "system" // TODO: Replace with actual user
             };
 
-            context.Set<ProjectQuestionnaire>().Add(projectQuestionnaire);
+            context.Set<QuestionnaireLine>().Add(questionnaireLine);
             await context.SaveChangesAsync(cancellationToken);
 
-            var response = new AddProjectQuestionnaireResponse(
-                projectQuestionnaire.Id,
-                projectQuestionnaire.ProjectId,
-                projectQuestionnaire.QuestionBankItemId,
-                projectQuestionnaire.SortOrder,
-                projectQuestionnaire.VariableName,
-                projectQuestionnaire.Version,
-                projectQuestionnaire.QuestionText,
-                projectQuestionnaire.QuestionTitle,
-                projectQuestionnaire.QuestionType,
-                projectQuestionnaire.Classification,
-                projectQuestionnaire.QuestionRationale
+            var response = new AddQuestionnaireLineResponse(
+                questionnaireLine.Id,
+                questionnaireLine.ProjectId,
+                questionnaireLine.QuestionBankItemId,
+                questionnaireLine.SortOrder,
+                questionnaireLine.VariableName,
+                questionnaireLine.Version,
+                questionnaireLine.QuestionText,
+                questionnaireLine.QuestionTitle,
+                questionnaireLine.QuestionType,
+                questionnaireLine.Classification,
+                questionnaireLine.QuestionRationale
             );
 
-            return TypedResults.Created($"/api/projects/{projectId}/questionnaires/{projectQuestionnaire.Id}", response);
+            return TypedResults.Created($"/api/projects/{projectId}/questionnairelines/{questionnaireLine.Id}", response);
         })
-        .WithName("AddProjectQuestionnaire")
-        .WithTags("ProjectQuestionnaires");
+        .WithName("AddQuestionnaireLine")
+        .WithTags("QuestionnaireLines");
     }
 }

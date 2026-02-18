@@ -1,15 +1,15 @@
 using Api.Features.Projects;
 using Api.Features.QuestionBank;
-using Api.Features.ProjectQuestionnaires;
+using Api.Features.QuestionnaireLines;
 using System.Net.Http.Json;
 
 namespace Api.E2ETests;
 
 /// <summary>
-/// E2E tests for Project Questionnaire management in the Designer app.
+/// E2E tests for Questionnaire Line management in the Designer app.
 /// These tests cover project creation, question assignment, and question reordering.
 /// </summary>
-public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
+public class QuestionnaireLineE2ETests(E2ETestFixture fixture)
 {
     [Fact]
     public async Task CreateProjectAndAssignQuestions_ThroughUI_ShouldPersistInDatabase()
@@ -89,9 +89,9 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
             Assert.True(await questionTable.IsVisibleAsync(), "Expected at least one question row in the table");
 
             // Assert - Verify in database via API
-            var questionnaireResponse = await apiClient.GetAsync($"/api/projects/{projectId}/questionnaires", TestContext.Current.CancellationToken);
+            var questionnaireResponse = await apiClient.GetAsync($"/api/projects/{projectId}/questionnairelines", TestContext.Current.CancellationToken);
             questionnaireResponse.EnsureSuccessStatusCode();
-            var questionnaires = await questionnaireResponse.Content.ReadFromJsonAsync<List<ProjectQuestionnaireDto>>(cancellationToken: TestContext.Current.CancellationToken);
+            var questionnaires = await questionnaireResponse.Content.ReadFromJsonAsync<List<QuestionnaireLineDto>>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(questionnaires);
             Assert.Single(questionnaires);
             Assert.Equal(0, questionnaires[0].SortOrder);
@@ -125,19 +125,19 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
         Assert.True(questions.Count >= 2, "Need at least 2 questions for reordering test");
 
         // Add first question
-        var addResponse1 = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnaires",
+        var addResponse1 = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnairelines",
             new { questionBankItemId = questions[0].Id },
             TestContext.Current.CancellationToken);
         addResponse1.EnsureSuccessStatusCode();
-        var questionnaire1 = await addResponse1.Content.ReadFromJsonAsync<AddProjectQuestionnaireResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var questionnaire1 = await addResponse1.Content.ReadFromJsonAsync<AddQuestionnaireLineResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(questionnaire1);
 
         // Add second question
-        var addResponse2 = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnaires",
+        var addResponse2 = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnairelines",
             new { questionBankItemId = questions[1].Id },
             TestContext.Current.CancellationToken);
         addResponse2.EnsureSuccessStatusCode();
-        var questionnaire2 = await addResponse2.Content.ReadFromJsonAsync<AddProjectQuestionnaireResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var questionnaire2 = await addResponse2.Content.ReadFromJsonAsync<AddQuestionnaireLineResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(questionnaire2);
 
         var page = await fixture.CreatePageAsync();
@@ -184,9 +184,9 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
             Assert.Equal(firstRowVariableName, newSecondRowVariableName);
 
             // Assert - Verify sort order updated in database via API
-            var questionnaireResponse = await apiClient.GetAsync($"/api/projects/{project.Id}/questionnaires", TestContext.Current.CancellationToken);
+            var questionnaireResponse = await apiClient.GetAsync($"/api/projects/{project.Id}/questionnairelines", TestContext.Current.CancellationToken);
             questionnaireResponse.EnsureSuccessStatusCode();
-            var questionnaires = await questionnaireResponse.Content.ReadFromJsonAsync<List<ProjectQuestionnaireDto>>(cancellationToken: TestContext.Current.CancellationToken);
+            var questionnaires = await questionnaireResponse.Content.ReadFromJsonAsync<List<QuestionnaireLineDto>>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(questionnaires);
             Assert.Equal(2, questionnaires.Count);
 
@@ -225,7 +225,7 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
         Assert.NotEmpty(questions);
 
         // Add question to project
-        var addResponse = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnaires",
+        var addResponse = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnairelines",
             new { questionBankItemId = questions[0].Id },
             TestContext.Current.CancellationToken);
         addResponse.EnsureSuccessStatusCode();
@@ -264,9 +264,9 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
             Assert.True(await emptyState.IsVisibleAsync(), "Expected empty state message after deleting last question");
 
             // Assert - Verify removed from database via API
-            var questionnaireResponse = await apiClient.GetAsync($"/api/projects/{project.Id}/questionnaires", TestContext.Current.CancellationToken);
+            var questionnaireResponse = await apiClient.GetAsync($"/api/projects/{project.Id}/questionnairelines", TestContext.Current.CancellationToken);
             questionnaireResponse.EnsureSuccessStatusCode();
-            var questionnaires = await questionnaireResponse.Content.ReadFromJsonAsync<List<ProjectQuestionnaireDto>>(cancellationToken: TestContext.Current.CancellationToken);
+            var questionnaires = await questionnaireResponse.Content.ReadFromJsonAsync<List<QuestionnaireLineDto>>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(questionnaires);
             Assert.Empty(questionnaires);
         }
@@ -299,7 +299,7 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
         Assert.NotEmpty(questions);
 
         // Add question to project
-        var addResponse = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnaires",
+        var addResponse = await apiClient.PostAsJsonAsync($"/api/projects/{project.Id}/questionnairelines",
             new { questionBankItemId = questions[0].Id },
             TestContext.Current.CancellationToken);
         addResponse.EnsureSuccessStatusCode();
@@ -361,7 +361,7 @@ public class ProjectQuestionnaireE2ETests(E2ETestFixture fixture)
 // DTOs for API responses
 public record QuestionBankItemDto(Guid Id, string VariableName, int Version, string? QuestionText, string? QuestionType, string? Classification);
 public record ProjectDto(Guid Id, string Name, string? Description);
-public record ProjectQuestionnaireDto(
+public record QuestionnaireLineDto(
     Guid Id, 
     Guid ProjectId, 
     Guid QuestionBankItemId, 
@@ -382,7 +382,7 @@ public record ProjectQuestionnaireDto(
     string? QuestionFormatDetails,
     bool IsDummy
 );
-public record AddProjectQuestionnaireResponse(
+public record AddQuestionnaireLineResponse(
     Guid Id, 
     Guid ProjectId, 
     Guid QuestionBankItemId, 

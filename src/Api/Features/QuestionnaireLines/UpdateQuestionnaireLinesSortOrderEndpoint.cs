@@ -1,20 +1,20 @@
 using Api.Data;
-using Api.Features.ProjectQuestionnaires.Validators;
+using Api.Features.QuestionnaireLines.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Features.ProjectQuestionnaires;
+namespace Api.Features.QuestionnaireLines;
 
-public static class UpdateProjectQuestionnairesSortOrderEndpoint
+public static class UpdateQuestionnaireLinesSortOrderEndpoint
 {
-    public static void MapUpdateProjectQuestionnairesSortOrderEndpoint(this IEndpointRouteBuilder app)
+    public static void MapUpdateQuestionnaireLinesSortOrderEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/projects/{projectId:guid}/questionnaires/sort-order", async Task<Results<NoContent, ValidationProblem, NotFound>> (
+        app.MapPut("/projects/{projectId:guid}/questionnairelines/sort-order", async Task<Results<NoContent, ValidationProblem, NotFound>> (
             Guid projectId,
-            UpdateProjectQuestionnairesSortOrderRequest request,
+            UpdateQuestionnaireLinesSortOrderRequest request,
             ApplicationDbContext context,
-            IValidator<UpdateProjectQuestionnairesSortOrderRequest> validator,
+            IValidator<UpdateQuestionnaireLinesSortOrderRequest> validator,
             CancellationToken cancellationToken) =>
         {
             // Validate request
@@ -33,7 +33,7 @@ public static class UpdateProjectQuestionnairesSortOrderEndpoint
 
             // Get all questionnaires for this project
             var questionnaireIds = request.Items.Select(i => i.Id).ToList();
-            var questionnaires = await context.Set<ProjectQuestionnaire>()
+            var questionnaires = await context.Set<QuestionnaireLine>()
                 .Where(pq => pq.ProjectId == projectId && questionnaireIds.Contains(pq.Id))
                 .ToListAsync(cancellationToken);
 
@@ -55,7 +55,7 @@ public static class UpdateProjectQuestionnairesSortOrderEndpoint
 
             return TypedResults.NoContent();
         })
-        .WithName("UpdateProjectQuestionnairesSortOrder")
-        .WithTags("ProjectQuestionnaires");
+        .WithName("UpdateQuestionnaireLinesSortOrder")
+        .WithTags("QuestionnaireLines");
     }
 }

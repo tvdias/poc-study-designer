@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Info, X } from 'lucide-react';
 import { 
-    projectQuestionnairesApi, 
+    questionnaireLinesApi, 
     questionBankApi, 
-    type ProjectQuestionnaire, 
+    type QuestionnaireLine, 
     type QuestionBankItem 
 } from '../services/api';
 import './QuestionnaireSection.css';
@@ -13,7 +13,7 @@ interface QuestionnaireSectionProps {
 }
 
 export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
-    const [questionnaires, setQuestionnaires] = useState<ProjectQuestionnaire[]>([]);
+    const [questionnaires, setQuestionnaires] = useState<QuestionnaireLine[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -28,7 +28,7 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
         try {
             setLoading(true);
             setError(null);
-            const data = await projectQuestionnairesApi.getAll(projectId);
+            const data = await questionnaireLinesApi.getAll(projectId);
             setQuestionnaires(data);
         } catch (err) {
             setError('Failed to load questionnaires');
@@ -59,7 +59,7 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
         if (!selectedQuestion) return;
 
         try {
-            const newQuestionnaire = await projectQuestionnairesApi.add(projectId, {
+            const newQuestionnaire = await questionnaireLinesApi.add(projectId, {
                 questionBankItemId: selectedQuestion
             });
             setQuestionnaires([...questionnaires, newQuestionnaire]);
@@ -82,7 +82,7 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
         }
 
         try {
-            await projectQuestionnairesApi.delete(projectId, id);
+            await questionnaireLinesApi.delete(projectId, id);
             setQuestionnaires(questionnaires.filter(q => q.id !== id));
         } catch (err) {
             alert('Failed to delete questionnaire item');
@@ -127,7 +127,7 @@ export function QuestionnaireSection({ projectId }: QuestionnaireSectionProps) {
         }));
 
         try {
-            await projectQuestionnairesApi.updateSortOrder(projectId, { items: updatedItems });
+            await questionnaireLinesApi.updateSortOrder(projectId, { items: updatedItems });
             // Reload to get the updated data from server
             await loadQuestionnaires();
         } catch (err) {

@@ -1,21 +1,21 @@
 using Api.Data;
-using Api.Features.ProjectQuestionnaires.Validators;
+using Api.Features.QuestionnaireLines.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Features.ProjectQuestionnaires;
+namespace Api.Features.QuestionnaireLines;
 
-public static class UpdateProjectQuestionnaireEndpoint
+public static class UpdateQuestionnaireLineEndpoint
 {
-    public static void MapUpdateProjectQuestionnaireEndpoint(this IEndpointRouteBuilder app)
+    public static void MapUpdateQuestionnaireLineEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/projects/{projectId:guid}/questionnaires/{id:guid}", async Task<Results<Ok<ProjectQuestionnaireDto>, ValidationProblem, NotFound>> (
+        app.MapPut("/projects/{projectId:guid}/questionnairelines/{id:guid}", async Task<Results<Ok<QuestionnaireLineDto>, ValidationProblem, NotFound>> (
             Guid projectId,
             Guid id,
-            UpdateProjectQuestionnaireRequest request,
+            UpdateQuestionnaireLineRequest request,
             ApplicationDbContext context,
-            IValidator<UpdateProjectQuestionnaireRequest> validator,
+            IValidator<UpdateQuestionnaireLineRequest> validator,
             CancellationToken cancellationToken) =>
         {
             // Validate request
@@ -26,7 +26,7 @@ public static class UpdateProjectQuestionnaireEndpoint
             }
 
             // Get the questionnaire
-            var questionnaire = await context.Set<ProjectQuestionnaire>()
+            var questionnaire = await context.Set<QuestionnaireLine>()
                 .FirstOrDefaultAsync(pq => pq.Id == id && pq.ProjectId == projectId, cancellationToken);
 
             if (questionnaire == null)
@@ -50,7 +50,7 @@ public static class UpdateProjectQuestionnaireEndpoint
 
             await context.SaveChangesAsync(cancellationToken);
 
-            var response = new ProjectQuestionnaireDto(
+            var response = new QuestionnaireLineDto(
                 questionnaire.Id,
                 questionnaire.ProjectId,
                 questionnaire.QuestionBankItemId,
@@ -74,7 +74,7 @@ public static class UpdateProjectQuestionnaireEndpoint
 
             return TypedResults.Ok(response);
         })
-        .WithName("UpdateProjectQuestionnaire")
-        .WithTags("ProjectQuestionnaires");
+        .WithName("UpdateQuestionnaireLine")
+        .WithTags("QuestionnaireLines");
     }
 }
