@@ -31,23 +31,78 @@ public static class AddQuestionnaireLineEndpoint
                 return TypedResults.NotFound();
             }
 
-            // Check if question bank item exists
-            var questionBankItem = await context.QuestionBankItems
-                .AsNoTracking()
-                .FirstOrDefaultAsync(q => q.Id == request.QuestionBankItemId, cancellationToken);
+            string variableName;
+            int version;
+            string? questionText = null;
+            string? questionTitle = null;
+            string? questionType = null;
+            string? classification = null;
+            string? questionRationale = null;
+            string? scraperNotes = null;
+            string? customNotes = null;
+            int? rowSortOrder = null;
+            int? columnSortOrder = null;
+            int? answerMin = null;
+            int? answerMax = null;
+            string? questionFormatDetails = null;
+            bool isDummy = false;
 
-            if (questionBankItem == null)
+            // If QuestionBankItemId is provided, import from question bank
+            if (request.QuestionBankItemId.HasValue)
             {
-                return TypedResults.NotFound();
+                var questionBankItem = await context.QuestionBankItems
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(q => q.Id == request.QuestionBankItemId.Value, cancellationToken);
+
+                if (questionBankItem == null)
+                {
+                    return TypedResults.NotFound();
+                }
+
+                // Check if this question is already added to the project
+                var exists = await context.Set<QuestionnaireLine>()
+                    .AnyAsync(pq => pq.ProjectId == projectId && pq.QuestionBankItemId == request.QuestionBankItemId.Value, cancellationToken);
+
+                if (exists)
+                {
+                    return TypedResults.Conflict("This question has already been added to the project questionnaire.");
+                }
+
+                // Copy fields from QuestionBankItem
+                variableName = questionBankItem.VariableName;
+                version = questionBankItem.Version;
+                questionText = questionBankItem.QuestionText;
+                questionTitle = questionBankItem.QuestionTitle;
+                questionType = questionBankItem.QuestionType;
+                classification = questionBankItem.Classification;
+                questionRationale = questionBankItem.QuestionRationale;
+                scraperNotes = questionBankItem.ScraperNotes;
+                customNotes = questionBankItem.CustomNotes;
+                rowSortOrder = questionBankItem.RowSortOrder;
+                columnSortOrder = questionBankItem.ColumnSortOrder;
+                answerMin = questionBankItem.AnswerMin;
+                answerMax = questionBankItem.AnswerMax;
+                questionFormatDetails = questionBankItem.QuestionFormatDetails;
+                isDummy = questionBankItem.IsDummy;
             }
-
-            // Check if this question is already added to the project
-            var exists = await context.Set<QuestionnaireLine>()
-                .AnyAsync(pq => pq.ProjectId == projectId && pq.QuestionBankItemId == request.QuestionBankItemId, cancellationToken);
-
-            if (exists)
+            else
             {
-                return TypedResults.Conflict("This question has already been added to the project questionnaire.");
+                // Manual question addition - use provided values
+                variableName = request.VariableName!; // Validated by FluentValidation
+                version = request.Version ?? 1; // Default to version 1
+                questionText = request.QuestionText;
+                questionTitle = request.QuestionTitle;
+                questionType = request.QuestionType;
+                classification = request.Classification;
+                questionRationale = request.QuestionRationale;
+                scraperNotes = request.ScraperNotes;
+                customNotes = request.CustomNotes;
+                rowSortOrder = request.RowSortOrder;
+                columnSortOrder = request.ColumnSortOrder;
+                answerMin = request.AnswerMin;
+                answerMax = request.AnswerMax;
+                questionFormatDetails = request.QuestionFormatDetails;
+                isDummy = request.IsDummy ?? false;
             }
 
             // Get the next sort order
@@ -55,7 +110,7 @@ public static class AddQuestionnaireLineEndpoint
                 .Where(pq => pq.ProjectId == projectId)
                 .MaxAsync(pq => (int?)pq.SortOrder, cancellationToken) ?? -1;
 
-            // Copy fields from QuestionBankItem to QuestionnaireLine
+            // Create questionnaire line
             var questionnaireLine = new QuestionnaireLine
             {
                 Id = Guid.NewGuid(),
@@ -63,22 +118,22 @@ public static class AddQuestionnaireLineEndpoint
                 QuestionBankItemId = request.QuestionBankItemId,
                 SortOrder = maxSortOrder + 1,
                 
-                // Copy editable fields from question bank
-                VariableName = questionBankItem.VariableName,
-                Version = questionBankItem.Version,
-                QuestionText = questionBankItem.QuestionText,
-                QuestionTitle = questionBankItem.QuestionTitle,
-                QuestionType = questionBankItem.QuestionType,
-                Classification = questionBankItem.Classification,
-                QuestionRationale = questionBankItem.QuestionRationale,
-                ScraperNotes = questionBankItem.ScraperNotes,
-                CustomNotes = questionBankItem.CustomNotes,
-                RowSortOrder = questionBankItem.RowSortOrder,
-                ColumnSortOrder = questionBankItem.ColumnSortOrder,
-                AnswerMin = questionBankItem.AnswerMin,
-                AnswerMax = questionBankItem.AnswerMax,
-                QuestionFormatDetails = questionBankItem.QuestionFormatDetails,
-                IsDummy = questionBankItem.IsDummy,
+                // Set editable fields
+                VariableName = variableName,
+                Version = version,
+                QuestionText = questionText,
+                QuestionTitle = questionTitle,
+                QuestionType = questionType,
+                Classification = classification,
+                QuestionRationale = questionRationale,
+                ScraperNotes = scraperNotes,
+                CustomNotes = customNotes,
+                RowSortOrder = rowSortOrder,
+                ColumnSortOrder = columnSortOrder,
+                AnswerMin = answerMin,
+                AnswerMax = answerMax,
+                QuestionFormatDetails = questionFormatDetails,
+                IsDummy = isDummy,
                 
                 CreatedOn = DateTime.UtcNow,
                 CreatedBy = "system" // TODO: Replace with actual user

@@ -313,7 +313,10 @@ public class ApplicationDbContext : DbContext
             
             entity.ToTable("QuestionnaireLines");
             
-            entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId }).IsUnique();
+            // Unique index only when QuestionBankItemId is not null (prevents duplicate imports from question bank)
+            entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId })
+                .IsUnique()
+                .HasFilter("[QuestionBankItemId] IS NOT NULL");
             
             entity.HasOne(e => e.Project)
                 .WithMany()
@@ -323,7 +326,8 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.QuestionBankItem)
                 .WithMany()
                 .HasForeignKey(e => e.QuestionBankItemId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Optional relationship
         });
 
     }

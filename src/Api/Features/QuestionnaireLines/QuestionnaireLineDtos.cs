@@ -1,13 +1,28 @@
 namespace Api.Features.QuestionnaireLines;
 
 public record AddQuestionnaireLineRequest(
-    Guid QuestionBankItemId
+    Guid? QuestionBankItemId,
+    string? VariableName,
+    int? Version,
+    string? QuestionText,
+    string? QuestionTitle,
+    string? QuestionType,
+    string? Classification,
+    string? QuestionRationale,
+    string? ScraperNotes,
+    string? CustomNotes,
+    int? RowSortOrder,
+    int? ColumnSortOrder,
+    int? AnswerMin,
+    int? AnswerMax,
+    string? QuestionFormatDetails,
+    bool? IsDummy
 );
 
 public record AddQuestionnaireLineResponse(
     Guid Id,
     Guid ProjectId,
-    Guid QuestionBankItemId,
+    Guid? QuestionBankItemId,
     int SortOrder,
     string VariableName,
     int Version,
@@ -21,7 +36,7 @@ public record AddQuestionnaireLineResponse(
 public record QuestionnaireLineDto(
     Guid Id,
     Guid ProjectId,
-    Guid QuestionBankItemId,
+    Guid? QuestionBankItemId,
     int SortOrder,
     string VariableName,
     int Version,

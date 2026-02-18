@@ -9,8 +9,8 @@ public class QuestionnaireLine : AuditableEntity
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }
     public Project Project { get; set; } = null!;
-    public Guid QuestionBankItemId { get; set; }
-    public QuestionBankItem QuestionBankItem { get; set; } = null!;
+    public Guid? QuestionBankItemId { get; set; }
+    public QuestionBankItem? QuestionBankItem { get; set; }
     public int SortOrder { get; set; }
     
     // Editable fields copied from QuestionBankItem
