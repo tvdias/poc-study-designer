@@ -25,6 +25,7 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddScoped<ISubsetManagementService, SubsetManagementService>();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
@@ -204,6 +205,11 @@ api.MapBulkAddOrUpdateManagedListItemsEndpoint();
 // Managed List Assignments
 api.MapAssignManagedListToQuestionEndpoint();
 api.MapUnassignManagedListFromQuestionEndpoint();
+
+// Subset Definitions
+app.MapSaveQuestionSelectionEndpoint();
+app.MapGetSubsetDetailsEndpoint();
+app.MapGetSubsetsForProjectEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();
