@@ -195,6 +195,8 @@ jobs:
     name: Quality Gate Status
     needs: [backend-tests, frontend-coverage]
     if: always()
+    permissions:
+      contents: read
     
     steps:
       - name: Check Quality Gate
