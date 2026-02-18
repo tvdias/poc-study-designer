@@ -106,6 +106,16 @@ src/
    - Place migrations in `Migrations/` folder
    - Use UTC timestamps: `DateTime.UtcNow`
    - Entity properties should include: `Id`, `CreatedOn`, `CreatedBy`, etc.
+   - All entities extending `AuditableEntity` must set `CreatedOn = DateTime.UtcNow` and `CreatedBy` (user identifier or "System" for automated processes)
+   - Configure entity relationships in `ApplicationDbContext.OnModelCreating()`
+   - Use unique indexes for natural keys: `entity.HasIndex(e => e.Name).IsUnique()`
+
+8. **Migrations**:
+   - Every EF Core migration requires both a `.cs` file and a `.Designer.cs` file
+   - Missing Designer files cause "pending model changes" errors
+   - When making properties nullable, update both the migration's Designer.cs and ApplicationDbContextModelSnapshot.cs
+   - For unpublished work, consolidate multiple migrations into one by merging later migrations into earlier CreateTable statements
+   - Test migrations with `dotnet ef database update` locally before committing
 
 ### TypeScript/React Guidelines
 
@@ -187,6 +197,49 @@ public async Task ValidTag_ShouldPassValidation()
 - Use `Api.IntegrationTests` project
 - Test full API workflows
 - Use WebApplicationFactory for testing
+- Tests that clear the entire database using `ExecuteDeleteAsync` are flaky when run concurrently and should be skipped with `[Fact(Skip = "reason")]`
+
+### E2E Tests (Playwright)
+
+1. **Test Organization**:
+   - E2E tests are in `Api.E2ETests` project
+   - Use Playwright for browser automation
+   - Assembly-level fixture starts full Aspire application
+   - Tests are run sequentially (not parallel) via `[assembly: CollectionBehavior(DisableTestParallelization = true)]`
+
+2. **Setup Requirements**:
+   - Install Playwright browsers: `playwright install chromium`
+   - Tests use headless Chromium in CI with `--no-sandbox` flags
+   - Fixture seeds database before tests run
+
+3. **Test Patterns**:
+   - Combine Playwright UI interactions with direct API verification
+   - Use stable selectors (prefer `data-testid` attributes)
+   - Verify both UI state and database persistence
+   - Use `DragToAsync` for drag-and-drop testing
+   - Accept dialogs with `page.Dialog += (_, dialog) => dialog.AcceptAsync()`
+
+4. **Example E2E Test**:
+```csharp
+[Fact]
+public async Task CreateProject_ShouldPersistToDatabase()
+{
+    // Arrange - Navigate to page
+    var page = await _fixture.CreatePageAsync();
+    await page.GotoAsync(_fixture.GetDesignerUrl());
+    
+    // Act - Interact with UI
+    await page.Locator("button:has-text('Create Project')").ClickAsync();
+    await page.FillAsync("input[name='name']", "Test Project");
+    await page.ClickAsync("button:has-text('Save')");
+    
+    // Assert - Verify in database
+    var apiClient = _fixture.CreateApiClient();
+    var response = await apiClient.GetAsync("/api/projects");
+    var projects = await response.Content.ReadFromJsonAsync<List<Project>>();
+    Assert.Contains(projects, p => p.Name == "Test Project");
+}
+```
 
 ## Development Workflow
 
@@ -229,6 +282,35 @@ cd src/CluedinProcessor  # or src/ProjectsProcessor
 func start               # Local function runtime
 ```
 
+## Azure Integration
+
+### Azure Functions
+
+The project includes two Azure Functions for serverless processing:
+
+1. **CluedinProcessor** (`src/CluedinProcessor/`)
+   - Processes data from CluedIn platform
+   - Service Bus event consumer
+   - Triggered by Azure Service Bus messages
+
+2. **ProjectsProcessor** (`src/ProjectsProcessor/`)
+   - Handles project creation and processing
+   - Service Bus event consumer
+   - Processes project-related events
+
+**Development**:
+- Use Azure Functions Core Tools: `func start` in function directory
+- Configure Service Bus connection string in local.settings.json
+- Test locally with Azure Storage Emulator or Azurite
+
+### Azure Service Bus
+
+- **ServiceBusPublisher** (`src/ServiceBusPublisher/`) - Utility for publishing events
+- Use for event-driven architecture between services
+- Configure connection strings via User Secrets (local) or Azure Key Vault (production)
+- Messages should be JSON-serialized DTOs
+- Handle transient failures with retry policies
+
 ## Prerequisites
 
 When helping users set up the project, ensure they have:
@@ -260,6 +342,32 @@ When helping users set up the project, ensure they have:
 4. Use semantic HTML elements
 5. Handle loading and error states
 
+### Database Seeding
+
+- Seed data endpoint at `/api/seed` (development/testing only)
+- Registered inside `app.Environment.IsDevelopment()` check
+- Use `.WithTags("Utilities")` for utility endpoints
+- Seed entities must have `CreatedOn = DateTime.UtcNow` and `CreatedBy = "SeedData"`
+- Example: `api.MapSeedDataEndpoint()` in `Program.cs`
+
+### Working with Join Tables
+
+For many-to-many relationships with additional properties:
+1. Create a join entity (e.g., `QuestionManagedList` linking Questions to ManagedLists)
+2. Include relationship properties: `QuestionId`, `ManagedListId`
+3. Add sortOrder or other metadata as needed
+4. Configure in ApplicationDbContext with unique indexes:
+   ```csharp
+   entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId }).IsUnique();
+   ```
+
+### Handling Optional References
+
+- Use nullable foreign keys (e.g., `Guid?`) when relationships are optional
+- Provide dual-path logic in endpoints (import from reference vs. create new)
+- Update both entity and migration Designer files when changing nullability
+- Validation should conditionally require fields based on whether reference is provided
+
 ## Important Notes
 
 - Use feature-based organization (vertical slices) rather than layer-based
@@ -270,4 +378,57 @@ When helping users set up the project, ensure they have:
 - Include comprehensive error handling
 - Write tests for new features
 - Follow existing code patterns for consistency
-- `**/bin/*` and `**/obj/*` folders shouldn't be commited
+- `**/bin/*` and `**/obj/*` folders shouldn't be committed
+- DTOs in E2E tests must match actual API response structure exactly, including nullable properties (e.g., `Guid?`)
+
+## CI/CD Workflows
+
+The project uses GitHub Actions for continuous integration:
+
+### Backend CI (`backend-ci.yml`)
+- Triggers on changes to `*.cs`, `*.csproj`, `*.slnx` files
+- Runs on: push to `main` or `develop` branches
+- Steps:
+  1. Setup .NET 10.0 and Node.js 20
+  2. Restore dependencies: `dotnet restore src/StudyDesigner.slnx`
+  3. Build: `dotnet build --configuration Release`
+  4. Run unit tests: `dotnet run --project src/Api.Tests`
+  5. Run integration tests: `dotnet run --project src/Api.IntegrationTests`
+  6. Install Playwright and run E2E tests
+
+### Frontend CI (`frontend-ci.yml`)
+- Triggers on changes to frontend files in `src/Admin/` and `src/Designer/`
+- Runs: `npm ci`, `npm run lint`, `npm run build`, `npm test -- --run`
+
+### Quality Gate (`ci-quality-gate.yml`)
+- Combines backend and frontend CI results
+- Required check for merging PRs
+
+### Docker Validation (`validate-docker.yml`)
+- Validates Docker Compose configuration
+- Ensures containers build and start correctly
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"Pending model changes" error**:
+   - Missing migration Designer.cs file
+   - Mismatch between entity definition and migration/snapshot
+   - Solution: Ensure Designer.cs and ApplicationDbContextModelSnapshot.cs match entity definitions
+
+2. **Playwright browser not found**:
+   - Run: `playwright install chromium` in `src/Api.E2ETests/bin/Debug/net10.0/`
+   - Or use: `pwsh bin/Debug/net10.0/playwright.ps1 install chromium` (Windows)
+
+3. **Flaky integration tests**:
+   - Tests clearing entire database fail when run concurrently
+   - Use `[Fact(Skip = "Flaky when run with other tests")]` attribute
+
+4. **Frontend build artifacts in commits**:
+   - Ensure `.gitignore` excludes `**/bin/`, `**/obj/`, `**/dist/`, `**/build/`
+   - Frontend `.esproj` projects generate artifacts that should never be committed
+
+5. **Missing health check in Aspire**:
+   - Vite apps (Designer, Admin) don't have built-in health checks
+   - Wait for resource to be running, then probe HTTP endpoint
