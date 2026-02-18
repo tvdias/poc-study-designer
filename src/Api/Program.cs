@@ -199,6 +199,7 @@ api.MapDeleteManagedListEndpoint();
 api.MapCreateManagedListItemEndpoint();
 api.MapUpdateManagedListItemEndpoint();
 api.MapDeleteManagedListItemEndpoint();
+api.MapBulkAddOrUpdateManagedListItemsEndpoint();
 
 // Managed List Assignments
 api.MapAssignManagedListToQuestionEndpoint();

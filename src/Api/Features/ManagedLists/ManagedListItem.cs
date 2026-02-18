@@ -11,4 +11,5 @@ public class ManagedListItem : AuditableEntity
     public required string Label { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? Metadata { get; set; }
 }

@@ -20,7 +20,7 @@ public static class GetManagedListByIdEndpoint
         CancellationToken cancellationToken)
     {
         var managedList = await db.ManagedLists
-            .Include(ml => ml.Items.Where(i => i.IsActive))
+            .Include(ml => ml.Items)
             .FirstOrDefaultAsync(ml => ml.Id == id, cancellationToken);
 
         if (managedList == null)
@@ -28,9 +28,11 @@ public static class GetManagedListByIdEndpoint
             return TypedResults.NotFound($"Managed list with ID '{id}' not found.");
         }
 
+        // Order items by SortOrder if provided, otherwise alphabetically by Label (Name)
         var items = managedList.Items
             .OrderBy(i => i.SortOrder)
-            .Select(i => new ManagedListItemDto(i.Id, i.Value, i.Label, i.SortOrder, i.IsActive))
+            .ThenBy(i => i.Label)
+            .Select(i => new ManagedListItemDto(i.Id, i.Value, i.Label, i.SortOrder, i.IsActive, i.Metadata))
             .ToList();
 
         var response = new GetManagedListByIdResponse(
