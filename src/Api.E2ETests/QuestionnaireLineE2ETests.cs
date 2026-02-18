@@ -364,7 +364,7 @@ public record ProjectDto(Guid Id, string Name, string? Description);
 public record QuestionnaireLineDto(
     Guid Id, 
     Guid ProjectId, 
-    Guid QuestionBankItemId, 
+    Guid? QuestionBankItemId,  // Nullable to support manual questions
     int SortOrder, 
     string VariableName, 
     int Version, 
@@ -385,7 +385,7 @@ public record QuestionnaireLineDto(
 public record AddQuestionnaireLineResponse(
     Guid Id, 
     Guid ProjectId, 
-    Guid QuestionBankItemId, 
+    Guid? QuestionBankItemId,  // Nullable to support manual questions
     int SortOrder, 
     string VariableName, 
     int Version, 
