@@ -9,6 +9,8 @@ public record UpdateProjectRequest(
     string Name,
     string? Description,
     Guid? ClientId,
+    Guid? CommissioningMarketId,
+    Methodology? Methodology,
     Guid? ProductId,
     string? Owner,
     ProjectStatus Status,
@@ -20,6 +22,8 @@ public record UpdateProjectResponse(
     string Name,
     string? Description,
     Guid? ClientId,
+    Guid? CommissioningMarketId,
+    Methodology? Methodology,
     Guid? ProductId,
     string? Owner,
     ProjectStatus Status,
@@ -77,6 +81,8 @@ public static class UpdateProjectEndpoint
             project.Name = request.Name;
             project.Description = request.Description;
             project.ClientId = request.ClientId;
+            project.CommissioningMarketId = request.CommissioningMarketId;
+            project.Methodology = request.Methodology;
             project.ProductId = request.ProductId;
             project.Owner = request.Owner;
             project.Status = request.Status;
@@ -91,6 +97,8 @@ public static class UpdateProjectEndpoint
                 project.Name,
                 project.Description,
                 project.ClientId,
+                project.CommissioningMarketId,
+                project.Methodology,
                 project.ProductId,
                 project.Owner,
                 project.Status,
