@@ -8,6 +8,7 @@ using Api.Features.Products;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
+using Api.Features.QuestionnaireLines;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -36,6 +37,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<QuestionAnswer> QuestionAnswers => Set<QuestionAnswer>();
     public DbSet<MetricGroup> MetricGroups => Set<MetricGroup>();
     public DbSet<Project> Projects => Set<Project>();
+    public DbSet<QuestionnaireLine> QuestionnaireLines => Set<QuestionnaireLine>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -303,6 +305,29 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<QuestionnaireLine>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.ToTable("QuestionnaireLines");
+            
+            // Unique index only when QuestionBankItemId is not null (prevents duplicate imports from question bank)
+            entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId })
+                .IsUnique()
+                .HasFilter("\"QuestionBankItemId\" IS NOT NULL");
+            
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.QuestionBankItem)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionBankItemId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Optional relationship
         });
 
     }

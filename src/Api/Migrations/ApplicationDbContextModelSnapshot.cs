@@ -926,6 +926,90 @@ namespace Api.Migrations
                     b.ToTable("QuestionBankItems");
                 });
 
+            modelBuilder.Entity("Api.Features.QuestionnaireLines.QuestionnaireLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("AnswerMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AnswerMin")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Classification")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ColumnSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomNotes")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDummy")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("QuestionBankItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QuestionFormatDetails")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionRationale")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionType")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("RowSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ScraperNotes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VariableName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionBankItemId");
+
+                    b.HasIndex("ProjectId", "QuestionBankItemId")
+                        .IsUnique()
+                        .HasFilter("\"QuestionBankItemId\" IS NOT NULL");
+
+                    b.ToTable("QuestionnaireLines", (string)null);
+                });
+
             modelBuilder.Entity("Api.Features.Tags.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1149,6 +1233,24 @@ namespace Api.Migrations
                     b.Navigation("MetricGroup");
 
                     b.Navigation("ParentQuestion");
+                });
+
+            modelBuilder.Entity("Api.Features.QuestionnaireLines.QuestionnaireLine", b =>
+                {
+                    b.HasOne("Api.Features.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Project");
+
+                    b.Navigation("QuestionBankItem");
                 });
 
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationQuestion", b =>

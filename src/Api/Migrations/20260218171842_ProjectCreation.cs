@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddProjects : Migration
+    public partial class ProjectCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -53,6 +53,51 @@ namespace Api.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "QuestionnaireLines",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuestionBankItemId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    VariableName = table.Column<string>(type: "text", nullable: false),
+                    Version = table.Column<int>(type: "integer", nullable: false),
+                    QuestionText = table.Column<string>(type: "text", nullable: true),
+                    QuestionTitle = table.Column<string>(type: "text", nullable: true),
+                    QuestionType = table.Column<string>(type: "text", nullable: true),
+                    Classification = table.Column<string>(type: "text", nullable: true),
+                    QuestionRationale = table.Column<string>(type: "text", nullable: true),
+                    ScraperNotes = table.Column<string>(type: "text", nullable: true),
+                    CustomNotes = table.Column<string>(type: "text", nullable: true),
+                    RowSortOrder = table.Column<int>(type: "integer", nullable: true),
+                    ColumnSortOrder = table.Column<int>(type: "integer", nullable: true),
+                    AnswerMin = table.Column<int>(type: "integer", nullable: true),
+                    AnswerMax = table.Column<int>(type: "integer", nullable: true),
+                    QuestionFormatDetails = table.Column<string>(type: "text", nullable: true),
+                    IsDummy = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuestionnaireLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_QuestionnaireLines_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_QuestionnaireLines_QuestionBankItems_QuestionBankItemId",
+                        column: x => x.QuestionBankItemId,
+                        principalTable: "QuestionBankItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_ClientId",
                 table: "Projects",
@@ -73,11 +118,26 @@ namespace Api.Migrations
                 name: "IX_Projects_ProductId",
                 table: "Projects",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionnaireLines_ProjectId_QuestionBankItemId",
+                table: "QuestionnaireLines",
+                columns: new[] { "ProjectId", "QuestionBankItemId" },
+                unique: true,
+                filter: "\"QuestionBankItemId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionnaireLines_QuestionBankItemId",
+                table: "QuestionnaireLines",
+                column: "QuestionBankItemId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "QuestionnaireLines");
+
             migrationBuilder.DropTable(
                 name: "Projects");
         }

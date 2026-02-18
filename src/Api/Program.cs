@@ -10,6 +10,7 @@ using Api.Features.ProductTemplates;
 using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
+using Api.Features.QuestionnaireLines;
 using Api.Features.Seed;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -177,6 +178,13 @@ api.MapGetProjectsEndpoint();
 api.MapGetProjectByIdEndpoint();
 api.MapUpdateProjectEndpoint();
 api.MapDeleteProjectEndpoint();
+
+// Questionnaire Lines
+api.MapAddQuestionnaireLineEndpoint();
+api.MapGetQuestionnaireLinesEndpoint();
+api.MapUpdateQuestionnaireLineEndpoint();
+api.MapUpdateQuestionnaireLinesSortOrderEndpoint();
+api.MapDeleteQuestionnaireLineEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();

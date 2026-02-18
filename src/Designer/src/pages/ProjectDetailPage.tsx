@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
 import { projectsApi, clientsApi, commissioningMarketsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest } from '../services/api';
+import { QuestionnaireSection } from './QuestionnaireSection';
 import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
@@ -448,15 +449,8 @@ export function ProjectDetailPage() {
                         </section>
                     )}
 
-                    {!isCreateMode && activeSection === 'questionnaire' && (
-                        <section className="detail-section">
-                            <div className="section-header">
-                                <h2 className="section-title">Questionnaire Structure</h2>
-                            </div>
-                            <div className="section-content">
-                                <p className="placeholder-text">Questionnaire section coming soon...</p>
-                            </div>
-                        </section>
+                    {!isCreateMode && activeSection === 'questionnaire' && project && (
+                        <QuestionnaireSection projectId={project.id} />
                     )}
 
                     {!isCreateMode && activeSection === 'studies' && (
