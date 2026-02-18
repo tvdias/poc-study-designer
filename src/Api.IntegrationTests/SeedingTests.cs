@@ -56,29 +56,24 @@ public class SeedingTests(IntegrationTestFixture fixture)
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        // Use ExecuteDeleteAsync to bypass change tracker and avoid concurrency issues
         // Delete in reverse dependency order
-        db.Projects.RemoveRange(db.Projects);
-        db.ProductTemplateLines.RemoveRange(db.ProductTemplateLines);
-        db.ProductTemplates.RemoveRange(db.ProductTemplates);
-        db.ModuleQuestions.RemoveRange(db.ModuleQuestions);
-        
-        // Modules self-ref
-        var modules = await db.Modules.ToListAsync();
-        db.Modules.RemoveRange(modules);
-
-        db.ProductConfigQuestions.RemoveRange(db.ProductConfigQuestions);
-        db.Products.RemoveRange(db.Products);
-        db.ConfigurationAnswers.RemoveRange(db.ConfigurationAnswers);
-        db.ConfigurationQuestions.RemoveRange(db.ConfigurationQuestions);
-        db.Clients.RemoveRange(db.Clients);
-        db.QuestionAnswers.RemoveRange(db.QuestionAnswers);
-        db.QuestionBankItems.RemoveRange(db.QuestionBankItems);
-        db.MetricGroups.RemoveRange(db.MetricGroups);
-        db.FieldworkMarkets.RemoveRange(db.FieldworkMarkets);
-        db.CommissioningMarkets.RemoveRange(db.CommissioningMarkets);
-        db.Tags.RemoveRange(db.Tags);
-
-        await db.SaveChangesAsync();
+        await db.Projects.ExecuteDeleteAsync();
+        await db.ProductTemplateLines.ExecuteDeleteAsync();
+        await db.ProductTemplates.ExecuteDeleteAsync();
+        await db.ModuleQuestions.ExecuteDeleteAsync();
+        await db.Modules.ExecuteDeleteAsync();
+        await db.ProductConfigQuestions.ExecuteDeleteAsync();
+        await db.Products.ExecuteDeleteAsync();
+        await db.ConfigurationAnswers.ExecuteDeleteAsync();
+        await db.ConfigurationQuestions.ExecuteDeleteAsync();
+        await db.Clients.ExecuteDeleteAsync();
+        await db.QuestionAnswers.ExecuteDeleteAsync();
+        await db.QuestionBankItems.ExecuteDeleteAsync();
+        await db.MetricGroups.ExecuteDeleteAsync();
+        await db.FieldworkMarkets.ExecuteDeleteAsync();
+        await db.CommissioningMarkets.ExecuteDeleteAsync();
+        await db.Tags.ExecuteDeleteAsync();
     }
 
     private class SeedResponse
