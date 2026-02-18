@@ -1,4 +1,5 @@
 using Api.Data;
+using Api.Features.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -50,6 +51,12 @@ public class SubsetManagementService : ISubsetManagementService
         if (project == null)
         {
             throw new InvalidOperationException($"Project {request.ProjectId} not found");
+        }
+
+        // Check if project is in Draft status (allow edits only in Draft)
+        if (project.Status != ProjectStatus.Draft)
+        {
+            throw new InvalidOperationException($"This project is read-only. Create a new version to edit subsets. Current status: {project.Status}");
         }
 
         // Validate questionnaire line exists

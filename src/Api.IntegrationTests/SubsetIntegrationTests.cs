@@ -431,6 +431,56 @@ public class SubsetIntegrationTests
         Assert.NotNull(subsetsResult);
         Assert.Equal(2, subsetsResult.Subsets.Count);
     }
+
+    [Fact]
+    public async Task SaveQuestionSelection_NonDraftProject_ReturnsError()
+    {
+        // Arrange - Create project in Active status
+        var projectRequest = new { Name = $"Test Project {Guid.NewGuid()}", Description = "Test", Status = ProjectStatus.Active };
+        var projectResponse = await _client.PostAsJsonAsync("/api/projects", projectRequest, _fixture.JsonOptions);
+        projectResponse.EnsureSuccessStatusCode();
+        var project = await projectResponse.Content.ReadFromJsonAsync<CreateProjectResponse>(_fixture.JsonOptions);
+        Assert.NotNull(project);
+
+        var listRequest = new { ProjectId = project.Id, Name = $"BRANDS_{Guid.NewGuid().ToString().Substring(0, 8)}", Description = "Test brands list" };
+        var listResponse = await _client.PostAsJsonAsync("/api/managed-lists", listRequest, _fixture.JsonOptions);
+        listResponse.EnsureSuccessStatusCode();
+        var managedList = await listResponse.Content.ReadFromJsonAsync<CreateManagedListResponse>(_fixture.JsonOptions);
+        Assert.NotNull(managedList);
+
+        var itemIds = new List<Guid>();
+        for (int i = 1; i <= 5; i++)
+        {
+            var itemRequest = new { Value = $"ITEM{i}", Label = $"Item {i}", SortOrder = i };
+            var itemResponse = await _client.PostAsJsonAsync($"/api/managed-lists/{managedList.Id}/items", itemRequest, _fixture.JsonOptions);
+            itemResponse.EnsureSuccessStatusCode();
+            var item = await itemResponse.Content.ReadFromJsonAsync<Api.Features.ManagedLists.CreateManagedListItemResponse>(_fixture.JsonOptions);
+            Assert.NotNull(item);
+            itemIds.Add(item.Id);
+        }
+
+        var questionRequest = new
+        {
+            ProjectId = project.Id,
+            VariableName = $"Q1_{Guid.NewGuid().ToString().Substring(0, 8)}",
+            Version = 1,
+            QuestionText = "Test question",
+            SortOrder = 1
+        };
+        var questionResponse = await _client.PostAsJsonAsync("/api/questionnairelines", questionRequest, _fixture.JsonOptions);
+        questionResponse.EnsureSuccessStatusCode();
+        var question = await questionResponse.Content.ReadFromJsonAsync<AddQuestionnaireLineResponse>(_fixture.JsonOptions);
+        Assert.NotNull(question);
+
+        // Act - Try to save selection for non-Draft project
+        var selectionRequest = new SaveQuestionSelectionRequest(project.Id, question.Id, managedList.Id, itemIds.Take(3).ToList());
+        var selectionResponse = await _client.PostAsJsonAsync("/api/subsets/save-selection", selectionRequest, _fixture.JsonOptions);
+
+        // Assert - Should return BadRequest
+        Assert.Equal(HttpStatusCode.BadRequest, selectionResponse.StatusCode);
+        var errorMessage = await selectionResponse.Content.ReadAsStringAsync();
+        Assert.Contains("read-only", errorMessage, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 // Response DTOs for deserialization
