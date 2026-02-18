@@ -11,6 +11,7 @@ using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
 using Api.Features.QuestionnaireLines;
+using Api.Features.ManagedLists;
 using Api.Features.Seed;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -185,6 +186,23 @@ api.MapGetQuestionnaireLinesEndpoint();
 api.MapUpdateQuestionnaireLineEndpoint();
 api.MapUpdateQuestionnaireLinesSortOrderEndpoint();
 api.MapDeleteQuestionnaireLineEndpoint();
+
+// Managed Lists
+api.MapCreateManagedListEndpoint();
+api.MapGetManagedListsEndpoint();
+api.MapGetManagedListByIdEndpoint();
+api.MapUpdateManagedListEndpoint();
+api.MapDeactivateManagedListEndpoint();
+api.MapDeleteManagedListEndpoint();
+
+// Managed List Items
+api.MapCreateManagedListItemEndpoint();
+api.MapUpdateManagedListItemEndpoint();
+api.MapDeleteManagedListItemEndpoint();
+
+// Managed List Assignments
+api.MapAssignManagedListToQuestionEndpoint();
+api.MapUnassignManagedListFromQuestionEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();

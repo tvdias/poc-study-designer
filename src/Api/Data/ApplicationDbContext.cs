@@ -9,6 +9,7 @@ using Api.Features.QuestionBank;
 using Api.Features.MetricGroups;
 using Api.Features.Projects;
 using Api.Features.QuestionnaireLines;
+using Api.Features.ManagedLists;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -38,6 +39,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<MetricGroup> MetricGroups => Set<MetricGroup>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<QuestionnaireLine> QuestionnaireLines => Set<QuestionnaireLine>();
+    public DbSet<ManagedList> ManagedLists => Set<ManagedList>();
+    public DbSet<ManagedListItem> ManagedListItems => Set<ManagedListItem>();
+    public DbSet<QuestionManagedList> QuestionManagedLists => Set<QuestionManagedList>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -328,6 +332,54 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.QuestionBankItemId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false); // Optional relationship
+        });
+
+        modelBuilder.Entity<ManagedList>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+            
+            // Unique name within a project
+            entity.HasIndex(e => new { e.ProjectId, e.Name }).IsUnique();
+            
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.Items)
+                .WithOne(i => i.ManagedList)
+                .HasForeignKey(i => i.ManagedListId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.QuestionAssignments)
+                .WithOne(qa => qa.ManagedList)
+                .HasForeignKey(qa => qa.ManagedListId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ManagedListItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<QuestionManagedList>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            // Unique constraint: one managed list per question
+            entity.HasIndex(e => new { e.QuestionnaireLineId, e.ManagedListId }).IsUnique();
+            
+            entity.HasOne(e => e.QuestionnaireLine)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionnaireLineId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
     }
