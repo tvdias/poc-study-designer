@@ -195,6 +195,20 @@ public class CreateManagedListItemValidatorTests
     }
 
     [Fact]
+    public async Task ValidCodeWithUnderscores_ShouldPassValidation()
+    {
+        // Arrange
+        var request = new CreateManagedListItemRequest("COCA_COLA", "Coca-Cola", 1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
     public async Task EmptyValue_ShouldFailValidation()
     {
         // Arrange
@@ -205,7 +219,7 @@ public class CreateManagedListItemValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value is required.");
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value (code) is required.");
     }
 
     [Fact]
@@ -219,7 +233,7 @@ public class CreateManagedListItemValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item label is required.");
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item label (name) is required.");
     }
 
     [Fact]
@@ -248,7 +262,7 @@ public class CreateManagedListItemValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value must not exceed 100 characters.");
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value (code) must not exceed 100 characters.");
     }
 
     [Fact]
@@ -263,7 +277,49 @@ public class CreateManagedListItemValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item label must not exceed 200 characters.");
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item label (name) must not exceed 200 characters.");
+    }
+
+    [Fact]
+    public async Task CodeStartingWithNumber_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateManagedListItemRequest("123Value", "Label", 1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value (code) must start with a letter and contain only alphanumeric characters and underscores.");
+    }
+
+    [Fact]
+    public async Task CodeWithSpecialCharacters_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateManagedListItemRequest("Value-123", "Label", 1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value (code) must start with a letter and contain only alphanumeric characters and underscores.");
+    }
+
+    [Fact]
+    public async Task CodeWithSpaces_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new CreateManagedListItemRequest("Value 123", "Label", 1);
+
+        // Act
+        var result = await _validator.ValidateAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage == "Item value (code) must start with a letter and contain only alphanumeric characters and underscores.");
     }
 }
 

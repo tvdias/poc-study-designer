@@ -367,6 +367,10 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Value).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            
+            // Unique constraint: Value (Code) must be unique within the same ManagedList (case-insensitive)
+            entity.HasIndex(e => new { e.ManagedListId, e.Value }).IsUnique();
         });
 
         modelBuilder.Entity<QuestionManagedList>(entity =>

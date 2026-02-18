@@ -15,7 +15,7 @@ public static class CreateManagedListItemEndpoint
             .WithTags("ManagedLists");
     }
 
-    public static async Task<Results<CreatedAtRoute<CreateManagedListItemResponse>, ValidationProblem, NotFound<string>>> HandleAsync(
+    public static async Task<Results<CreatedAtRoute<CreateManagedListItemResponse>, ValidationProblem, NotFound<string>, Conflict<string>>> HandleAsync(
         Guid managedListId,
         CreateManagedListItemRequest request,
         ApplicationDbContext db,
@@ -35,6 +35,17 @@ public static class CreateManagedListItemEndpoint
             return TypedResults.NotFound($"Managed list with ID '{managedListId}' not found.");
         }
 
+        // Check for duplicate Value (Code) within the same ManagedList (case-insensitive)
+        var duplicateExists = await db.ManagedListItems
+            .AnyAsync(item => item.ManagedListId == managedListId && 
+                             item.Value.ToLower() == request.Value.ToLower(), 
+                      cancellationToken);
+        
+        if (duplicateExists)
+        {
+            return TypedResults.Conflict($"An item with code '{request.Value}' already exists in this managed list.");
+        }
+
         var item = new ManagedListItem
         {
             Id = Guid.NewGuid(),
@@ -43,6 +54,7 @@ public static class CreateManagedListItemEndpoint
             Label = request.Label,
             SortOrder = request.SortOrder,
             IsActive = true,
+            Metadata = request.Metadata,
             CreatedOn = DateTime.UtcNow,
             CreatedBy = "System" // TODO: Replace with real user when auth is available
         };
@@ -56,7 +68,8 @@ public static class CreateManagedListItemEndpoint
             item.Value,
             item.Label,
             item.SortOrder,
-            item.IsActive);
+            item.IsActive,
+            item.Metadata);
 
         return TypedResults.CreatedAtRoute(response, "GetManagedListById", new { id = managedListId });
     }

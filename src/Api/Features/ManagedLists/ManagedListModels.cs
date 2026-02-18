@@ -33,14 +33,33 @@ public record GetManagedListByIdResponse(
     string? ModifiedBy,
     List<ManagedListItemDto> Items);
 
-public record ManagedListItemDto(Guid Id, string Value, string Label, int SortOrder, bool IsActive);
+public record ManagedListItemDto(Guid Id, string Value, string Label, int SortOrder, bool IsActive, string? Metadata);
 
 // Managed List Items
-public record CreateManagedListItemRequest(string Value, string Label, int SortOrder);
-public record CreateManagedListItemResponse(Guid Id, Guid ManagedListId, string Value, string Label, int SortOrder, bool IsActive);
+public record CreateManagedListItemRequest(string Value, string Label, int SortOrder, string? Metadata = null);
+public record CreateManagedListItemResponse(Guid Id, Guid ManagedListId, string Value, string Label, int SortOrder, bool IsActive, string? Metadata);
 
-public record UpdateManagedListItemRequest(string Value, string Label, int SortOrder, bool IsActive);
-public record UpdateManagedListItemResponse(Guid Id, Guid ManagedListId, string Value, string Label, int SortOrder, bool IsActive);
+public record UpdateManagedListItemRequest(string Value, string Label, int SortOrder, bool IsActive, string? Metadata = null);
+public record UpdateManagedListItemResponse(Guid Id, Guid ManagedListId, string Value, string Label, int SortOrder, bool IsActive, string? Metadata);
+
+// Bulk Operations
+public record BulkManagedListItemInput(string Value, string Label, int SortOrder, bool IsActive = true, string? Metadata = null);
+
+public record BulkAddOrUpdateManagedListItemsRequest(List<BulkManagedListItemInput> Items, bool AllowUpdates = true);
+
+public record BulkOperationResult(
+    int TotalRows,
+    int InsertedCount,
+    int UpdatedCount,
+    int SkippedCount,
+    int RejectedCount,
+    List<BulkOperationRowResult> Results);
+
+public record BulkOperationRowResult(
+    int RowIndex,
+    string Value,
+    string Status,  // "inserted", "updated", "skipped", "rejected"
+    string? ErrorMessage);
 
 // Question Assignment
 public record AssignManagedListToQuestionRequest(Guid QuestionnaireLineId, Guid ManagedListId);
