@@ -287,10 +287,14 @@ public class ManagedListItemIntegrationTests : IClassFixture<WebApplicationFacto
         // Create a project
         var createProjectRequest = new CreateProjectRequest(
             "Test Project",
-            Guid.NewGuid(), // ClientId (assuming exists)
             "Test Project Description",
-            Guid.NewGuid(), // CommissioningMarketId
-            "Methodology");
+            null, // ClientId
+            null, // CommissioningMarketId
+            null, // Methodology
+            null, // ProductId
+            null, // Owner
+            null, // Status
+            null); // CostManagementEnabled
 
         var projectResponse = await _client.PostAsJsonAsync("/api/projects", createProjectRequest);
         var project = await projectResponse.Content.ReadFromJsonAsync<CreateProjectResponse>();
