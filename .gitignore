@@ -371,3 +371,4 @@ FodyWeavers.xsd
 coverage/
 **/coverage/
 
+**/obj/**/package.g.props
