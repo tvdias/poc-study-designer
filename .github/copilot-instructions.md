@@ -368,6 +368,299 @@ For many-to-many relationships with additional properties:
 - Update both entity and migration Designer files when changing nullability
 - Validation should conditionally require fields based on whether reference is provided
 
+## Real-World Examples
+
+### Example 1: Creating a Complete CRUD Feature
+
+Let's create a "Categories" feature from scratch:
+
+1. **Create the entity** (`src/Api/Features/Categories/Category.cs`):
+```csharp
+using Api.Features.Shared;
+
+namespace Api.Features.Categories;
+
+public class Category : AuditableEntity
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+```
+
+2. **Add DbSet to ApplicationDbContext** (`src/Api/Data/ApplicationDbContext.cs`):
+```csharp
+public DbSet<Category> Categories => Set<Category>();
+
+// In OnModelCreating:
+modelBuilder.Entity<Category>(entity =>
+{
+    entity.HasKey(e => e.Id);
+    entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+    entity.Property(e => e.Description).HasMaxLength(500);
+    entity.HasIndex(e => e.Name).IsUnique();
+});
+```
+
+3. **Create DTOs and endpoint** (`src/Api/Features/Categories/CreateCategoryEndpoint.cs`):
+```csharp
+public record CreateCategoryRequest(string Name, string? Description);
+public record CreateCategoryResponse(Guid Id, string Name);
+
+public static class CreateCategoryEndpoint
+{
+    public static void MapCreateCategoryEndpoint(this IEndpointRouteBuilder app)
+    {
+        app.MapPost("/categories", HandleAsync)
+            .WithName("CreateCategory")
+            .WithSummary("Create a new category")
+            .WithTags("Categories");
+    }
+
+    public static async Task<Results<CreatedAtRoute<CreateCategoryResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
+        CreateCategoryRequest request,
+        ApplicationDbContext db,
+        IValidator<CreateCategoryRequest> validator,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return TypedResults.ValidationProblem(validationResult.ToDictionary());
+        }
+
+        var category = new Category
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Description = request.Description,
+            CreatedOn = DateTime.UtcNow,
+            CreatedBy = "System"
+        };
+
+        db.Categories.Add(category);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return TypedResults.Conflict($"Category '{request.Name}' already exists.");
+            }
+            throw;
+        }
+
+        return TypedResults.CreatedAtRoute(
+            new CreateCategoryResponse(category.Id, category.Name), 
+            "GetCategoryById", 
+            new { id = category.Id }
+        );
+    }
+}
+```
+
+4. **Add validator** (`src/Api/Features/Categories/Validators/CreateCategoryValidator.cs`):
+```csharp
+using FluentValidation;
+
+namespace Api.Features.Categories.Validators;
+
+public class CreateCategoryValidator : AbstractValidator<CreateCategoryRequest>
+{
+    public CreateCategoryValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required")
+            .MaximumLength(100).WithMessage("Name cannot exceed 100 characters");
+
+        RuleFor(x => x.Description)
+            .MaximumLength(500).WithMessage("Description cannot exceed 500 characters")
+            .When(x => !string.IsNullOrEmpty(x.Description));
+    }
+}
+```
+
+5. **Create migration**:
+```bash
+cd src/Api
+dotnet ef migrations add AddCategories
+```
+
+6. **Register endpoint in Program.cs**:
+```csharp
+using Api.Features.Categories;
+// ...
+api.MapCreateCategoryEndpoint();
+api.MapGetCategoriesEndpoint();
+api.MapGetCategoryByIdEndpoint();
+api.MapUpdateCategoryEndpoint();
+api.MapDeleteCategoryEndpoint();
+```
+
+7. **Write tests** (`src/Api.Tests/CategoryValidatorTests.cs`):
+```csharp
+public class CreateCategoryValidatorTests
+{
+    private readonly CreateCategoryValidator _validator = new();
+
+    [Fact]
+    public async Task ValidCategory_ShouldPassValidation()
+    {
+        var request = new CreateCategoryRequest("Valid Name", "Description");
+        var result = await _validator.ValidateAsync(request);
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public async Task EmptyName_ShouldFailValidation()
+    {
+        var request = new CreateCategoryRequest("", null);
+        var result = await _validator.ValidateAsync(request);
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Name");
+    }
+}
+```
+
+### Example 2: Adding a React Component with API Integration
+
+Create a category management page in the Admin app:
+
+```typescript
+// src/Admin/src/pages/CategoriesPage.tsx
+import { useState, useEffect } from 'react';
+import { categoryApi } from '../services/api';
+
+interface Category {
+    id: string;
+    name: string;
+    description?: string;
+}
+
+export const CategoriesPage = () => {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/categories');
+            if (!response.ok) throw new Error('Failed to load categories');
+            const data = await response.json();
+            setCategories(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div role="alert">Error: {error}</div>;
+
+    return (
+        <div>
+            <h1>Categories</h1>
+            <ul role="list">
+                {categories.map(cat => (
+                    <li key={cat.id}>
+                        <strong>{cat.name}</strong>
+                        {cat.description && <p>{cat.description}</p>}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+```
+
+### Example 3: Working with Drag-and-Drop Reordering
+
+Implementing drag-and-drop requires:
+
+1. **HTML5 draggable attribute**:
+```typescript
+<div
+    draggable
+    onDragStart={(e) => handleDragStart(e, item.id)}
+    onDragOver={(e) => handleDragOver(e, item.id)}
+    onDragEnd={handleDragEnd}
+>
+    {item.name}
+</div>
+```
+
+2. **Track drag state**:
+```typescript
+const [draggedId, setDraggedId] = useState<string | null>(null);
+const [draggedOverId, setDraggedOverId] = useState<string | null>(null);
+
+const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedId(id);
+};
+
+const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    setDraggedOverId(id);
+};
+
+const handleDragEnd = async () => {
+    if (!draggedId || !draggedOverId) return;
+    
+    // Reorder items locally
+    const newOrder = reorderItems(items, draggedId, draggedOverId);
+    setItems(newOrder);
+    
+    // Update server
+    const updates = newOrder.map((item, index) => ({
+        id: item.id,
+        sortOrder: index
+    }));
+    
+    await fetch('/api/items/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+    });
+    
+    setDraggedId(null);
+    setDraggedOverId(null);
+};
+```
+
+3. **Backend bulk update endpoint**:
+```csharp
+public record UpdateSortOrderRequest(List<ItemSortOrder> Items);
+public record ItemSortOrder(Guid Id, int SortOrder);
+
+public static async Task<Results<NoContent, ValidationProblem>> HandleAsync(
+    UpdateSortOrderRequest request,
+    ApplicationDbContext db,
+    CancellationToken cancellationToken)
+{
+    foreach (var item in request.Items)
+    {
+        var entity = await db.Items.FindAsync([item.Id], cancellationToken);
+        if (entity != null)
+        {
+            entity.SortOrder = item.SortOrder;
+        }
+    }
+    
+    await db.SaveChangesAsync(cancellationToken);
+    return TypedResults.NoContent();
+}
+```
+
+
 ## Important Notes
 
 - Use feature-based organization (vertical slices) rather than layer-based
@@ -380,6 +673,28 @@ For many-to-many relationships with additional properties:
 - Follow existing code patterns for consistency
 - `**/bin/*` and `**/obj/*` folders shouldn't be committed
 - DTOs in E2E tests must match actual API response structure exactly, including nullable properties (e.g., `Guid?`)
+
+## Repository-Specific Conventions
+
+### Naming Conventions
+- Entity names may follow external system conventions (e.g., `QuestionnaireLine` matches Power Platform's `kt_questionnairelines`)
+- When integrating with external systems, preserve their naming conventions for traceability
+
+### Copy-Edit Pattern
+- When creating project-specific versions of shared data (e.g., questions from question bank):
+  - Copy all fields to the project entity (not just reference IDs)
+  - Maintain traceability via foreign key (e.g., `QuestionBankItemId`)
+  - This enables per-project customization while preserving relationships
+
+### Status Management
+- Use `Status` enum for entities with active/inactive states
+- Prevent operations on inactive entities (e.g., can't assign inactive managed lists)
+- Include status checks in validators and business logic
+
+### Project-Scoped Features
+- Many features are scoped to projects (e.g., `ManagedList` with `ProjectId`)
+- Enforce unique constraints per project: `HasIndex(e => new { e.ProjectId, e.Name }).IsUnique()`
+- Always filter by `ProjectId` in queries to prevent cross-project data access
 
 ## CI/CD Workflows
 
