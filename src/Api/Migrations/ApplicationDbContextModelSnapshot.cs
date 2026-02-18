@@ -1004,7 +1004,8 @@ namespace Api.Migrations
                     b.HasIndex("QuestionBankItemId");
 
                     b.HasIndex("ProjectId", "QuestionBankItemId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"QuestionBankItemId\" IS NOT NULL");
 
                     b.ToTable("QuestionnaireLines", (string)null);
                 });

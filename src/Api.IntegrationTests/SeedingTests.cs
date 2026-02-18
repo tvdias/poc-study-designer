@@ -58,22 +58,22 @@ public class SeedingTests(IntegrationTestFixture fixture)
 
         // Use ExecuteDeleteAsync to bypass change tracker and avoid concurrency issues
         // Delete in reverse dependency order
-        await db.Projects.ExecuteDeleteAsync();
-        await db.ProductTemplateLines.ExecuteDeleteAsync();
-        await db.ProductTemplates.ExecuteDeleteAsync();
-        await db.ModuleQuestions.ExecuteDeleteAsync();
-        await db.Modules.ExecuteDeleteAsync();
-        await db.ProductConfigQuestions.ExecuteDeleteAsync();
-        await db.Products.ExecuteDeleteAsync();
-        await db.ConfigurationAnswers.ExecuteDeleteAsync();
-        await db.ConfigurationQuestions.ExecuteDeleteAsync();
-        await db.Clients.ExecuteDeleteAsync();
-        await db.QuestionAnswers.ExecuteDeleteAsync();
-        await db.QuestionBankItems.ExecuteDeleteAsync();
-        await db.MetricGroups.ExecuteDeleteAsync();
-        await db.FieldworkMarkets.ExecuteDeleteAsync();
-        await db.CommissioningMarkets.ExecuteDeleteAsync();
-        await db.Tags.ExecuteDeleteAsync();
+        await db.Projects.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.ProductTemplateLines.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.ProductTemplates.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.ModuleQuestions.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.Modules.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.ProductConfigQuestions.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.Products.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.ConfigurationAnswers.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.ConfigurationQuestions.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.Clients.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.QuestionAnswers.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.QuestionBankItems.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.MetricGroups.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.FieldworkMarkets.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.CommissioningMarkets.IgnoreQueryFilters().ExecuteDeleteAsync();
+        await db.Tags.IgnoreQueryFilters().ExecuteDeleteAsync();
     }
 
     private class SeedResponse

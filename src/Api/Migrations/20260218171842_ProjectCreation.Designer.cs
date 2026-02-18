@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260218083122_MakeQuestionBankItemIdOptional")]
-    partial class MakeQuestionBankItemIdOptional
+    [Migration("20260218171842_ProjectCreation")]
+    partial class ProjectCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1007,7 +1007,8 @@ namespace Api.Migrations
                     b.HasIndex("QuestionBankItemId");
 
                     b.HasIndex("ProjectId", "QuestionBankItemId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"QuestionBankItemId\" IS NOT NULL");
 
                     b.ToTable("QuestionnaireLines", (string)null);
                 });

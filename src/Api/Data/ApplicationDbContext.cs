@@ -316,7 +316,7 @@ public class ApplicationDbContext : DbContext
             // Unique index only when QuestionBankItemId is not null (prevents duplicate imports from question bank)
             entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId })
                 .IsUnique()
-                .HasFilter("[QuestionBankItemId] IS NOT NULL");
+                .HasFilter("\"QuestionBankItemId\" IS NOT NULL");
             
             entity.HasOne(e => e.Project)
                 .WithMany()
