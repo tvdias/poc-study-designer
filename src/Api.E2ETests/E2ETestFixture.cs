@@ -32,6 +32,12 @@ public class E2ETestFixture : IAsyncLifetime
         Console.WriteLine($"[E2E] Waiting for API health check.");
         await WaitForResourceReadyAsync("api", "/health");
 
+        // Seed the database to ensure tests have required data
+        Console.WriteLine($"[E2E] Seeding database.");
+        using var apiClient = CreateApiClient();
+        var seedResponse = await apiClient.PostAsync("/api/seed", null);
+        seedResponse.EnsureSuccessStatusCode();
+
         // Vite apps don't have Aspire health checks, so wait for them to be running
         // and then probe their HTTP endpoints to confirm they're serving requests.
         Console.WriteLine($"[E2E] Waiting for Admin app.");

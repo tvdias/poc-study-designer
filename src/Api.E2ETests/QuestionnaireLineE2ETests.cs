@@ -44,17 +44,17 @@ public class QuestionnaireLineE2ETests(E2ETestFixture fixture)
             await nameInput.FillAsync(projectName);
 
             // Click Save button
-            var saveButton = page.Locator("button:has-text('Save')");
+            var saveButton = page.Locator("button[type='submit']");
             await saveButton.ClickAsync();
 
-            // Wait for navigation to project detail page
-            await page.WaitForURLAsync(new System.Text.RegularExpressions.Regex(".*/projects/.*"), new() { Timeout = 10000 });
+            // Wait for navigation to project detail page with GUID
+            await page.WaitForURLAsync(new System.Text.RegularExpressions.Regex(@".*/projects/[0-9a-fA-F-]{36}"), new() { Timeout = 30000 });
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Extract project ID from URL
             var url = page.Url;
             var projectId = url.Split('/').Last();
-            Assert.False(string.IsNullOrEmpty(projectId), "Expected project ID in URL");
+            Assert.False(string.IsNullOrEmpty(projectId) || projectId == "new", "Expected valid project ID in URL");
 
             // Act - Step 2: Navigate to Questionnaire section
             var questionnaireButton = page.Locator("button:has-text('Questionnaire')");
