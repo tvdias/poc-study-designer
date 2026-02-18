@@ -17,6 +17,8 @@ on:
 
 jobs:
   validate:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     name: Validate Docker Files
     
