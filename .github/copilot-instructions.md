@@ -114,7 +114,6 @@ src/
    - Every EF Core migration requires both a `.cs` file and a `.Designer.cs` file
    - Missing Designer files cause "pending model changes" errors
    - When making properties nullable, update both the migration's Designer.cs and ApplicationDbContextModelSnapshot.cs
-   - For unpublished work, consolidate multiple migrations into one by merging later migrations into earlier CreateTable statements
    - Test migrations with `dotnet ef database update` locally before committing
 
 ### TypeScript/React Guidelines
@@ -197,7 +196,6 @@ public async Task ValidTag_ShouldPassValidation()
 - Use `Api.IntegrationTests` project
 - Test full API workflows
 - Use WebApplicationFactory for testing
-- Tests that clear the entire database using `ExecuteDeleteAsync` are flaky when run concurrently and should be skipped with `[Fact(Skip = "reason")]`
 
 ### E2E Tests (Playwright)
 
@@ -205,7 +203,6 @@ public async Task ValidTag_ShouldPassValidation()
    - E2E tests are in `Api.E2ETests` project
    - Use Playwright for browser automation
    - Assembly-level fixture starts full Aspire application
-   - Tests are run sequentially (not parallel) via `[assembly: CollectionBehavior(DisableTestParallelization = true)]`
 
 2. **Setup Requirements**:
    - Install Playwright browsers: `playwright install chromium`
@@ -677,7 +674,6 @@ public static async Task<Results<NoContent, ValidationProblem>> HandleAsync(
 ## Repository-Specific Conventions
 
 ### Naming Conventions
-- Entity names may follow external system conventions (e.g., `QuestionnaireLine` matches Power Platform's `kt_questionnairelines`)
 - When integrating with external systems, preserve their naming conventions for traceability
 
 ### Copy-Edit Pattern
