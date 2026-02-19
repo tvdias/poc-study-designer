@@ -21,7 +21,6 @@ public static class SaveQuestionSelectionEndpoint
         ISubsetManagementService subsetService,
         CancellationToken cancellationToken)
     {
-        // Validate request
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -30,9 +29,7 @@ public static class SaveQuestionSelectionEndpoint
 
         try
         {
-            // TODO: Get actual user ID from authentication context
             var userId = "system";
-            
             var response = await subsetService.SaveQuestionSelectionAsync(request, userId, cancellationToken);
             return TypedResults.Ok(response);
         }

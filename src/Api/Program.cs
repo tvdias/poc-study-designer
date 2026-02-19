@@ -196,6 +196,11 @@ api.MapUpdateManagedListEndpoint();
 api.MapDeactivateManagedListEndpoint();
 api.MapDeleteManagedListEndpoint();
 
+// Subset Definitions
+api.MapSaveQuestionSelectionEndpoint();
+api.MapGetSubsetDetailsEndpoint();
+api.MapGetSubsetsForProjectEndpoint();
+
 // Managed List Items
 api.MapCreateManagedListItemEndpoint();
 api.MapUpdateManagedListItemEndpoint();
@@ -205,11 +210,6 @@ api.MapBulkAddOrUpdateManagedListItemsEndpoint();
 // Managed List Assignments
 api.MapAssignManagedListToQuestionEndpoint();
 api.MapUnassignManagedListFromQuestionEndpoint();
-
-// Subset Definitions
-api.MapSaveQuestionSelectionEndpoint();
-api.MapGetSubsetDetailsEndpoint();
-api.MapGetSubsetsForProjectEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();

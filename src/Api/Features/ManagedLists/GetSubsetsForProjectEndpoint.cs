@@ -12,7 +12,7 @@ public static class GetSubsetsForProjectEndpoint
             .WithSummary("Get all subset definitions for a specific project");
     }
     
-    private static async Task<Ok<GetSubsetsForProjectResponse>> HandleAsync(
+    public static async Task<Ok<GetSubsetsForProjectResponse>> HandleAsync(
         Guid projectId,
         ISubsetManagementService subsetService,
         CancellationToken cancellationToken)

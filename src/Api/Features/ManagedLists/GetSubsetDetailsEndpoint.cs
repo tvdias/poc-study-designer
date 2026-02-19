@@ -12,7 +12,7 @@ public static class GetSubsetDetailsEndpoint
             .WithTags("Subsets");
     }
     
-    private static async Task<Results<Ok<GetSubsetDetailsResponse>, NotFound>> HandleAsync(
+    public static async Task<Results<Ok<GetSubsetDetailsResponse>, NotFound>> HandleAsync(
         Guid id,
         ISubsetManagementService subsetService,
         CancellationToken cancellationToken)
