@@ -87,11 +87,6 @@ public class StudyIntegrationTests
         var v1Study = await v1Response.Content.ReadFromJsonAsync<CreateStudyResponse>(_fixture.JsonOptions);
         Assert.NotNull(v1Study);
 
-        // Mark V1 as non-draft (so we can create another version)
-        // Note: We would need an UpdateStudy endpoint for this in real scenario
-        // For now, we'll update directly via database or skip this test
-        // Let's test the "one draft only" validation instead
-
         // Act: Try to create V2 while V1 is still Draft
         var createV2Request = new CreateStudyVersionRequest
         {
@@ -106,6 +101,60 @@ public class StudyIntegrationTests
         Assert.Equal(HttpStatusCode.Conflict, v2Response.StatusCode);
         var errorContent = await v2Response.Content.ReadAsStringAsync();
         Assert.Contains("Only one Draft version is allowed", errorContent);
+    }
+
+    [Fact]
+    public async Task CreateStudyVersion_AfterMarkingParentNonDraft_ShouldSucceed()
+    {
+        var client = _fixture.HttpClient;
+
+        // Arrange: Create project, questionnaire, and Study V1
+        var project = await CreateTestProjectAsync(client);
+        var questionBankItem = await CreateTestQuestionBankItemAsync(client);
+        await AddQuestionnaireLineAsync(client, project.Id, questionBankItem.Id);
+
+        var createV1Request = new CreateStudyRequest
+        {
+            ProjectId = project.Id,
+            Name = "Test Study V1",
+            Description = "Initial version"
+        };
+
+        var v1Response = await client.PostAsJsonAsync("/api/studies", createV1Request);
+        var v1Study = await v1Response.Content.ReadFromJsonAsync<CreateStudyResponse>(_fixture.JsonOptions);
+        Assert.NotNull(v1Study);
+
+        // Mark V1 as non-draft (ReadyForScripting)
+        var updateRequest = new UpdateStudyRequest
+        {
+            Name = v1Study.Name,
+            Description = "Initial version",
+            Status = StudyStatus.ReadyForScripting
+        };
+
+        var updateResponse = await client.PutAsJsonAsync($"/api/studies/{v1Study.StudyId}", updateRequest);
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        // Act: Create V2
+        var createV2Request = new CreateStudyVersionRequest
+        {
+            ParentStudyId = v1Study.StudyId,
+            Name = "Test Study V2",
+            Comment = "Second version",
+            Reason = "Testing versioning"
+        };
+
+        var v2Response = await client.PostAsJsonAsync($"/api/studies/{v1Study.StudyId}/versions", createV2Request);
+
+        // Assert: Should succeed
+        Assert.Equal(HttpStatusCode.Created, v2Response.StatusCode);
+
+        var v2Study = await v2Response.Content.ReadFromJsonAsync<CreateStudyVersionResponse>(_fixture.JsonOptions);
+        Assert.NotNull(v2Study);
+        Assert.Equal("Test Study V2", v2Study.Name);
+        Assert.Equal(2, v2Study.VersionNumber);
+        Assert.Equal(StudyStatus.Draft, v2Study.Status);
+        Assert.Equal(v1Study.StudyId, v2Study.ParentStudyId);
     }
 
     [Fact]
