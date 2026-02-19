@@ -49,3 +49,28 @@ public record SubsetSummaryDto(
     int MemberCount,
     DateTime CreatedOn
 );
+
+// Delete subset
+public record DeleteSubsetResponse(
+    Guid SubsetDefinitionId,
+    List<Guid> AffectedQuestionIds
+);
+
+// Project subset summary (for AC-SYNC-02)
+public record ProjectSubsetSummaryResponse(
+    Guid ProjectId,
+    List<SubsetDetailSummaryDto> Subsets
+);
+
+public record SubsetDetailSummaryDto(
+    Guid Id,
+    Guid ManagedListId,
+    string ManagedListName,
+    string Name,
+    int MemberCount,
+    int TotalItemsInList,
+    bool IsFull,
+    List<string> MemberLabels,
+    int QuestionCount,
+    DateTime CreatedOn
+);

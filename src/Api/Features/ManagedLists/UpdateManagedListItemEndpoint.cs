@@ -21,6 +21,7 @@ public static class UpdateManagedListItemEndpoint
         UpdateManagedListItemRequest request,
         ApplicationDbContext db,
         IValidator<UpdateManagedListItemRequest> validator,
+        ISubsetManagementService subsetService,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -57,6 +58,9 @@ public static class UpdateManagedListItemEndpoint
         item.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
 
         await db.SaveChangesAsync(cancellationToken);
+
+        // Trigger subset refresh for affected subsets (AC-SYNC-04)
+        await subsetService.InvalidateSubsetsForItemAsync(itemId, "System", cancellationToken);
 
         var response = new UpdateManagedListItemResponse(
             item.Id,

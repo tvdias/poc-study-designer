@@ -20,6 +20,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
         Guid managedListId,
         BulkAddOrUpdateManagedListItemsRequest request,
         ApplicationDbContext db,
+        ISubsetManagementService subsetService,
         CancellationToken cancellationToken)
     {
         // Check if managed list exists
@@ -50,6 +51,9 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
 
         // Track codes within this batch to detect duplicates
         var codesInBatch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        // Track which items were updated for subset refresh
+        var updatedItemIds = new List<Guid>();
 
         for (int i = 0; i < request.Items.Count; i++)
         {
@@ -94,6 +98,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
                     existingItem.ModifiedOn = DateTime.UtcNow;
                     existingItem.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
 
+                    updatedItemIds.Add(existingItem.Id);
                     results.Add(new BulkOperationRowResult(rowIndex, input.Value, "updated", null));
                     updatedCount++;
                 }
@@ -133,6 +138,12 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
         if (insertedCount > 0 || updatedCount > 0)
         {
             await db.SaveChangesAsync(cancellationToken);
+            
+            // Trigger subset refresh for updated items (AC-SYNC-04)
+            foreach (var itemId in updatedItemIds)
+            {
+                await subsetService.InvalidateSubsetsForItemAsync(itemId, "System", cancellationToken);
+            }
         }
 
         var bulkResult = new BulkOperationResult(

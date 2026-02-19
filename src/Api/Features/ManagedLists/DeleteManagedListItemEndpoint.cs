@@ -17,6 +17,7 @@ public static class DeleteManagedListItemEndpoint
         Guid managedListId,
         Guid itemId,
         ApplicationDbContext db,
+        ISubsetManagementService subsetService,
         CancellationToken cancellationToken)
     {
         var item = await db.ManagedListItems.FindAsync(new object[] { itemId }, cancellationToken);
@@ -24,6 +25,9 @@ public static class DeleteManagedListItemEndpoint
         {
             return TypedResults.NotFound($"Managed list item with ID '{itemId}' not found in managed list '{managedListId}'.");
         }
+
+        // Trigger subset refresh before deletion (AC-SYNC-04)
+        await subsetService.InvalidateSubsetsForItemAsync(itemId, "System", cancellationToken);
 
         db.ManagedListItems.Remove(item);
         await db.SaveChangesAsync(cancellationToken);
