@@ -10,6 +10,7 @@ using Api.Features.MetricGroups;
 using Api.Features.Projects;
 using Api.Features.QuestionnaireLines;
 using Api.Features.ManagedLists;
+using Api.Features.Studies;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
@@ -45,6 +46,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<SubsetDefinition> SubsetDefinitions => Set<SubsetDefinition>();
     public DbSet<SubsetMembership> SubsetMemberships => Set<SubsetMembership>();
     public DbSet<QuestionSubsetLink> QuestionSubsetLinks => Set<QuestionSubsetLink>();
+    public DbSet<Study> Studies => Set<Study>();
+    public DbSet<StudyQuestionnaireLine> StudyQuestionnaireLines => Set<StudyQuestionnaireLine>();
+    public DbSet<StudyManagedListAssignment> StudyManagedListAssignments => Set<StudyManagedListAssignment>();
+    public DbSet<StudyQuestionSubsetLink> StudyQuestionSubsetLinks => Set<StudyQuestionSubsetLink>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -451,6 +456,112 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ManagedListId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Study>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.StatusReason).HasMaxLength(500);
+            entity.Property(e => e.VersionComment).HasMaxLength(1000);
+            entity.Property(e => e.VersionReason).HasMaxLength(1000);
+            
+            // Unique constraint: one version number per project study lineage
+            entity.HasIndex(e => new { e.ProjectId, e.MasterStudyId, e.VersionNumber }).IsUnique();
+            
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.MasterStudy)
+                .WithMany()
+                .HasForeignKey(e => e.MasterStudyId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.ParentStudy)
+                .WithMany(e => e.ChildVersions)
+                .HasForeignKey(e => e.ParentStudyId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudyQuestionnaireLine>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.VariableName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.QuestionText).HasMaxLength(4000);
+            entity.Property(e => e.QuestionTitle).HasMaxLength(500);
+            entity.Property(e => e.QuestionType).HasMaxLength(100);
+            entity.Property(e => e.Classification).HasMaxLength(100);
+            entity.Property(e => e.QuestionRationale).HasMaxLength(2000);
+            entity.Property(e => e.ScraperNotes).HasMaxLength(2000);
+            entity.Property(e => e.CustomNotes).HasMaxLength(2000);
+            entity.Property(e => e.QuestionFormatDetails).HasMaxLength(1000);
+            
+            // Unique constraint: one question per study per sort order
+            entity.HasIndex(e => new { e.StudyId, e.SortOrder }).IsUnique();
+            
+            entity.HasOne(e => e.Study)
+                .WithMany(s => s.QuestionnaireLines)
+                .HasForeignKey(e => e.StudyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.QuestionBankItem)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionBankItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudyManagedListAssignment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            // Unique constraint: one managed list per question per study
+            entity.HasIndex(e => new { e.StudyQuestionnaireLineId, e.ManagedListId }).IsUnique();
+            
+            entity.HasOne(e => e.Study)
+                .WithMany()
+                .HasForeignKey(e => e.StudyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.StudyQuestionnaireLine)
+                .WithMany(q => q.ManagedListAssignments)
+                .HasForeignKey(e => e.StudyQuestionnaireLineId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ManagedList)
+                .WithMany()
+                .HasForeignKey(e => e.ManagedListId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudyQuestionSubsetLink>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            // Unique constraint: one subset link per question per managed list in study
+            entity.HasIndex(e => new { e.StudyQuestionnaireLineId, e.ManagedListId }).IsUnique();
+            
+            entity.HasOne(e => e.Study)
+                .WithMany()
+                .HasForeignKey(e => e.StudyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.StudyQuestionnaireLine)
+                .WithMany(q => q.SubsetLinks)
+                .HasForeignKey(e => e.StudyQuestionnaireLineId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ManagedList)
+                .WithMany()
+                .HasForeignKey(e => e.ManagedListId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.SubsetDefinition)
+                .WithMany()
+                .HasForeignKey(e => e.SubsetDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
     }

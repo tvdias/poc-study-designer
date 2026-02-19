@@ -12,6 +12,7 @@ using Api.Features.MetricGroups;
 using Api.Features.Projects;
 using Api.Features.QuestionnaireLines;
 using Api.Features.ManagedLists;
+using Api.Features.Studies;
 using Api.Features.Seed;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -27,6 +28,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<ISubsetManagementService, SubsetManagementService>();
 builder.Services.AddScoped<IAutoAssociationService, AutoAssociationService>();
+builder.Services.AddScoped<IStudyService, StudyService>();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
@@ -213,6 +215,12 @@ api.MapBulkAddOrUpdateManagedListItemsEndpoint();
 // Managed List Assignments
 api.MapAssignManagedListToQuestionEndpoint();
 api.MapUnassignManagedListFromQuestionEndpoint();
+
+// Studies
+api.MapCreateStudyEndpoint();
+api.MapCreateStudyVersionEndpoint();
+api.MapGetStudiesEndpoint();
+api.MapGetStudyByIdEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();

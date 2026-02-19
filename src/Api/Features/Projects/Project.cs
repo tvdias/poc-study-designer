@@ -19,6 +19,12 @@ public class Project
     public string? Owner { get; set; }
     public ProjectStatus Status { get; set; } = ProjectStatus.Active;
     public bool CostManagementEnabled { get; set; }
+    
+    // Study synchronization fields
+    public bool HasStudies { get; set; }
+    public int StudyCount { get; set; }
+    public DateTime? LastStudyModifiedOn { get; set; }
+    
     public DateTime CreatedOn { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
     public DateTime? ModifiedOn { get; set; }
