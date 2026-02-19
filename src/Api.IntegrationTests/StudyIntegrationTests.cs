@@ -53,13 +53,15 @@ public class StudyIntegrationTests
         Assert.Equal("Test Study V1", study.Name);
         Assert.Equal(1, study.VersionNumber);
         Assert.Equal(StudyStatus.Draft, study.Status);
-        Assert.True(study.QuestionCount > 0);
+        
+        // Debug: Print question count
+        Assert.True(study.QuestionCount > 0, $"Expected QuestionCount > 0, but was {study.QuestionCount}");
 
         // Verify project counters updated
         var projectResponse = await client.GetAsync($"/api/projects/{project.Id}");
-        var updatedProject = await projectResponse.Content.ReadFromJsonAsync<Project>(_fixture.JsonOptions);
+        var updatedProject = await projectResponse.Content.ReadFromJsonAsync<GetProjectByIdResponse>(_fixture.JsonOptions);
         Assert.NotNull(updatedProject);
-        Assert.True(updatedProject.HasStudies);
+        Assert.True(updatedProject.HasStudies, $"Expected HasStudies=true, but was {updatedProject.HasStudies}");
         Assert.Equal(1, updatedProject.StudyCount);
         Assert.NotNull(updatedProject.LastStudyModifiedOn);
     }
