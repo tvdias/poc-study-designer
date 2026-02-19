@@ -13,6 +13,10 @@ export interface Project {
     owner?: string;
     status: 'Active' | 'OnHold' | 'Closed';
     costManagementEnabled: boolean;
+    hasStudies: boolean;
+    studyCount: number;
+    lastStudyModifiedOn?: string;
+    questionnaireLineCount: number;
     modifiedOn?: string;
     createdOn: string;
 }
@@ -123,6 +127,21 @@ export const clientsApi = {
         const url = query ? `${API_BASE}/clients?query=${encodeURIComponent(query)}` : `${API_BASE}/clients`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch clients');
+        return response.json();
+    }
+};
+
+export interface FieldworkMarket {
+    id: string;
+    isoCode: string;
+    name: string;
+}
+
+export const fieldworkMarketsApi = {
+    getAll: async (query?: string): Promise<FieldworkMarket[]> => {
+        const url = query ? `${API_BASE}/fieldwork-markets?query=${encodeURIComponent(query)}` : `${API_BASE}/fieldwork-markets`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch fieldwork markets');
         return response.json();
     }
 };
@@ -266,6 +285,174 @@ export const commissioningMarketsApi = {
         const url = query ? `${API_BASE}/commissioning-markets?query=${encodeURIComponent(query)}` : `${API_BASE}/commissioning-markets`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch commissioning markets');
+        return response.json();
+    }
+};
+export interface ManagedList {
+    id: string;
+    projectId: string;
+    name: string;
+    description?: string;
+    status: 'Active' | 'Inactive';
+    items: ManagedListItem[];
+}
+
+export interface ManagedListItem {
+    id: string;
+    managedListId: string;
+    code: string;
+    label: string;
+    sortOrder: number;
+    isActive: boolean;
+}
+
+export interface CreateManagedListRequest {
+    projectId: string;
+    name: string;
+    description?: string;
+}
+
+export interface UpdateManagedListRequest {
+    name?: string;
+    description?: string;
+}
+
+export interface ManagedListItemRequest {
+    code: string;
+    label: string;
+    sortOrder: number;
+    isActive: boolean;
+}
+
+export interface StudySummary {
+    studyId: string;
+    name: string;
+    version: number;
+    status: 'Draft' | 'Final' | 'Archived' | 'Completed' | 'Abandoned'; // Updated enum
+    createdOn: string;
+    createdBy: string;
+    questionCount: number;
+    category?: string;
+    fieldworkMarketName?: string;
+}
+
+export interface CreateStudyRequest {
+    projectId: string;
+    name: string;
+    category: string;
+    maconomyJobNumber: string;
+    projectOperationsUrl: string;
+    scripterNotes?: string;
+    fieldworkMarketId: string;
+}
+
+export const managedListsApi = {
+    getAll: async (projectId: string): Promise<ManagedList[]> => {
+        const response = await fetch(`${API_BASE}/managedlists?projectId=${projectId}`);
+        if (!response.ok) throw new Error('Failed to fetch managed lists');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<ManagedList> => {
+        const response = await fetch(`${API_BASE}/managedlists/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch managed list');
+        return response.json();
+    },
+
+    create: async (data: CreateManagedListRequest): Promise<ManagedList> => {
+        const response = await fetch(`${API_BASE}/managedlists`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: UpdateManagedListRequest): Promise<ManagedList> => {
+        const response = await fetch(`${API_BASE}/managedlists/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/managedlists/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete managed list');
+    },
+
+    addItem: async (managedListId: string, data: ManagedListItemRequest): Promise<ManagedListItem> => {
+        const response = await fetch(`${API_BASE}/managedlists/${managedListId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    updateItem: async (managedListId: string, itemId: string, data: ManagedListItemRequest): Promise<ManagedListItem> => {
+        const response = await fetch(`${API_BASE}/managedlists/${managedListId}/items/${itemId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    deleteItem: async (managedListId: string, itemId: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/managedlists/${managedListId}/items/${itemId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete managed list item');
+    }
+};
+
+export interface CreateStudyResponse {
+    studyId: string;
+}
+
+export const studiesApi = {
+    getAll: async (projectId: string): Promise<StudySummary[]> => {
+        const response = await fetch(`${API_BASE}/studies?projectId=${projectId}`);
+        if (!response.ok) throw new Error('Failed to fetch studies');
+        const data = await response.json();
+        return data.studies; // Response wrapper
+    },
+
+    create: async (data: CreateStudyRequest): Promise<CreateStudyResponse> => {
+        const response = await fetch(`${API_BASE}/studies`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
         return response.json();
     }
 };

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
 import { projectsApi, clientsApi, commissioningMarketsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest } from '../services/api';
 import { QuestionnaireSection } from './QuestionnaireSection';
+import { ManagedListsSection } from './ManagedListsSection';
+import { StudiesSection } from './StudiesSection';
 import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
@@ -234,7 +236,7 @@ export function ProjectDetailPage() {
                                     <span className="project-id">ID: {project.id.substring(0, 13)}</span>
                                 )}
                             </div>
-                            
+
                             {isCreateMode ? (
                                 /* Creation Form */
                                 <form onSubmit={handleCreateProject}>
@@ -243,7 +245,7 @@ export function ProjectDetailPage() {
                                             {serverError}
                                         </div>
                                     )}
-                                    
+
                                     <div className="section-content">
                                         <div className="form-grid">
                                             <div className="form-group col-span-2">
@@ -263,7 +265,7 @@ export function ProjectDetailPage() {
                                                     <div className="field-error">{validationErrors.Name[0]}</div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="form-group col-span-2">
                                                 <label className="form-label">Client Account</label>
                                                 <select
@@ -282,7 +284,7 @@ export function ProjectDetailPage() {
                                                     <div className="field-error">{validationErrors.ClientId[0]}</div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="form-group col-span-2">
                                                 <label className="form-label">Commissioning Market</label>
                                                 <select
@@ -320,7 +322,7 @@ export function ProjectDetailPage() {
                                                     <div className="field-error">{validationErrors.Methodology[0]}</div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="form-group col-span-2">
                                                 <label className="form-label">Description</label>
                                                 <textarea
@@ -337,15 +339,15 @@ export function ProjectDetailPage() {
                                         </div>
                                     </div>
                                     <div className="section-footer">
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={() => navigate('/projects')}
                                             className="cancel-btn"
                                             disabled={isSubmitting}
                                         >
                                             Cancel
                                         </button>
-                                        <button 
+                                        <button
                                             type="submit"
                                             className="save-btn"
                                             disabled={isSubmitting}
@@ -358,92 +360,92 @@ export function ProjectDetailPage() {
                             ) : project ? (
                                 /* View Mode */
                                 <>
-                            <div className="section-content">
-                                <div className="form-grid">
-                                    <div className="form-group col-span-2">
-                                        <label className="form-label">Project Name</label>
-                                        <input
-                                            type="text"
-                                            value={project.name}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Status</label>
-                                        <select className="form-select" value={project.status} disabled>
-                                            <option value="Active">Active</option>
-                                            <option value="OnHold">On Hold</option>
-                                            <option value="Closed">Closed</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Cost Management</label>
-                                        <div className="toggle-wrapper">
-                                            <input
-                                                type="checkbox"
-                                                checked={project.costManagementEnabled}
-                                                disabled
-                                                className="toggle-input"
-                                            />
-                                            <span className="toggle-label">
-                                                {project.costManagementEnabled ? 'Enabled' : 'Disabled'}
-                                            </span>
+                                    <div className="section-content">
+                                        <div className="form-grid">
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Project Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.name}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Status</label>
+                                                <select className="form-select" value={project.status} disabled>
+                                                    <option value="Active">Active</option>
+                                                    <option value="OnHold">On Hold</option>
+                                                    <option value="Closed">Closed</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Cost Management</label>
+                                                <div className="toggle-wrapper">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={project.costManagementEnabled}
+                                                        disabled
+                                                        className="toggle-input"
+                                                    />
+                                                    <span className="toggle-label">
+                                                        {project.costManagementEnabled ? 'Enabled' : 'Disabled'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Client Account</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.clientName || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Commissioning Market</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.commissioningMarketName || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Methodology</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.methodology || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Owner</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.owner || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Description</label>
+                                                <textarea
+                                                    rows={2}
+                                                    value={project.description || ''}
+                                                    className="form-textarea"
+                                                    readOnly
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Client Account</label>
-                                        <input
-                                            type="text"
-                                            value={project.clientName || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
+                                    <div className="section-footer">
+                                        <button className="save-btn">
+                                            <Save size={14} />
+                                            <span>Save Details</span>
+                                        </button>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Commissioning Market</label>
-                                        <input
-                                            type="text"
-                                            value={project.commissioningMarketName || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Methodology</label>
-                                        <input
-                                            type="text"
-                                            value={project.methodology || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Owner</label>
-                                        <input
-                                            type="text"
-                                            value={project.owner || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group col-span-2">
-                                        <label className="form-label">Description</label>
-                                        <textarea
-                                            rows={2}
-                                            value={project.description || ''}
-                                            className="form-textarea"
-                                            readOnly
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="section-footer">
-                                <button className="save-btn">
-                                    <Save size={14} />
-                                    <span>Save Details</span>
-                                </button>
-                            </div>
                                 </>
                             ) : null}
                         </section>
@@ -453,15 +455,12 @@ export function ProjectDetailPage() {
                         <QuestionnaireSection projectId={project.id} />
                     )}
 
-                    {!isCreateMode && activeSection === 'studies' && (
-                        <section className="detail-section">
-                            <div className="section-header">
-                                <h2 className="section-title">Studies</h2>
-                            </div>
-                            <div className="section-content">
-                                <p className="placeholder-text">Studies section coming soon...</p>
-                            </div>
-                        </section>
+                    {!isCreateMode && activeSection === 'studies' && project && (
+                        <StudiesSection projectId={project.id} />
+                    )}
+
+                    {!isCreateMode && activeSection === 'lists' && project && (
+                        <ManagedListsSection projectId={project.id} />
                     )}
                 </main>
             </div>

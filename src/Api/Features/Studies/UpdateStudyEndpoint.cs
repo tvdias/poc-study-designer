@@ -16,10 +16,11 @@ public static class UpdateStudyEndpoint
             .WithTags("Studies");
     }
 
-    public static async Task<Results<Ok, NotFound, ValidationProblem>> HandleAsync(
+    public static async Task<Results<Ok, NotFound, ValidationProblem, ProblemHttpResult>> HandleAsync(
         Guid studyId,
         UpdateStudyRequest request,
         ApplicationDbContext db,
+        IStudyService studyService,
         IValidator<UpdateStudyRequest> validator,
         CancellationToken cancellationToken)
     {
@@ -35,13 +36,34 @@ public static class UpdateStudyEndpoint
             return TypedResults.NotFound();
         }
 
-        study.Name = request.Name;
-        study.Description = request.Description;
+        // Validate name uniqueness if changing name
+        var trimmedName = request.Name.Trim();
+        if (study.Name != trimmedName)
+        {
+            try 
+            {
+                await studyService.ValidateStudyNameUniquenessAsync(study.ProjectId, trimmedName, study.MasterStudyId, cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return TypedResults.Problem(
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Study Name Conflict"
+                );
+            }
+        }
+
+        study.Name = trimmedName;
+        study.Category = request.Category.Trim();
+        study.MaconomyJobNumber = request.MaconomyJobNumber.Trim();
+        study.ProjectOperationsUrl = request.ProjectOperationsUrl.Trim();
+        study.ScripterNotes = request.ScripterNotes;
+        study.FieldworkMarketId = request.FieldworkMarketId;
         
         if (request.Status.HasValue)
         {
             study.Status = request.Status.Value;
-            study.StatusReason = request.StatusReason;
         }
 
         study.ModifiedOn = DateTime.UtcNow;

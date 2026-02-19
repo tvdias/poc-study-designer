@@ -51,7 +51,7 @@ public static class CreateProjectEndpoint
 {
     public static void MapCreateProjectEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/projects", async Task<Results<CreatedAtRoute<CreateProjectResponse>, ValidationProblem, Conflict<string>>> (
+        app.MapPost("/projects", async Task<Results<CreatedAtRoute<CreateProjectResponse>, ValidationProblem, ProblemHttpResult>> (
             CreateProjectRequest request,
             ApplicationDbContext db,
             IValidator<CreateProjectRequest> validator,
@@ -63,17 +63,22 @@ public static class CreateProjectEndpoint
                 return TypedResults.ValidationProblem(validationResult.ToDictionary());
             }
 
-            // Check if a project with the same name already exists
-            var existingProject = await db.Projects.FirstOrDefaultAsync(p => p.Name == request.Name, ct);
-            if (existingProject != null)
+            // Check if a project with the same name already exists for this client
+            var trimmedName = request.Name.Trim();
+            var isNameDuplicated = await db.Projects.AnyAsync(p => p.ClientId == request.ClientId && p.Name.ToLower() == trimmedName.ToLower(), ct);
+            if (isNameDuplicated)
             {
-                return TypedResults.Conflict("A project with this name already exists");
+                return TypedResults.Problem(
+                    detail: "A project with this name already exists for this client",
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Project Name Conflict"
+                );
             }
 
             var project = new Project
             {
                 Id = Guid.NewGuid(),
-                Name = request.Name,
+                Name = trimmedName,
                 Description = request.Description,
                 ClientId = request.ClientId,
                 CommissioningMarketId = request.CommissioningMarketId,
@@ -105,7 +110,6 @@ public static class CreateProjectEndpoint
 
             return TypedResults.CreatedAtRoute(response, "GetProjectById", new { id = project.Id });
         })
-        .WithName("CreateProject")
-        .WithOpenApi();
+        .WithName("CreateProject");
     }
 }

@@ -301,7 +301,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Methodology)
                 .HasConversion<string>()
                 .HasMaxLength(50);
-            entity.HasIndex(e => e.Name).IsUnique(); // Ensure project names are unique
+            entity.HasIndex(e => new { e.ClientId, e.Name }).IsUnique(); // Project names unique per client
             
             entity.HasOne(e => e.Client)
                 .WithMany()
@@ -462,13 +462,9 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Description).HasMaxLength(2000);
-            entity.Property(e => e.StatusReason).HasMaxLength(500);
-            entity.Property(e => e.VersionComment).HasMaxLength(1000);
-            entity.Property(e => e.VersionReason).HasMaxLength(1000);
             
             // Unique constraint: one version number per project study lineage
-            entity.HasIndex(e => new { e.ProjectId, e.MasterStudyId, e.VersionNumber }).IsUnique();
+            entity.HasIndex(e => new { e.ProjectId, e.MasterStudyId, e.Version }).IsUnique();
             
             entity.HasOne(e => e.Project)
                 .WithMany()

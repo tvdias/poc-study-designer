@@ -21,6 +21,7 @@ public record GetProjectByIdResponse(
     bool HasStudies,
     int StudyCount,
     DateTime? LastStudyModifiedOn,
+    int QuestionnaireLineCount,
     DateTime CreatedOn,
     string CreatedBy,
     DateTime? ModifiedOn,
@@ -47,6 +48,9 @@ public static class GetProjectByIdEndpoint
                 return TypedResults.NotFound();
             }
 
+            var questionnaireLineCount = await db.QuestionnaireLines
+                .CountAsync(ql => ql.ProjectId == id, ct);
+
             var response = new GetProjectByIdResponse(
                 project.Id,
                 project.Name,
@@ -64,6 +68,7 @@ public static class GetProjectByIdEndpoint
                 project.HasStudies,
                 project.StudyCount,
                 project.LastStudyModifiedOn,
+                questionnaireLineCount,
                 project.CreatedOn,
                 project.CreatedBy,
                 project.ModifiedOn,

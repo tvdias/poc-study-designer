@@ -15,7 +15,7 @@ public interface IStudyService
         CancellationToken cancellationToken = default);
     
     Task<CreateStudyVersionResponse> CreateStudyVersionAsync(
-        CreateStudyVersionRequest request,
+        Guid parentStudyId,
         string userId,
         CancellationToken cancellationToken = default);
     
@@ -25,6 +25,12 @@ public interface IStudyService
     
     Task<GetStudyDetailsResponse?> GetStudyByIdAsync(
         Guid studyId,
+        CancellationToken cancellationToken = default);
+
+    Task ValidateStudyNameUniquenessAsync(
+        Guid projectId,
+        string name,
+        Guid masterStudyId,
         CancellationToken cancellationToken = default);
 }
 
@@ -49,20 +55,34 @@ public class StudyService : IStudyService
         string userId,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation(
-            "Creating Study V1 for ProjectId={ProjectId}, Name={Name}",
-            request.ProjectId, request.Name);
+        _logger.LogInformation("Creating Study V1 for ProjectId={ProjectId}, Name={Name}", request.ProjectId, request.Name);
+
+        // initialize study
+        var studyId = Guid.CreateVersion7();
+        var study = new Study
+        {
+            Id = studyId,
+            ProjectId = request.ProjectId,
+            Name = request.Name.Trim(),
+            Version = 1,
+            Status = StudyStatus.Draft,
+            MasterStudyId = studyId,
+            ParentStudyId = null,
+            Category = request.Category.Trim(),
+            MaconomyJobNumber = request.MaconomyJobNumber.Trim(),
+            ProjectOperationsUrl = request.ProjectOperationsUrl.Trim(),
+            ScripterNotes = request.ScripterNotes,
+            FieldworkMarketId = request.FieldworkMarketId,
+            CreatedBy = userId,
+            CreatedOn = DateTime.UtcNow
+        };
 
         // Validate project exists and is active
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == request.ProjectId, cancellationToken);
+        var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == study.ProjectId, cancellationToken)
+            ?? throw new InvalidOperationException($"Project {request.ProjectId} not found");
 
-        if (project == null)
-        {
-            throw new InvalidOperationException($"Project {request.ProjectId} not found");
-        }
+        await ValidateStudyNameUniquenessAsync(study.ProjectId, study.Name, study.MasterStudyId, cancellationToken);
 
-        // Get all active questionnaire lines (Project Master Questionnaire)
         var masterQuestions = await _context.QuestionnaireLines
             .Include(q => q.QuestionBankItem)
             .Where(q => q.ProjectId == request.ProjectId)
@@ -72,8 +92,7 @@ public class StudyService : IStudyService
 
         if (masterQuestions.Count == 0)
         {
-            throw new InvalidOperationException(
-                $"Project {request.ProjectId} has no questionnaire lines to copy");
+            throw new InvalidOperationException($"Project has no questionnaire lines.");
         }
 
         var strategy = _context.Database.CreateExecutionStrategy();
@@ -82,27 +101,7 @@ public class StudyService : IStudyService
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                // Create Study V1
-                var study = new Study
-                {
-                    Id = Guid.NewGuid(),
-                    ProjectId = request.ProjectId,
-                    Name = request.Name,
-                    Description = request.Description,
-                    VersionNumber = 1,
-                    Status = StudyStatus.Draft,
-                    MasterStudyId = null, // V1 is its own master
-                    ParentStudyId = null,
-                    VersionComment = request.Comment,
-                    CreatedBy = userId,
-                    CreatedOn = DateTime.UtcNow
-                };
-
                 _context.Studies.Add(study);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                // Set MasterStudyId to itself for V1
-                study.MasterStudyId = study.Id;
                 await _context.SaveChangesAsync(cancellationToken);
 
                 // Copy questionnaire lines
@@ -129,9 +128,7 @@ public class StudyService : IStudyService
                     cancellationToken);
 
                 // Update project counters
-                await UpdateProjectCountersAsync(
-                    request.ProjectId,
-                    cancellationToken);
+                await UpdateProjectCountersAsync(request.ProjectId, cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
 
@@ -143,7 +140,7 @@ public class StudyService : IStudyService
                 {
                     StudyId = study.Id,
                     Name = study.Name,
-                    VersionNumber = study.VersionNumber,
+                    Version = study.Version,
                     Status = study.Status,
                     QuestionCount = studyQuestions.Count
                 };
@@ -158,42 +155,30 @@ public class StudyService : IStudyService
     }
 
     public async Task<CreateStudyVersionResponse> CreateStudyVersionAsync(
-        CreateStudyVersionRequest request,
+        Guid parentStudyId,
         string userId,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation(
-            "Creating new version for StudyId={StudyId}",
-            request.ParentStudyId);
+        _logger.LogInformation("Creating new version for StudyId={StudyId}", parentStudyId);
 
-        // Load parent study with lineage
-        var parentStudy = await _context.Studies
-            .Include(s => s.Project)
-            .FirstOrDefaultAsync(s => s.Id == request.ParentStudyId, cancellationToken);
+        // Load parent study
+        var parentStudy = await _context.Studies.Include(s => s.Project).FirstOrDefaultAsync(s => s.Id == parentStudyId, cancellationToken)
+            ?? throw new InvalidOperationException($"Study {parentStudyId} not found");
 
-        if (parentStudy == null)
+        // Check for existing Draft version in lineage (only one Draft is allowed)
+        var isExistingDraft = await _context.Studies
+            .Where(s => s.MasterStudyId == parentStudy.MasterStudyId && s.Status == StudyStatus.Draft)
+            .AnyAsync(cancellationToken);
+
+        if (isExistingDraft)
         {
-            throw new InvalidOperationException($"Parent Study {request.ParentStudyId} not found");
-        }
-
-        // Determine master study ID (root of lineage)
-        var masterStudyId = parentStudy.MasterStudyId ?? parentStudy.Id;
-
-        // Check for existing Draft version in lineage (only one Draft allowed)
-        var existingDraft = await _context.Studies
-            .Where(s => s.MasterStudyId == masterStudyId && s.Status == StudyStatus.Draft)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (existingDraft != null)
-        {
-            throw new InvalidOperationException(
-                "Only one Draft version is allowed in this Study; finish or abandon the existing Draft first.");
+            throw new InvalidOperationException("Only one Draft version is allowed in this Study; finish or abandon the existing Draft first.");
         }
 
         // Get next version number
         var maxVersion = await _context.Studies
-            .Where(s => s.MasterStudyId == masterStudyId)
-            .MaxAsync(s => s.VersionNumber, cancellationToken);
+            .Where(s => s.MasterStudyId == parentStudy.MasterStudyId)
+            .MaxAsync(s => s.Version, cancellationToken);
 
         var newVersionNumber = maxVersion + 1;
 
@@ -203,7 +188,7 @@ public class StudyService : IStudyService
             .Include(q => q.SubsetLinks)
                 .ThenInclude(sl => sl.SubsetDefinition)
                     .ThenInclude(sd => sd!.Memberships)
-            .Where(q => q.StudyId == request.ParentStudyId)
+            .Where(q => q.StudyId == parentStudyId)
             .OrderBy(q => q.SortOrder)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -214,19 +199,20 @@ public class StudyService : IStudyService
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                // Create new Study version
                 var study = new Study
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     ProjectId = parentStudy.ProjectId,
-                    Name = request.Name ?? parentStudy.Name,
-                    Description = request.Description ?? parentStudy.Description,
-                    VersionNumber = newVersionNumber,
+                    Name = parentStudy.Name,
+                    Version = newVersionNumber,
                     Status = StudyStatus.Draft,
-                    MasterStudyId = masterStudyId,
+                    MasterStudyId = parentStudy.MasterStudyId,
                     ParentStudyId = parentStudy.Id,
-                    VersionComment = request.Comment,
-                    VersionReason = request.Reason,
+                    Category = parentStudy.Category,
+                    MaconomyJobNumber = parentStudy.MaconomyJobNumber,
+                    ProjectOperationsUrl = parentStudy.ProjectOperationsUrl,
+                    ScripterNotes = parentStudy.ScripterNotes,
+                    FieldworkMarketId = parentStudy.FieldworkMarketId,
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow
                 };
@@ -258,9 +244,7 @@ public class StudyService : IStudyService
                     cancellationToken);
 
                 // Update project LastStudyModifiedOn
-                await UpdateProjectCountersAsync(
-                    parentStudy.ProjectId,
-                    cancellationToken);
+                await UpdateProjectCountersAsync(parentStudy.ProjectId, cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
 
@@ -272,39 +256,39 @@ public class StudyService : IStudyService
                 {
                     StudyId = study.Id,
                     Name = study.Name,
-                    VersionNumber = study.VersionNumber,
+                    Version = study.Version,
                     Status = study.Status,
-                    ParentStudyId = parentStudy.Id,
+                    ParentStudyId = study.ParentStudyId.Value,
                     QuestionCount = studyQuestions.Count
                 };
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                _logger.LogError(ex, "Failed to create new version for StudyId={StudyId}", request.ParentStudyId);
+                _logger.LogError(ex, "Failed to create new version for StudyId={StudyId}", parentStudyId);
                 throw;
             }
         });
     }
 
-    public async Task<GetStudiesResponse> GetStudiesAsync(
-        Guid projectId,
-        CancellationToken cancellationToken = default)
+    public async Task<GetStudiesResponse> GetStudiesAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var studies = await _context.Studies
             .Where(s => s.ProjectId == projectId)
             .OrderByDescending(s => s.CreatedOn)
+            .Include(s => s.FieldworkMarket)
             .Select(s => new StudySummary
             {
                 StudyId = s.Id,
                 Name = s.Name,
-                VersionNumber = s.VersionNumber,
+                Version = s.Version,
                 Status = s.Status,
                 CreatedOn = s.CreatedOn,
                 CreatedBy = s.CreatedBy,
-                QuestionCount = s.QuestionnaireLines.Count
+                QuestionCount = s.QuestionnaireLines.Count,
+                Category = s.Category,
+                FieldworkMarketName = s.FieldworkMarket.Name
             })
-            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return new GetStudiesResponse
@@ -313,14 +297,13 @@ public class StudyService : IStudyService
         };
     }
 
-    public async Task<GetStudyDetailsResponse?> GetStudyByIdAsync(
-        Guid studyId,
-        CancellationToken cancellationToken = default)
+    public async Task<GetStudyDetailsResponse?> GetStudyByIdAsync(Guid studyId, CancellationToken cancellationToken = default)
     {
         var study = await _context.Studies
             .Include(s => s.Project)
             .Include(s => s.ParentStudy)
             .Include(s => s.MasterStudy)
+            .Include(s => s.FieldworkMarket)
             .Where(s => s.Id == studyId)
             .Select(s => new GetStudyDetailsResponse
             {
@@ -328,22 +311,46 @@ public class StudyService : IStudyService
                 ProjectId = s.ProjectId,
                 ProjectName = s.Project.Name,
                 Name = s.Name,
-                Description = s.Description,
-                VersionNumber = s.VersionNumber,
+                Version = s.Version,
                 Status = s.Status,
                 MasterStudyId = s.MasterStudyId,
                 ParentStudyId = s.ParentStudyId,
-                VersionComment = s.VersionComment,
                 CreatedOn = s.CreatedOn,
                 CreatedBy = s.CreatedBy,
                 ModifiedOn = s.ModifiedOn,
                 ModifiedBy = s.ModifiedBy,
-                QuestionCount = s.QuestionnaireLines.Count
+                QuestionCount = s.QuestionnaireLines.Count,
+                Category = s.Category,
+                MaconomyJobNumber = s.MaconomyJobNumber,
+                ProjectOperationsUrl = s.ProjectOperationsUrl,
+                ScripterNotes = s.ScripterNotes,
+                FieldworkMarketId = s.FieldworkMarketId,
+                FieldworkMarketName = s.FieldworkMarket.Name
             })
-            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
         return study;
+    }
+
+    public async Task ValidateStudyNameUniquenessAsync(
+        Guid projectId,
+        string name,
+        Guid masterStudyId,
+        CancellationToken cancellationToken = default)
+    {        
+        // A name must be unique within a project, 
+        // EXCEPT for studies in the same lineage (same MasterStudyId)
+        var query = _context.Studies
+            .Where(s => s.MasterStudyId != masterStudyId
+                && s.ProjectId == projectId
+                && s.Name.ToLower() == name.ToLower());
+
+        var exists = await query.AnyAsync(cancellationToken);
+
+        if (exists)
+        {
+            throw new InvalidOperationException($"A study with the name '{name}' already exists in this project.");
+        }
     }
 
     // Private helper methods

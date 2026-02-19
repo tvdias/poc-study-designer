@@ -941,14 +941,12 @@ namespace Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
-
                     b.HasIndex("CommissioningMarketId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ClientId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Projects");
                 });
@@ -1262,17 +1260,24 @@ namespace Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                    b.Property<Guid>("FieldworkMarketId")
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid?>("MasterStudyId")
+                    b.Property<string>("MaconomyJobNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MasterStudyId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ModifiedBy")
@@ -1292,31 +1297,28 @@ namespace Api.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ProjectOperationsUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ScripterNotes")
+                        .HasColumnType("text");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<string>("StatusReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("VersionComment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("VersionNumber")
+                    b.Property<int>("Version")
                         .HasColumnType("integer");
 
-                    b.Property<string>("VersionReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("FieldworkMarketId");
 
                     b.HasIndex("MasterStudyId");
 
                     b.HasIndex("ParentStudyId");
 
-                    b.HasIndex("ProjectId", "MasterStudyId", "VersionNumber")
+                    b.HasIndex("ProjectId", "MasterStudyId", "Version")
                         .IsUnique();
 
                     b.ToTable("Studies");
@@ -1846,10 +1848,17 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Api.Features.Studies.Study", b =>
                 {
+                    b.HasOne("Api.Features.FieldworkMarkets.FieldworkMarket", "FieldworkMarket")
+                        .WithMany()
+                        .HasForeignKey("FieldworkMarketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Api.Features.Studies.Study", "MasterStudy")
                         .WithMany()
                         .HasForeignKey("MasterStudyId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Api.Features.Studies.Study", "ParentStudy")
                         .WithMany("ChildVersions")
@@ -1861,6 +1870,8 @@ namespace Api.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("FieldworkMarket");
 
                     b.Navigation("MasterStudy");
 

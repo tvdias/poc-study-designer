@@ -5,6 +5,7 @@ using Api.Features.Studies;
 using Api.Features.QuestionBank;
 using Api.Features.QuestionnaireLines;
 using Api.Features.ManagedLists;
+using Api.Features.FieldworkMarkets;
 using Xunit;
 
 namespace Api.IntegrationTests;
@@ -33,8 +34,11 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study V1",
-            Description = "Test Description",
-            Comment = "Initial version"
+            Category = "Test Category",
+            MaconomyJobNumber = "JOB123",
+            ProjectOperationsUrl = "http://test.com",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client),
+            ScripterNotes = "Initial version"
         };
 
         var response = await client.PostAsJsonAsync("/api/studies", createRequest);
@@ -51,7 +55,7 @@ public class StudyIntegrationTests
         var study = await response.Content.ReadFromJsonAsync<CreateStudyResponse>(_fixture.JsonOptions);
         Assert.NotNull(study);
         Assert.Equal("Test Study V1", study.Name);
-        Assert.Equal(1, study.VersionNumber);
+        Assert.Equal(1, study.Version);
         Assert.Equal(StudyStatus.Draft, study.Status);
         
         // Debug: Print question count
@@ -80,7 +84,10 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study V1",
-            Description = "Initial version"
+            Category = "Test Category",
+            MaconomyJobNumber = "JOB123",
+            ProjectOperationsUrl = "http://test.com",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client)
         };
 
         var v1Response = await client.PostAsJsonAsync("/api/studies", createV1Request);
@@ -88,14 +95,7 @@ public class StudyIntegrationTests
         Assert.NotNull(v1Study);
 
         // Act: Try to create V2 while V1 is still Draft
-        var createV2Request = new CreateStudyVersionRequest
-        {
-            ParentStudyId = v1Study.StudyId,
-            Comment = "Second version",
-            Reason = "Testing versioning"
-        };
-
-        var v2Response = await client.PostAsJsonAsync($"/api/studies/{v1Study.StudyId}/versions", createV2Request);
+        var v2Response = await client.PostAsync($"/api/studies/{v1Study.StudyId}/versions", null);
 
         // Assert: Should fail because V1 is still Draft
         Assert.Equal(HttpStatusCode.Conflict, v2Response.StatusCode);
@@ -117,7 +117,10 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study V1",
-            Description = "Initial version"
+            Category = "Test",
+            MaconomyJobNumber = "123",
+            ProjectOperationsUrl = "http://test.com",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client)
         };
 
         var v1Response = await client.PostAsJsonAsync("/api/studies", createV1Request);
@@ -128,7 +131,10 @@ public class StudyIntegrationTests
         var updateRequest = new UpdateStudyRequest
         {
             Name = v1Study.Name,
-            Description = "Initial version",
+            Category = "Test",
+            MaconomyJobNumber = "123",
+            ProjectOperationsUrl = "http://test.com",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client),
             Status = StudyStatus.ReadyForScripting
         };
 
@@ -136,23 +142,15 @@ public class StudyIntegrationTests
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
 
         // Act: Create V2
-        var createV2Request = new CreateStudyVersionRequest
-        {
-            ParentStudyId = v1Study.StudyId,
-            Name = "Test Study V2",
-            Comment = "Second version",
-            Reason = "Testing versioning"
-        };
-
-        var v2Response = await client.PostAsJsonAsync($"/api/studies/{v1Study.StudyId}/versions", createV2Request);
+        var v2Response = await client.PostAsync($"/api/studies/{v1Study.StudyId}/versions", null);
 
         // Assert: Should succeed
         Assert.Equal(HttpStatusCode.Created, v2Response.StatusCode);
 
         var v2Study = await v2Response.Content.ReadFromJsonAsync<CreateStudyVersionResponse>(_fixture.JsonOptions);
         Assert.NotNull(v2Study);
-        Assert.Equal("Test Study V2", v2Study.Name);
-        Assert.Equal(2, v2Study.VersionNumber);
+        Assert.Equal("Test Study V1", v2Study.Name);
+        Assert.Equal(2, v2Study.Version);
         Assert.Equal(StudyStatus.Draft, v2Study.Status);
         Assert.Equal(v1Study.StudyId, v2Study.ParentStudyId);
     }
@@ -171,7 +169,10 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study for List",
-            Description = "Test"
+            Category = "Test",
+            MaconomyJobNumber = "123",
+            ProjectOperationsUrl = "http://test",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client)
         };
 
         await client.PostAsJsonAsync("/api/studies", createRequest);
@@ -202,7 +203,10 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study for Details",
-            Description = "Detailed test"
+            Category = "Test",
+            MaconomyJobNumber = "123",
+            ProjectOperationsUrl = "http://test",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client)
         };
 
         var createResponse = await client.PostAsJsonAsync("/api/studies", createRequest);
@@ -219,8 +223,7 @@ public class StudyIntegrationTests
         Assert.NotNull(details);
         Assert.Equal(study.StudyId, details.StudyId);
         Assert.Equal("Test Study for Details", details.Name);
-        Assert.Equal("Detailed test", details.Description);
-        Assert.Equal(1, details.VersionNumber);
+        Assert.Equal(1, details.Version);
         Assert.Equal(StudyStatus.Draft, details.Status);
         Assert.True(details.QuestionCount > 0);
     }
@@ -237,7 +240,10 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study Empty",
-            Description = "Should fail"
+            Category = "Test",
+            MaconomyJobNumber = "123",
+            ProjectOperationsUrl = "http://test",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client)
         };
 
         // Act
@@ -246,7 +252,7 @@ public class StudyIntegrationTests
         // Assert: Should fail because no questionnaire lines
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var errorContent = await response.Content.ReadAsStringAsync();
-        Assert.Contains("has no questionnaire lines to copy", errorContent);
+        Assert.Contains("has no questionnaire lines", errorContent);
     }
 
     [Fact]
@@ -270,7 +276,10 @@ public class StudyIntegrationTests
         {
             ProjectId = project.Id,
             Name = "Test Study with ML",
-            Description = "Should include ML assignments"
+            Category = "Test",
+            MaconomyJobNumber = "123",
+            ProjectOperationsUrl = "http://test",
+            FieldworkMarketId = await CreateTestFieldworkMarketAsync(client)
         };
 
         var response = await client.PostAsJsonAsync("/api/studies", createRequest);
@@ -294,11 +303,24 @@ public class StudyIntegrationTests
             Name = $"Test Project {Guid.NewGuid():N}",
             Description = "Test Description",
             Owner = "TestOwner",
-            Status = ProjectStatus.Draft
+            Status = ProjectStatus.Draft,
+            // Adding likely required fields to avoid runtime error, though anonymous type compiled fine
+            ClientId = (Guid?)null,
+            CommissioningMarketId = (Guid?)null,
+            ProductId = (Guid?)null,
+            Methodology = Methodology.Online,
+            CostManagementEnabled = true
         };
 
         var response = await client.PostAsJsonAsync("/api/projects", projectRequest);
-        response.EnsureSuccessStatusCode();
+        
+        // If it fails due to FK, we'll see it at runtime. 
+        if (!response.IsSuccessStatusCode)
+        {
+             var content = await response.Content.ReadAsStringAsync();
+             // Just throw to fail test fast
+             throw new Exception($"Failed to create project: {response.StatusCode} {content}");
+        }
         
         var project = await response.Content.ReadFromJsonAsync<Project>(_fixture.JsonOptions);
         Assert.NotNull(project);
@@ -313,7 +335,9 @@ public class StudyIntegrationTests
             QuestionText = "Test Question",
             QuestionType = "Single",
             Version = 1,
-            Status = "Active"
+            Status = "Active",
+            // MetricGroup is optional, but if required add it here
+            MetricGroupId = (Guid?)null 
         };
 
         var response = await client.PostAsJsonAsync("/api/question-bank", questionRequest);
@@ -350,7 +374,11 @@ public class StudyIntegrationTests
         };
 
         var response = await client.PostAsJsonAsync("/api/managedlists", listRequest);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to create managed list: {content}");
+        }
         
         var list = await response.Content.ReadFromJsonAsync<ManagedList>(_fixture.JsonOptions);
         Assert.NotNull(list);
@@ -368,4 +396,14 @@ public class StudyIntegrationTests
         var response = await client.PostAsJsonAsync("/api/managedlists/assign", assignRequest);
         response.EnsureSuccessStatusCode();
     }
+
+    private async Task<Guid> CreateTestFieldworkMarketAsync(HttpClient client)
+    {
+        var request = new CreateFieldworkMarketRequest($"GB-{Guid.NewGuid():N}".Substring(0, 10), "Test Market");
+        var response = await client.PostAsJsonAsync("/api/fieldwork-markets", request);
+        response.EnsureSuccessStatusCode();
+        var market = await response.Content.ReadFromJsonAsync<CreateFieldworkMarketResponse>(_fixture.JsonOptions);
+        return market.Id;
+    }
 }
+

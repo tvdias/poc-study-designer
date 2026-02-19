@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260218234154_AddSubsetManagement")]
-    partial class AddSubsetManagement
+    [Migration("20260219225910_DesignerInitialization")]
+    partial class DesignerInitialization
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -906,6 +906,12 @@ namespace Api.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<bool>("HasStudies")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastStudyModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Methodology")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -933,16 +939,17 @@ namespace Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("StudyCount")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("ClientId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CommissioningMarketId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ClientId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Projects");
                 });
@@ -1248,6 +1255,250 @@ namespace Api.Migrations
                         .HasFilter("\"QuestionBankItemId\" IS NOT NULL");
 
                     b.ToTable("QuestionnaireLines", (string)null);
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.Study", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FieldworkMarketId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MaconomyJobNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MasterStudyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("ParentStudyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProjectOperationsUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ScripterNotes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FieldworkMarketId");
+
+                    b.HasIndex("MasterStudyId");
+
+                    b.HasIndex("ParentStudyId");
+
+                    b.HasIndex("ProjectId", "MasterStudyId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("Studies");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyManagedListAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ManagedListId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudyQuestionnaireLineId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagedListId");
+
+                    b.HasIndex("StudyId");
+
+                    b.HasIndex("StudyQuestionnaireLineId", "ManagedListId")
+                        .IsUnique();
+
+                    b.ToTable("StudyManagedListAssignments");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyQuestionSubsetLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ManagedListId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("StudyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudyQuestionnaireLineId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SubsetDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagedListId");
+
+                    b.HasIndex("StudyId");
+
+                    b.HasIndex("SubsetDefinitionId");
+
+                    b.HasIndex("StudyQuestionnaireLineId", "ManagedListId")
+                        .IsUnique();
+
+                    b.ToTable("StudyQuestionSubsetLinks");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyQuestionnaireLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("AnswerMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AnswerMin")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Classification")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("ColumnSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDummy")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("QuestionBankItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QuestionFormatDetails")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("QuestionRationale")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("QuestionText")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("QuestionTitle")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("QuestionType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("RowSortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ScraperNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StudyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VariableName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionBankItemId");
+
+                    b.HasIndex("StudyId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("StudyQuestionnaireLines");
                 });
 
             modelBuilder.Entity("Api.Features.Tags.Tag", b =>
@@ -1598,6 +1849,119 @@ namespace Api.Migrations
                     b.Navigation("QuestionBankItem");
                 });
 
+            modelBuilder.Entity("Api.Features.Studies.Study", b =>
+                {
+                    b.HasOne("Api.Features.FieldworkMarkets.FieldworkMarket", "FieldworkMarket")
+                        .WithMany()
+                        .HasForeignKey("FieldworkMarketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Studies.Study", "MasterStudy")
+                        .WithMany()
+                        .HasForeignKey("MasterStudyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Studies.Study", "ParentStudy")
+                        .WithMany("ChildVersions")
+                        .HasForeignKey("ParentStudyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Api.Features.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FieldworkMarket");
+
+                    b.Navigation("MasterStudy");
+
+                    b.Navigation("ParentStudy");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyManagedListAssignment", b =>
+                {
+                    b.HasOne("Api.Features.ManagedLists.ManagedList", "ManagedList")
+                        .WithMany()
+                        .HasForeignKey("ManagedListId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Studies.Study", "Study")
+                        .WithMany()
+                        .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Studies.StudyQuestionnaireLine", "StudyQuestionnaireLine")
+                        .WithMany("ManagedListAssignments")
+                        .HasForeignKey("StudyQuestionnaireLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ManagedList");
+
+                    b.Navigation("Study");
+
+                    b.Navigation("StudyQuestionnaireLine");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyQuestionSubsetLink", b =>
+                {
+                    b.HasOne("Api.Features.ManagedLists.ManagedList", "ManagedList")
+                        .WithMany()
+                        .HasForeignKey("ManagedListId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Studies.Study", "Study")
+                        .WithMany()
+                        .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.Studies.StudyQuestionnaireLine", "StudyQuestionnaireLine")
+                        .WithMany("SubsetLinks")
+                        .HasForeignKey("StudyQuestionnaireLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Features.ManagedLists.SubsetDefinition", "SubsetDefinition")
+                        .WithMany()
+                        .HasForeignKey("SubsetDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ManagedList");
+
+                    b.Navigation("Study");
+
+                    b.Navigation("StudyQuestionnaireLine");
+
+                    b.Navigation("SubsetDefinition");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyQuestionnaireLine", b =>
+                {
+                    b.HasOne("Api.Features.QuestionBank.QuestionBankItem", "QuestionBankItem")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Api.Features.Studies.Study", "Study")
+                        .WithMany("QuestionnaireLines")
+                        .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuestionBankItem");
+
+                    b.Navigation("Study");
+                });
+
             modelBuilder.Entity("Api.Features.ConfigurationQuestions.ConfigurationQuestion", b =>
                 {
                     b.Navigation("Answers");
@@ -1646,6 +2010,20 @@ namespace Api.Migrations
                     b.Navigation("Answers");
 
                     b.Navigation("ModuleQuestions");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.Study", b =>
+                {
+                    b.Navigation("ChildVersions");
+
+                    b.Navigation("QuestionnaireLines");
+                });
+
+            modelBuilder.Entity("Api.Features.Studies.StudyQuestionnaireLine", b =>
+                {
+                    b.Navigation("ManagedListAssignments");
+
+                    b.Navigation("SubsetLinks");
                 });
 #pragma warning restore 612, 618
         }
