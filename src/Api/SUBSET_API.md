@@ -95,6 +95,79 @@ Retrieves detailed information about a specific subset definition including all 
 
 ---
 
+### Delete Subset
+
+**Endpoint:** `DELETE /api/subsets/{id}`
+
+Deletes a subset definition and clears all question links to it. Questions using this subset will fall back to full list selection.
+
+**Response (200 OK):**
+```json
+{
+  "subsetDefinitionId": "guid",
+  "affectedQuestionIds": ["guid", "guid", ...]
+}
+```
+
+**Behavior:**
+- Removes the subset definition from the database
+- Clears `SubsetDefinitionId` in all QuestionSubsetLinks (sets to null for full selection)
+- Removes all SubsetMembership records
+- Returns list of affected question IDs for refresh
+
+**Validation:**
+- Project must be in Draft status
+- Subset must exist
+
+**Error Responses:**
+- `404 Not Found`: Subset not found
+- `400 Bad Request`: Project is not in Draft status
+
+---
+
+### Refresh Project Summary
+
+**Endpoint:** `POST /api/subsets/project/{projectId}/refresh`
+
+Recomputes and returns the complete subset summary for a project, including membership details and question counts.
+
+**Response (200 OK):**
+```json
+{
+  "projectId": "guid",
+  "subsets": [
+    {
+      "id": "guid",
+      "managedListId": "guid",
+      "managedListName": "BRANDS",
+      "name": "BRANDS_SUB1",
+      "memberCount": 5,
+      "totalItemsInList": 10,
+      "isFull": false,
+      "memberLabels": ["Coca-Cola", "Pepsi", "Sprite", "Fanta", "7Up"],
+      "questionCount": 2,
+      "createdOn": "2026-02-18T23:00:00Z"
+    },
+    ...
+  ]
+}
+```
+
+**Behavior:**
+- Calculates complete subset summaries including:
+  - Member counts vs total list size
+  - Whether subset is full or partial
+  - All member labels in sort order
+  - Number of questions using each subset
+- Automatically called after subset operations to maintain consistency
+
+**Use Cases:**
+- Manual refresh to ensure UI has latest data
+- After bulk operations on managed list items
+- Dashboard/summary views needing current subset state
+
+---
+
 ### Get Subsets for Project
 
 **Endpoint:** `GET /api/subsets/project/{projectId}`
@@ -141,6 +214,34 @@ Two questions selecting the same items (regardless of order) will share the same
 - Second subset: `{LIST}_SUB2`
 - If SUB2 is deleted and a new subset is created: `{LIST}_SUB3` (no gap reuse)
 - Naming is per (Project, Managed List) pair - different projects can have SUB1
+
+### Automatic Synchronization (US4)
+
+The system automatically maintains consistency when subsets or managed list items change:
+
+#### Triggers
+1. **Subset Operations**: Creating, updating, or deleting subsets triggers:
+   - Question display refresh for all affected questions
+   - Project summary refresh
+
+2. **Managed List Item Updates**: Updating an item (label, value, sort order) triggers:
+   - Refresh for all subsets containing that item
+   - Only affects Draft projects (locked projects remain unchanged)
+
+3. **Managed List Item Deletion**: Deleting an item triggers:
+   - Refresh for all subsets containing that item
+   - Removes item from subset memberships
+
+#### State-Aware Behavior
+- **Draft Projects**: All synchronization triggers are active
+- **Non-Draft Projects**: Synchronization is skipped to preserve locked state
+  - MLE changes do not affect non-Draft project subsets
+  - Subset operations are blocked entirely
+  
+#### Idempotency
+- Multiple refresh triggers for the same subset are handled safely
+- No duplicate data or inconsistent state
+- Summary calculations are deterministic
 
 ## Database Schema
 
