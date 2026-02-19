@@ -19,6 +19,24 @@ public interface ISubsetManagementService
     Task<GetSubsetsForProjectResponse> GetSubsetsForProjectAsync(
         Guid projectId,
         CancellationToken cancellationToken = default);
+    
+    Task<DeleteSubsetResponse> DeleteSubsetAsync(
+        Guid subsetDefinitionId,
+        string userId,
+        CancellationToken cancellationToken = default);
+    
+    Task RefreshQuestionDisplaysAsync(
+        Guid subsetDefinitionId,
+        CancellationToken cancellationToken = default);
+    
+    Task<ProjectSubsetSummaryResponse> RefreshProjectSummaryAsync(
+        Guid projectId,
+        CancellationToken cancellationToken = default);
+    
+    Task InvalidateSubsetsForItemAsync(
+        Guid managedListItemId,
+        string userId,
+        CancellationToken cancellationToken = default);
 }
 
 public class SubsetManagementService : ISubsetManagementService
@@ -235,6 +253,15 @@ public class SubsetManagementService : ISubsetManagementService
 
         await _context.SaveChangesAsync(cancellationToken);
 
+        // Trigger refresh after save (AC-SYNC-01)
+        if (subsetDefinitionId.HasValue)
+        {
+            await RefreshQuestionDisplaysAsync(subsetDefinitionId.Value, cancellationToken);
+        }
+        
+        // Refresh project summary (AC-SYNC-02)
+        await RefreshProjectSummaryAsync(request.ProjectId, cancellationToken);
+
         return new SaveQuestionSelectionResponse(
             request.QuestionnaireLineId,
             request.ManagedListId,
@@ -341,5 +368,184 @@ public class SubsetManagementService : ISubsetManagementService
 
         var nextSuffix = maxSuffix + 1;
         return $"{prefix}{nextSuffix}";
+    }
+
+    public async Task<DeleteSubsetResponse> DeleteSubsetAsync(
+        Guid subsetDefinitionId,
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Deleting subset {SubsetId}", subsetDefinitionId);
+
+        var subset = await _context.SubsetDefinitions
+            .Include(sd => sd.QuestionLinks)
+            .Include(sd => sd.Memberships)
+            .Include(sd => sd.Project)
+            .FirstOrDefaultAsync(sd => sd.Id == subsetDefinitionId, cancellationToken);
+
+        if (subset == null)
+        {
+            throw new InvalidOperationException($"Subset {subsetDefinitionId} not found");
+        }
+
+        // Validate project is in Draft state
+        if (subset.Project.Status != ProjectStatus.Draft)
+        {
+            throw new InvalidOperationException($"Cannot delete subset in read-only project. Current status: {subset.Project.Status}");
+        }
+
+        var questionIds = subset.QuestionLinks.Select(ql => ql.QuestionnaireLineId).ToList();
+        var projectId = subset.ProjectId;
+
+        // Clear subset links (set SubsetDefinitionId to null for full selection fallback)
+        foreach (var link in subset.QuestionLinks)
+        {
+            link.SubsetDefinitionId = null;
+            link.ModifiedOn = DateTime.UtcNow;
+            link.ModifiedBy = userId;
+        }
+
+        // Remove memberships and subset definition
+        _context.SubsetMemberships.RemoveRange(subset.Memberships);
+        _context.SubsetDefinitions.Remove(subset);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Deleted subset {SubsetId}, cleared {QuestionCount} question links", 
+            subsetDefinitionId, questionIds.Count);
+
+        return new DeleteSubsetResponse(subsetDefinitionId, questionIds);
+    }
+
+    public async Task RefreshQuestionDisplaysAsync(
+        Guid subsetDefinitionId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Refreshing question displays for subset {SubsetId}", subsetDefinitionId);
+
+        // Find all questions using this subset
+        var questionIds = await _context.QuestionSubsetLinks
+            .AsNoTracking()
+            .Where(qsl => qsl.SubsetDefinitionId == subsetDefinitionId)
+            .Select(qsl => qsl.QuestionnaireLineId)
+            .ToListAsync(cancellationToken);
+
+        // In a real implementation, this would trigger UI refresh events (e.g., SignalR)
+        // For now, we log the questions that need refreshing
+        _logger.LogInformation("Identified {QuestionCount} questions for refresh: {QuestionIds}", 
+            questionIds.Count, string.Join(", ", questionIds));
+
+        // Future enhancement: Publish refresh events to SignalR hub or message queue
+        // await _hubContext.Clients.Group($"Project_{projectId}").SendAsync("RefreshQuestions", questionIds);
+    }
+
+    public async Task<ProjectSubsetSummaryResponse> RefreshProjectSummaryAsync(
+        Guid projectId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Refreshing project summary for {ProjectId}", projectId);
+
+        // Get all subsets for the project with their details
+        var subsets = await _context.SubsetDefinitions
+            .Include(sd => sd.ManagedList)
+            .Include(sd => sd.Memberships)
+                .ThenInclude(m => m.ManagedListItem)
+            .Include(sd => sd.QuestionLinks)
+            .AsNoTracking()
+            .Where(sd => sd.ProjectId == projectId && sd.Status == SubsetStatus.Active)
+            .OrderBy(sd => sd.ManagedListId)
+            .ThenBy(sd => sd.Name)
+            .ToListAsync(cancellationToken);
+
+        // Get all managed lists for the project to calculate full vs partial
+        var managedListCounts = await _context.ManagedListItems
+            .AsNoTracking()
+            .Where(mli => mli.ManagedList.ProjectId == projectId && mli.IsActive)
+            .GroupBy(mli => mli.ManagedListId)
+            .Select(g => new { ManagedListId = g.Key, TotalCount = g.Count() })
+            .ToDictionaryAsync(x => x.ManagedListId, x => x.TotalCount, cancellationToken);
+
+        var summaries = subsets.Select(sd =>
+        {
+            var totalItemsInList = managedListCounts.GetValueOrDefault(sd.ManagedListId, 0);
+            var memberCount = sd.Memberships.Count;
+            var isFull = memberCount == totalItemsInList;
+            var memberLabels = sd.Memberships
+                .OrderBy(m => m.ManagedListItem.SortOrder)
+                .Select(m => m.ManagedListItem.Label)
+                .ToList();
+            var questionCount = sd.QuestionLinks.Count;
+
+            return new SubsetDetailSummaryDto(
+                sd.Id,
+                sd.ManagedListId,
+                sd.ManagedList.Name,
+                sd.Name,
+                memberCount,
+                totalItemsInList,
+                isFull,
+                memberLabels,
+                questionCount,
+                sd.CreatedOn
+            );
+        }).ToList();
+
+        _logger.LogInformation("Generated summary for {SubsetCount} subsets in project {ProjectId}", 
+            summaries.Count, projectId);
+
+        return new ProjectSubsetSummaryResponse(projectId, summaries);
+    }
+
+    public async Task InvalidateSubsetsForItemAsync(
+        Guid managedListItemId,
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Invalidating subsets for ManagedListItem {ItemId}", managedListItemId);
+
+        // Find the managed list item
+        var item = await _context.ManagedListItems
+            .Include(mli => mli.ManagedList)
+                .ThenInclude(ml => ml.Project)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(mli => mli.Id == managedListItemId, cancellationToken);
+
+        if (item == null)
+        {
+            _logger.LogWarning("ManagedListItem {ItemId} not found", managedListItemId);
+            return;
+        }
+
+        // Only process if project is in Draft state
+        if (item.ManagedList.Project.Status != ProjectStatus.Draft)
+        {
+            _logger.LogInformation("Skipping invalidation for item {ItemId} - project is not in Draft status", 
+                managedListItemId);
+            return;
+        }
+
+        // Find all subsets that include this item
+        var affectedSubsets = await _context.SubsetMemberships
+            .Include(sm => sm.SubsetDefinition)
+                .ThenInclude(sd => sd.QuestionLinks)
+            .Where(sm => sm.ManagedListItemId == managedListItemId)
+            .Select(sm => sm.SubsetDefinition)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        _logger.LogInformation("Found {SubsetCount} subsets affected by item {ItemId}", 
+            affectedSubsets.Count, managedListItemId);
+
+        // For each affected subset, trigger question display refresh
+        foreach (var subset in affectedSubsets)
+        {
+            await RefreshQuestionDisplaysAsync(subset.Id, cancellationToken);
+        }
+
+        // Refresh project summary
+        if (affectedSubsets.Any())
+        {
+            await RefreshProjectSummaryAsync(item.ManagedList.ProjectId, cancellationToken);
+        }
     }
 }

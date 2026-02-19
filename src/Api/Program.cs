@@ -200,6 +200,8 @@ api.MapDeleteManagedListEndpoint();
 api.MapSaveQuestionSelectionEndpoint();
 api.MapGetSubsetDetailsEndpoint();
 api.MapGetSubsetsForProjectEndpoint();
+api.MapDeleteSubsetEndpoint();
+api.MapRefreshProjectSummaryEndpoint();
 
 // Managed List Items
 api.MapCreateManagedListItemEndpoint();
