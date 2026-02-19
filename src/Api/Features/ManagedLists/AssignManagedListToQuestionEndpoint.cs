@@ -19,6 +19,7 @@ public static class AssignManagedListToQuestionEndpoint
         AssignManagedListToQuestionRequest request,
         ApplicationDbContext db,
         IValidator<AssignManagedListToQuestionRequest> validator,
+        IAutoAssociationService autoAssociationService,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -66,6 +67,13 @@ public static class AssignManagedListToQuestionEndpoint
 
         db.QuestionManagedLists.Add(assignment);
         await db.SaveChangesAsync(cancellationToken);
+
+        // Trigger auto-association for Draft Studies (US5 - AC-AUTO-02)
+        await autoAssociationService.OnManagedListAssignedToQuestionAsync(
+            assignment.QuestionnaireLineId, 
+            assignment.ManagedListId, 
+            "System", 
+            cancellationToken);
 
         var response = new AssignManagedListToQuestionResponse(
             assignment.Id,
