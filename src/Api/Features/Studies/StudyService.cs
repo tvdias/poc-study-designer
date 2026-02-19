@@ -76,81 +76,85 @@ public class StudyService : IStudyService
                 $"Project {request.ProjectId} has no questionnaire lines to copy");
         }
 
-        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Create Study V1
-            var study = new Study
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                Id = Guid.NewGuid(),
-                ProjectId = request.ProjectId,
-                Name = request.Name,
-                Description = request.Description,
-                VersionNumber = 1,
-                Status = StudyStatus.Draft,
-                MasterStudyId = null, // V1 is its own master
-                ParentStudyId = null,
-                VersionComment = request.Comment,
-                CreatedBy = userId,
-                CreatedOn = DateTime.UtcNow
-            };
+                // Create Study V1
+                var study = new Study
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = request.ProjectId,
+                    Name = request.Name,
+                    Description = request.Description,
+                    VersionNumber = 1,
+                    Status = StudyStatus.Draft,
+                    MasterStudyId = null, // V1 is its own master
+                    ParentStudyId = null,
+                    VersionComment = request.Comment,
+                    CreatedBy = userId,
+                    CreatedOn = DateTime.UtcNow
+                };
 
-            _context.Studies.Add(study);
-            await _context.SaveChangesAsync(cancellationToken);
+                _context.Studies.Add(study);
+                await _context.SaveChangesAsync(cancellationToken);
 
-            // Set MasterStudyId to itself for V1
-            study.MasterStudyId = study.Id;
-            await _context.SaveChangesAsync(cancellationToken);
+                // Set MasterStudyId to itself for V1
+                study.MasterStudyId = study.Id;
+                await _context.SaveChangesAsync(cancellationToken);
 
-            // Copy questionnaire lines
-            var studyQuestions = await CopyQuestionnaireLinesAsync(
-                study.Id,
-                masterQuestions,
-                userId,
-                cancellationToken);
+                // Copy questionnaire lines
+                var studyQuestions = await CopyQuestionnaireLinesAsync(
+                    study.Id,
+                    masterQuestions,
+                    userId,
+                    cancellationToken);
 
-            // Copy managed list assignments
-            await CopyManagedListAssignmentsAsync(
-                study.Id,
-                studyQuestions,
-                masterQuestions,
-                userId,
-                cancellationToken);
+                // Copy managed list assignments
+                await CopyManagedListAssignmentsAsync(
+                    study.Id,
+                    studyQuestions,
+                    masterQuestions,
+                    userId,
+                    cancellationToken);
 
-            // Copy subsets with full selection (all active MLEs)
-            await CopySubsetsForV1Async(
-                study.Id,
-                studyQuestions,
-                request.ProjectId,
-                userId,
-                cancellationToken);
+                // Copy subsets with full selection (all active MLEs)
+                await CopySubsetsForV1Async(
+                    study.Id,
+                    studyQuestions,
+                    request.ProjectId,
+                    userId,
+                    cancellationToken);
 
-            // Update project counters
-            await UpdateProjectCountersAsync(
-                request.ProjectId,
-                cancellationToken);
+                // Update project counters
+                await UpdateProjectCountersAsync(
+                    request.ProjectId,
+                    cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
-            _logger.LogInformation(
-                "Successfully created Study V1: StudyId={StudyId}, Name={Name}, QuestionCount={QuestionCount}",
-                study.Id, study.Name, studyQuestions.Count);
+                _logger.LogInformation(
+                    "Successfully created Study V1: StudyId={StudyId}, Name={Name}, QuestionCount={QuestionCount}",
+                    study.Id, study.Name, studyQuestions.Count);
 
-            return new CreateStudyResponse
+                return new CreateStudyResponse
+                {
+                    StudyId = study.Id,
+                    Name = study.Name,
+                    VersionNumber = study.VersionNumber,
+                    Status = study.Status,
+                    QuestionCount = studyQuestions.Count
+                };
+            }
+            catch (Exception ex)
             {
-                StudyId = study.Id,
-                Name = study.Name,
-                VersionNumber = study.VersionNumber,
-                Status = study.Status,
-                QuestionCount = studyQuestions.Count
-            };
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            _logger.LogError(ex, "Failed to create Study V1 for ProjectId={ProjectId}", request.ProjectId);
-            throw;
-        }
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to create Study V1 for ProjectId={ProjectId}", request.ProjectId);
+                throw;
+            }
+        });
     }
 
     public async Task<CreateStudyVersionResponse> CreateStudyVersionAsync(
@@ -204,79 +208,83 @@ public class StudyService : IStudyService
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Create new Study version
-            var study = new Study
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                Id = Guid.NewGuid(),
-                ProjectId = parentStudy.ProjectId,
-                Name = request.Name ?? parentStudy.Name,
-                Description = request.Description ?? parentStudy.Description,
-                VersionNumber = newVersionNumber,
-                Status = StudyStatus.Draft,
-                MasterStudyId = masterStudyId,
-                ParentStudyId = parentStudy.Id,
-                VersionComment = request.Comment,
-                VersionReason = request.Reason,
-                CreatedBy = userId,
-                CreatedOn = DateTime.UtcNow
-            };
+                // Create new Study version
+                var study = new Study
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = parentStudy.ProjectId,
+                    Name = request.Name ?? parentStudy.Name,
+                    Description = request.Description ?? parentStudy.Description,
+                    VersionNumber = newVersionNumber,
+                    Status = StudyStatus.Draft,
+                    MasterStudyId = masterStudyId,
+                    ParentStudyId = parentStudy.Id,
+                    VersionComment = request.Comment,
+                    VersionReason = request.Reason,
+                    CreatedBy = userId,
+                    CreatedOn = DateTime.UtcNow
+                };
 
-            _context.Studies.Add(study);
-            await _context.SaveChangesAsync(cancellationToken);
+                _context.Studies.Add(study);
+                await _context.SaveChangesAsync(cancellationToken);
 
-            // Copy questions from parent
-            var studyQuestions = await CopyStudyQuestionnairesAsync(
-                study.Id,
-                parentQuestions,
-                userId,
-                cancellationToken);
+                // Copy questions from parent
+                var studyQuestions = await CopyStudyQuestionnairesAsync(
+                    study.Id,
+                    parentQuestions,
+                    userId,
+                    cancellationToken);
 
-            // Copy managed list assignments from parent
-            await CopyStudyManagedListAssignmentsAsync(
-                study.Id,
-                studyQuestions,
-                parentQuestions,
-                userId,
-                cancellationToken);
+                // Copy managed list assignments from parent
+                await CopyStudyManagedListAssignmentsAsync(
+                    study.Id,
+                    studyQuestions,
+                    parentQuestions,
+                    userId,
+                    cancellationToken);
 
-            // Copy/reuse subsets from parent
-            await CopySubsetsFromParentAsync(
-                study.Id,
-                studyQuestions,
-                parentQuestions,
-                userId,
-                cancellationToken);
+                // Copy/reuse subsets from parent
+                await CopySubsetsFromParentAsync(
+                    study.Id,
+                    studyQuestions,
+                    parentQuestions,
+                    userId,
+                    cancellationToken);
 
-            // Update project LastStudyModifiedOn
-            await UpdateProjectCountersAsync(
-                parentStudy.ProjectId,
-                cancellationToken);
+                // Update project LastStudyModifiedOn
+                await UpdateProjectCountersAsync(
+                    parentStudy.ProjectId,
+                    cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
-            _logger.LogInformation(
-                "Successfully created Study V{Version}: StudyId={StudyId}, Name={Name}, QuestionCount={QuestionCount}",
-                newVersionNumber, study.Id, study.Name, studyQuestions.Count);
+                _logger.LogInformation(
+                    "Successfully created Study V{Version}: StudyId={StudyId}, Name={Name}, QuestionCount={QuestionCount}",
+                    newVersionNumber, study.Id, study.Name, studyQuestions.Count);
 
-            return new CreateStudyVersionResponse
+                return new CreateStudyVersionResponse
+                {
+                    StudyId = study.Id,
+                    Name = study.Name,
+                    VersionNumber = study.VersionNumber,
+                    Status = study.Status,
+                    ParentStudyId = parentStudy.Id,
+                    QuestionCount = studyQuestions.Count
+                };
+            }
+            catch (Exception ex)
             {
-                StudyId = study.Id,
-                Name = study.Name,
-                VersionNumber = study.VersionNumber,
-                Status = study.Status,
-                ParentStudyId = parentStudy.Id,
-                QuestionCount = studyQuestions.Count
-            };
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            _logger.LogError(ex, "Failed to create new version for StudyId={StudyId}", request.ParentStudyId);
-            throw;
-        }
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to create new version for StudyId={StudyId}", request.ParentStudyId);
+                throw;
+            }
+        });
     }
 
     public async Task<GetStudiesResponse> GetStudiesAsync(
