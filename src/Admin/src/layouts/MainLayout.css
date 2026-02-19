@@ -14,8 +14,12 @@
     z-index: 10;
 }
 
+
 .brand {
     padding: 0 var(--spacing-lg) var(--spacing-xxl);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .brand h2 {

@@ -15,7 +15,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<div style={{ padding: '2rem' }}><h2>Dashboard Coming Soon</h2></div>} />
+          <Route index element={<Navigate to="question-bank" replace />} />
           <Route path="tags" element={<TagsPage />} />
           <Route path="commissioning-markets" element={<CommissioningMarketsPage />} />
           <Route path="fieldwork-markets" element={<FieldworkMarketsPage />} />
