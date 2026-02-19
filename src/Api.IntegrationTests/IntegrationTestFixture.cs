@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Testcontainers.PostgreSql;
 using Xunit;
 using System.Text.Json;
@@ -36,13 +37,20 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         await _postgresContainer.StartAsync();
 
-
-
         // Create WebApplicationFactory
         Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
+
+                builder.ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders(); // Remove default providers
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Warning);
+                    logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+                    logging.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
+                });
                 
                 // Provide connection strings via UseSetting so they are available to WebApplicationBuilder
                 builder.UseSetting("ConnectionStrings:studydb", _postgresContainer.GetConnectionString());

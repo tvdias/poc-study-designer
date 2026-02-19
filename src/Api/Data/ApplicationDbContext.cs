@@ -42,6 +42,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ManagedList> ManagedLists => Set<ManagedList>();
     public DbSet<ManagedListItem> ManagedListItems => Set<ManagedListItem>();
     public DbSet<QuestionManagedList> QuestionManagedLists => Set<QuestionManagedList>();
+    public DbSet<SubsetDefinition> SubsetDefinitions => Set<SubsetDefinition>();
+    public DbSet<SubsetMembership> SubsetMemberships => Set<SubsetMembership>();
+    public DbSet<QuestionSubsetLink> QuestionSubsetLinks => Set<QuestionSubsetLink>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -383,6 +386,70 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.QuestionnaireLine)
                 .WithMany()
                 .HasForeignKey(e => e.QuestionnaireLineId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SubsetDefinition>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(250);
+            entity.Property(e => e.SignatureHash).IsRequired().HasMaxLength(64);
+            
+            // Unique index on (ProjectId, ManagedListId, SignatureHash) for reuse detection
+            entity.HasIndex(e => new { e.ProjectId, e.ManagedListId, e.SignatureHash }).IsUnique();
+            
+            // Index for efficient lookup
+            entity.HasIndex(e => new { e.ProjectId, e.ManagedListId });
+            
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ManagedList)
+                .WithMany()
+                .HasForeignKey(e => e.ManagedListId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.Memberships)
+                .WithOne(m => m.SubsetDefinition)
+                .HasForeignKey(m => m.SubsetDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.QuestionLinks)
+                .WithOne(ql => ql.SubsetDefinition)
+                .HasForeignKey(ql => ql.SubsetDefinitionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<SubsetMembership>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            // Unique constraint: one item can only be in a subset once
+            entity.HasIndex(e => new { e.SubsetDefinitionId, e.ManagedListItemId }).IsUnique();
+            
+            entity.HasOne(e => e.ManagedListItem)
+                .WithMany()
+                .HasForeignKey(e => e.ManagedListItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<QuestionSubsetLink>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            // Unique constraint: one subset link per question per managed list
+            entity.HasIndex(e => new { e.QuestionnaireLineId, e.ManagedListId }).IsUnique();
+            
+            entity.HasOne(e => e.QuestionnaireLine)
+                .WithMany()
+                .HasForeignKey(e => e.QuestionnaireLineId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ManagedList)
+                .WithMany()
+                .HasForeignKey(e => e.ManagedListId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
