@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Zap, ChevronDown, Bell, Plus } from 'lucide-react';
+import { Zap, ChevronDown, Bell, Plus, ArrowLeft } from 'lucide-react';
 import './DesignerLayout.css';
 
 export function DesignerLayout() {
@@ -15,11 +15,27 @@ export function DesignerLayout() {
         <div className="designer-layout">
             {/* Header */}
             <header className="designer-header" id="main-header">
-                <div className="header-left">
+                <div className="header-left" onClick={() => navigate('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src="/logo.svg" alt="Study Designer" style={{ height: '24px' }} />
                     <span className="service-name">Study Designer</span>
                 </div>
 
                 <div className="header-right">
+                    {/* Create Project Button */}
+                    {!isProjectDetail && (
+                        <button className="create-btn" onClick={handleCreateProject}>
+                            <Plus size={16} />
+                            <span className="hidden sm:inline">Create Project</span>
+                        </button>
+                    )}
+
+                    {location.pathname !== '/' && (
+                        <button className="header-action-btn" onClick={() => navigate('/')} style={{ marginRight: '8px' }}>
+                            <ArrowLeft size={16} className="text-slate-400" />
+                            <span className="hidden sm:inline">Back to Projects</span>
+                        </button>
+                    )}
+
                     {/* Quick Actions Dropdown */}
                     <div className="dropdown-wrapper">
                         <button className="header-action-btn">
@@ -37,14 +53,6 @@ export function DesignerLayout() {
                             </a>
                         </div>
                     </div>
-
-                    {/* Create Project Button */}
-                    {!isProjectDetail && (
-                        <button className="create-btn" onClick={handleCreateProject}>
-                            <Plus size={16} />
-                            <span className="hidden sm:inline">Create Project</span>
-                        </button>
-                    )}
 
                     {/* Notifications */}
                     <button className="notification-btn">
