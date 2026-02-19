@@ -9,7 +9,7 @@ public static class SaveQuestionSelectionEndpoint
 {
     public static void MapSaveQuestionSelectionEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/subsets/save-selection", async Task<Results<Ok<SaveQuestionSelectionResponse>, ValidationProblem, BadRequest<string>>> (
+        app.MapPost("/subsets/save-selection", async Task<Results<Ok<SaveQuestionSelectionResponse>, ValidationProblem, BadRequest<string>>> (
             [FromBody] SaveQuestionSelectionRequest request,
             [FromServices] IValidator<SaveQuestionSelectionRequest> validator,
             [FromServices] ISubsetManagementService subsetService,

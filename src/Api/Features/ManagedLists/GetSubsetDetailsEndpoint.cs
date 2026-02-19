@@ -6,7 +6,7 @@ public static class GetSubsetDetailsEndpoint
 {
     public static void MapGetSubsetDetailsEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/subsets/{id:guid}", async Task<Results<Ok<GetSubsetDetailsResponse>, NotFound>> (
+        app.MapGet("/subsets/{id:guid}", async Task<Results<Ok<GetSubsetDetailsResponse>, NotFound>> (
             Guid id,
             ISubsetManagementService subsetService,
             CancellationToken cancellationToken) =>

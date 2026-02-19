@@ -207,9 +207,9 @@ api.MapAssignManagedListToQuestionEndpoint();
 api.MapUnassignManagedListFromQuestionEndpoint();
 
 // Subset Definitions
-app.MapSaveQuestionSelectionEndpoint();
-app.MapGetSubsetDetailsEndpoint();
-app.MapGetSubsetsForProjectEndpoint();
+api.MapSaveQuestionSelectionEndpoint();
+api.MapGetSubsetDetailsEndpoint();
+api.MapGetSubsetsForProjectEndpoint();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();
