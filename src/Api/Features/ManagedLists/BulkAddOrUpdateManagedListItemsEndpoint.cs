@@ -21,6 +21,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
         BulkAddOrUpdateManagedListItemsRequest request,
         ApplicationDbContext db,
         ISubsetManagementService subsetService,
+        IAutoAssociationService autoAssociationService,
         CancellationToken cancellationToken)
     {
         // Check if managed list exists
@@ -52,8 +53,9 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
         // Track codes within this batch to detect duplicates
         var codesInBatch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
-        // Track which items were updated for subset refresh
+        // Track which items were updated/inserted for auto-association and subset refresh
         var updatedItemIds = new List<Guid>();
+        var insertedItemIds = new List<Guid>();
 
         for (int i = 0; i < request.Items.Count; i++)
         {
@@ -129,6 +131,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
                 };
 
                 db.ManagedListItems.Add(newItem);
+                insertedItemIds.Add(newItem.Id);
                 results.Add(new BulkOperationRowResult(rowIndex, input.Value, "inserted", null));
                 insertedCount++;
             }
@@ -138,6 +141,12 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
         if (insertedCount > 0 || updatedCount > 0)
         {
             await db.SaveChangesAsync(cancellationToken);
+            
+            // Trigger auto-association for newly inserted items (US5 - AC-AUTO-01)
+            foreach (var itemId in insertedItemIds)
+            {
+                await autoAssociationService.OnManagedListItemCreatedAsync(itemId, "System", cancellationToken);
+            }
             
             // Trigger subset refresh for updated items (AC-SYNC-04)
             foreach (var itemId in updatedItemIds)

@@ -20,6 +20,7 @@ public static class CreateManagedListItemEndpoint
         CreateManagedListItemRequest request,
         ApplicationDbContext db,
         IValidator<CreateManagedListItemRequest> validator,
+        IAutoAssociationService autoAssociationService,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -61,6 +62,9 @@ public static class CreateManagedListItemEndpoint
 
         db.ManagedListItems.Add(item);
         await db.SaveChangesAsync(cancellationToken);
+
+        // Trigger auto-association for Draft Studies (US5 - AC-AUTO-01)
+        await autoAssociationService.OnManagedListItemCreatedAsync(item.Id, "System", cancellationToken);
 
         var response = new CreateManagedListItemResponse(
             item.Id,

@@ -22,6 +22,7 @@ public static class UpdateManagedListItemEndpoint
         ApplicationDbContext db,
         IValidator<UpdateManagedListItemRequest> validator,
         ISubsetManagementService subsetService,
+        IAutoAssociationService autoAssociationService,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -49,6 +50,10 @@ public static class UpdateManagedListItemEndpoint
             return TypedResults.Conflict($"Another item with code '{request.Value}' already exists in this managed list.");
         }
 
+        // Track if activation status changed (US5 - AC-AUTO-03, AC-AUTO-04)
+        var wasActive = item.IsActive;
+        var willBeActive = request.IsActive;
+
         item.Value = request.Value;
         item.Label = request.Label;
         item.SortOrder = request.SortOrder;
@@ -58,6 +63,18 @@ public static class UpdateManagedListItemEndpoint
         item.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
 
         await db.SaveChangesAsync(cancellationToken);
+
+        // Handle activation state changes
+        if (wasActive && !willBeActive)
+        {
+            // Item was deactivated (US5 - AC-AUTO-03)
+            await autoAssociationService.OnManagedListItemDeactivatedAsync(itemId, "System", cancellationToken);
+        }
+        else if (!wasActive && willBeActive)
+        {
+            // Item was reactivated (US5 - AC-AUTO-04)
+            await autoAssociationService.OnManagedListItemReactivatedAsync(itemId, "System", cancellationToken);
+        }
 
         // Trigger subset refresh for affected subsets (AC-SYNC-04)
         await subsetService.InvalidateSubsetsForItemAsync(itemId, "System", cancellationToken);
