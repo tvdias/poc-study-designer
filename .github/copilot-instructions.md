@@ -106,6 +106,15 @@ src/
    - Place migrations in `Migrations/` folder
    - Use UTC timestamps: `DateTime.UtcNow`
    - Entity properties should include: `Id`, `CreatedOn`, `CreatedBy`, etc.
+   - All entities extending `AuditableEntity` must set `CreatedOn = DateTime.UtcNow` and `CreatedBy` (user identifier or "System" for automated processes)
+   - Configure entity relationships in `ApplicationDbContext.OnModelCreating()`
+   - Use unique indexes for natural keys: `entity.HasIndex(e => e.Name).IsUnique()`
+
+8. **Migrations**:
+   - Every EF Core migration requires both a `.cs` file and a `.Designer.cs` file
+   - Missing Designer files cause "pending model changes" errors
+   - When making properties nullable, update both the migration's Designer.cs and ApplicationDbContextModelSnapshot.cs
+   - Test migrations with `dotnet ef database update` locally before committing
 
 ### TypeScript/React Guidelines
 
@@ -188,6 +197,47 @@ public async Task ValidTag_ShouldPassValidation()
 - Test full API workflows
 - Use WebApplicationFactory for testing
 
+### E2E Tests (Playwright)
+
+1. **Test Organization**:
+   - E2E tests are in `Api.E2ETests` project
+   - Use Playwright for browser automation
+   - Assembly-level fixture starts full Aspire application
+
+2. **Setup Requirements**:
+   - Install Playwright browsers: `playwright install chromium`
+   - Tests use headless Chromium in CI with `--no-sandbox` flags
+   - Fixture seeds database before tests run
+
+3. **Test Patterns**:
+   - Combine Playwright UI interactions with direct API verification
+   - Use stable selectors (prefer `data-testid` attributes)
+   - Verify both UI state and database persistence
+   - Use `DragToAsync` for drag-and-drop testing
+   - Accept dialogs with `page.Dialog += (_, dialog) => dialog.AcceptAsync()`
+
+4. **Example E2E Test**:
+```csharp
+[Fact]
+public async Task CreateProject_ShouldPersistToDatabase()
+{
+    // Arrange - Navigate to page
+    var page = await _fixture.CreatePageAsync();
+    await page.GotoAsync(_fixture.GetDesignerUrl());
+    
+    // Act - Interact with UI
+    await page.Locator("button:has-text('Create Project')").ClickAsync();
+    await page.FillAsync("input[name='name']", "Test Project");
+    await page.ClickAsync("button:has-text('Save')");
+    
+    // Assert - Verify in database
+    var apiClient = _fixture.CreateApiClient();
+    var response = await apiClient.GetAsync("/api/projects");
+    var projects = await response.Content.ReadFromJsonAsync<List<Project>>();
+    Assert.Contains(projects, p => p.Name == "Test Project");
+}
+```
+
 ## Development Workflow
 
 ### Running the Application
@@ -229,6 +279,35 @@ cd src/CluedinProcessor  # or src/ProjectsProcessor
 func start               # Local function runtime
 ```
 
+## Azure Integration
+
+### Azure Functions
+
+The project includes two Azure Functions for serverless processing:
+
+1. **CluedinProcessor** (`src/CluedinProcessor/`)
+   - Processes data from CluedIn platform
+   - Service Bus event consumer
+   - Triggered by Azure Service Bus messages
+
+2. **ProjectsProcessor** (`src/ProjectsProcessor/`)
+   - Handles project creation and processing
+   - Service Bus event consumer
+   - Processes project-related events
+
+**Development**:
+- Use Azure Functions Core Tools: `func start` in function directory
+- Configure Service Bus connection string in local.settings.json
+- Test locally with Azure Storage Emulator or Azurite
+
+### Azure Service Bus
+
+- **ServiceBusPublisher** (`src/ServiceBusPublisher/`) - Utility for publishing events
+- Use for event-driven architecture between services
+- Configure connection strings via User Secrets (local) or Azure Key Vault (production)
+- Messages should be JSON-serialized DTOs
+- Handle transient failures with retry policies
+
 ## Prerequisites
 
 When helping users set up the project, ensure they have:
@@ -260,6 +339,325 @@ When helping users set up the project, ensure they have:
 4. Use semantic HTML elements
 5. Handle loading and error states
 
+### Database Seeding
+
+- Seed data endpoint at `/api/seed` (development/testing only)
+- Registered inside `app.Environment.IsDevelopment()` check
+- Use `.WithTags("Utilities")` for utility endpoints
+- Seed entities must have `CreatedOn = DateTime.UtcNow` and `CreatedBy = "SeedData"`
+- Example: `api.MapSeedDataEndpoint()` in `Program.cs`
+
+### Working with Join Tables
+
+For many-to-many relationships with additional properties:
+1. Create a join entity (e.g., `QuestionManagedList` linking Questions to ManagedLists)
+2. Include relationship properties: `QuestionId`, `ManagedListId`
+3. Add sortOrder or other metadata as needed
+4. Configure in ApplicationDbContext with unique indexes:
+   ```csharp
+   entity.HasIndex(e => new { e.ProjectId, e.QuestionBankItemId }).IsUnique();
+   ```
+
+### Handling Optional References
+
+- Use nullable foreign keys (e.g., `Guid?`) when relationships are optional
+- Provide dual-path logic in endpoints (import from reference vs. create new)
+- Update both entity and migration Designer files when changing nullability
+- Validation should conditionally require fields based on whether reference is provided
+
+## Real-World Examples
+
+### Example 1: Creating a Complete CRUD Feature
+
+Let's create a "Categories" feature from scratch:
+
+1. **Create the entity** (`src/Api/Features/Categories/Category.cs`):
+```csharp
+using Api.Features.Shared;
+
+namespace Api.Features.Categories;
+
+public class Category : AuditableEntity
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+```
+
+2. **Add DbSet to ApplicationDbContext** (`src/Api/Data/ApplicationDbContext.cs`):
+```csharp
+public DbSet<Category> Categories => Set<Category>();
+
+// In OnModelCreating:
+modelBuilder.Entity<Category>(entity =>
+{
+    entity.HasKey(e => e.Id);
+    entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+    entity.Property(e => e.Description).HasMaxLength(500);
+    entity.HasIndex(e => e.Name).IsUnique();
+});
+```
+
+3. **Create DTOs and endpoint** (`src/Api/Features/Categories/CreateCategoryEndpoint.cs`):
+```csharp
+public record CreateCategoryRequest(string Name, string? Description);
+public record CreateCategoryResponse(Guid Id, string Name);
+
+public static class CreateCategoryEndpoint
+{
+    public static void MapCreateCategoryEndpoint(this IEndpointRouteBuilder app)
+    {
+        app.MapPost("/categories", HandleAsync)
+            .WithName("CreateCategory")
+            .WithSummary("Create a new category")
+            .WithTags("Categories");
+    }
+
+    public static async Task<Results<CreatedAtRoute<CreateCategoryResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
+        CreateCategoryRequest request,
+        ApplicationDbContext db,
+        IValidator<CreateCategoryRequest> validator,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return TypedResults.ValidationProblem(validationResult.ToDictionary());
+        }
+
+        var category = new Category
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Description = request.Description,
+            CreatedOn = DateTime.UtcNow,
+            CreatedBy = "System"
+        };
+
+        db.Categories.Add(category);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return TypedResults.Conflict($"Category '{request.Name}' already exists.");
+            }
+            throw;
+        }
+
+        return TypedResults.CreatedAtRoute(
+            new CreateCategoryResponse(category.Id, category.Name), 
+            "GetCategoryById", 
+            new { id = category.Id }
+        );
+    }
+}
+```
+
+4. **Add validator** (`src/Api/Features/Categories/Validators/CreateCategoryValidator.cs`):
+```csharp
+using FluentValidation;
+
+namespace Api.Features.Categories.Validators;
+
+public class CreateCategoryValidator : AbstractValidator<CreateCategoryRequest>
+{
+    public CreateCategoryValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required")
+            .MaximumLength(100).WithMessage("Name cannot exceed 100 characters");
+
+        RuleFor(x => x.Description)
+            .MaximumLength(500).WithMessage("Description cannot exceed 500 characters")
+            .When(x => !string.IsNullOrEmpty(x.Description));
+    }
+}
+```
+
+5. **Create migration**:
+```bash
+cd src/Api
+dotnet ef migrations add AddCategories
+```
+
+6. **Register endpoint in Program.cs**:
+```csharp
+using Api.Features.Categories;
+// ...
+api.MapCreateCategoryEndpoint();
+api.MapGetCategoriesEndpoint();
+api.MapGetCategoryByIdEndpoint();
+api.MapUpdateCategoryEndpoint();
+api.MapDeleteCategoryEndpoint();
+```
+
+7. **Write tests** (`src/Api.Tests/CategoryValidatorTests.cs`):
+```csharp
+public class CreateCategoryValidatorTests
+{
+    private readonly CreateCategoryValidator _validator = new();
+
+    [Fact]
+    public async Task ValidCategory_ShouldPassValidation()
+    {
+        var request = new CreateCategoryRequest("Valid Name", "Description");
+        var result = await _validator.ValidateAsync(request);
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public async Task EmptyName_ShouldFailValidation()
+    {
+        var request = new CreateCategoryRequest("", null);
+        var result = await _validator.ValidateAsync(request);
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Name");
+    }
+}
+```
+
+### Example 2: Adding a React Component with API Integration
+
+Create a category management page in the Admin app:
+
+```typescript
+// src/Admin/src/pages/CategoriesPage.tsx
+import { useState, useEffect } from 'react';
+import { categoryApi } from '../services/api';
+
+interface Category {
+    id: string;
+    name: string;
+    description?: string;
+}
+
+export const CategoriesPage = () => {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/categories');
+            if (!response.ok) throw new Error('Failed to load categories');
+            const data = await response.json();
+            setCategories(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div role="alert">Error: {error}</div>;
+
+    return (
+        <div>
+            <h1>Categories</h1>
+            <ul role="list">
+                {categories.map(cat => (
+                    <li key={cat.id}>
+                        <strong>{cat.name}</strong>
+                        {cat.description && <p>{cat.description}</p>}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+```
+
+### Example 3: Working with Drag-and-Drop Reordering
+
+Implementing drag-and-drop requires:
+
+1. **HTML5 draggable attribute**:
+```typescript
+<div
+    draggable
+    onDragStart={(e) => handleDragStart(e, item.id)}
+    onDragOver={(e) => handleDragOver(e, item.id)}
+    onDragEnd={handleDragEnd}
+>
+    {item.name}
+</div>
+```
+
+2. **Track drag state**:
+```typescript
+const [draggedId, setDraggedId] = useState<string | null>(null);
+const [draggedOverId, setDraggedOverId] = useState<string | null>(null);
+
+const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedId(id);
+};
+
+const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    setDraggedOverId(id);
+};
+
+const handleDragEnd = async () => {
+    if (!draggedId || !draggedOverId) return;
+    
+    // Reorder items locally
+    const newOrder = reorderItems(items, draggedId, draggedOverId);
+    setItems(newOrder);
+    
+    // Update server
+    const updates = newOrder.map((item, index) => ({
+        id: item.id,
+        sortOrder: index
+    }));
+    
+    await fetch('/api/items/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+    });
+    
+    setDraggedId(null);
+    setDraggedOverId(null);
+};
+```
+
+3. **Backend bulk update endpoint**:
+```csharp
+public record UpdateSortOrderRequest(List<ItemSortOrder> Items);
+public record ItemSortOrder(Guid Id, int SortOrder);
+
+public static async Task<Results<NoContent, ValidationProblem>> HandleAsync(
+    UpdateSortOrderRequest request,
+    ApplicationDbContext db,
+    CancellationToken cancellationToken)
+{
+    foreach (var item in request.Items)
+    {
+        var entity = await db.Items.FindAsync([item.Id], cancellationToken);
+        if (entity != null)
+        {
+            entity.SortOrder = item.SortOrder;
+        }
+    }
+    
+    await db.SaveChangesAsync(cancellationToken);
+    return TypedResults.NoContent();
+}
+```
+
+
 ## Important Notes
 
 - Use feature-based organization (vertical slices) rather than layer-based
@@ -270,4 +668,78 @@ When helping users set up the project, ensure they have:
 - Include comprehensive error handling
 - Write tests for new features
 - Follow existing code patterns for consistency
-- `**/bin/*` and `**/obj/*` folders shouldn't be commited
+- `**/bin/*` and `**/obj/*` folders shouldn't be committed
+- DTOs in E2E tests must match actual API response structure exactly, including nullable properties (e.g., `Guid?`)
+
+## Repository-Specific Conventions
+
+### Naming Conventions
+- When integrating with external systems, preserve their naming conventions for traceability
+
+### Copy-Edit Pattern
+- When creating project-specific versions of shared data (e.g., questions from question bank):
+  - Copy all fields to the project entity (not just reference IDs)
+  - Maintain traceability via foreign key (e.g., `QuestionBankItemId`)
+  - This enables per-project customization while preserving relationships
+
+### Status Management
+- Use `Status` enum for entities with active/inactive states
+- Prevent operations on inactive entities (e.g., can't assign inactive managed lists)
+- Include status checks in validators and business logic
+
+### Project-Scoped Features
+- Many features are scoped to projects (e.g., `ManagedList` with `ProjectId`)
+- Enforce unique constraints per project: `HasIndex(e => new { e.ProjectId, e.Name }).IsUnique()`
+- Always filter by `ProjectId` in queries to prevent cross-project data access
+
+## CI/CD Workflows
+
+The project uses GitHub Actions for continuous integration:
+
+### Backend CI (`backend-ci.yml`)
+- Triggers on changes to `*.cs`, `*.csproj`, `*.slnx` files
+- Runs on: push to `main` or `develop` branches
+- Steps:
+  1. Setup .NET 10.0 and Node.js 20
+  2. Restore dependencies: `dotnet restore src/StudyDesigner.slnx`
+  3. Build: `dotnet build --configuration Release`
+  4. Run unit tests: `dotnet run --project src/Api.Tests`
+  5. Run integration tests: `dotnet run --project src/Api.IntegrationTests`
+  6. Install Playwright and run E2E tests
+
+### Frontend CI (`frontend-ci.yml`)
+- Triggers on changes to frontend files in `src/Admin/` and `src/Designer/`
+- Runs: `npm ci`, `npm run lint`, `npm run build`, `npm test -- --run`
+
+### Quality Gate (`ci-quality-gate.yml`)
+- Combines backend and frontend CI results
+- Required check for merging PRs
+
+### Docker Validation (`validate-docker.yml`)
+- Validates Docker Compose configuration
+- Ensures containers build and start correctly
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"Pending model changes" error**:
+   - Missing migration Designer.cs file
+   - Mismatch between entity definition and migration/snapshot
+   - Solution: Ensure Designer.cs and ApplicationDbContextModelSnapshot.cs match entity definitions
+
+2. **Playwright browser not found**:
+   - Run: `playwright install chromium` in `src/Api.E2ETests/bin/Debug/net10.0/`
+   - Or use: `pwsh bin/Debug/net10.0/playwright.ps1 install chromium` (Windows)
+
+3. **Flaky integration tests**:
+   - Tests clearing entire database fail when run concurrently
+   - Use `[Fact(Skip = "Flaky when run with other tests")]` attribute
+
+4. **Frontend build artifacts in commits**:
+   - Ensure `.gitignore` excludes `**/bin/`, `**/obj/`, `**/dist/`, `**/build/`
+   - Frontend `.esproj` projects generate artifacts that should never be committed
+
+5. **Missing health check in Aspire**:
+   - Vite apps (Designer, Admin) don't have built-in health checks
+   - Wait for resource to be running, then probe HTTP endpoint
