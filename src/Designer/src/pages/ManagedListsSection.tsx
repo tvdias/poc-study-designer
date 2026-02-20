@@ -10,12 +10,13 @@ import './ManagedListsSection.css';
 
 interface ManagedListsSectionProps {
     projectId: string;
+    onListUpdate?: () => void;
 }
 
 type SortField = 'name' | 'status' | 'itemCount' | 'description';
 type SortDirection = 'asc' | 'desc';
 
-export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
+export function ManagedListsSection({ projectId, onListUpdate }: ManagedListsSectionProps) {
     const navigate = useNavigate();
     const [managedLists, setManagedLists] = useState<ManagedList[]>([]);
     const [loading, setLoading] = useState(true);
@@ -57,6 +58,7 @@ export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
         try {
             const created = await managedListsApi.create(createFormData);
             await loadManagedLists();
+            if (onListUpdate) onListUpdate();
             setShowCreateModal(false);
             setCreateFormData({ projectId, name: '', description: '' });
             // Navigate directly to the new list
@@ -78,6 +80,7 @@ export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
         try {
             await managedListsApi.delete(id);
             setManagedLists(prev => prev.filter(l => l.id !== id));
+            if (onListUpdate) onListUpdate();
         } catch {
             alert('Failed to delete managed list');
         }

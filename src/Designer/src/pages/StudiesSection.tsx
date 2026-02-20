@@ -11,12 +11,13 @@ import './StudiesSection.css';
 
 interface StudiesSectionProps {
     projectId: string;
+    onListUpdate?: () => void;
 }
 
 type SortField = 'name' | 'version' | 'status' | 'category' | 'fieldworkMarketName' | 'createdOn';
 type SortDirection = 'asc' | 'desc';
 
-export function StudiesSection({ projectId }: StudiesSectionProps) {
+export function StudiesSection({ projectId, onListUpdate }: StudiesSectionProps) {
     const [studies, setStudies] = useState<StudySummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export function StudiesSection({ projectId }: StudiesSectionProps) {
         try {
             await studiesApi.create(createFormData);
             await loadStudies();
+            if (onListUpdate) onListUpdate();
             setShowCreateModal(false);
             setCreateFormData({
                 projectId,

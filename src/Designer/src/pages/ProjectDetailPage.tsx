@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
-import { projectsApi, clientsApi, commissioningMarketsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest } from '../services/api';
+import { projectsApi, clientsApi, commissioningMarketsApi, studiesApi, managedListsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest, type StudySummary, type ManagedList } from '../services/api';
 import { QuestionnaireSection } from './QuestionnaireSection';
 import { ManagedListsSection } from './ManagedListsSection';
 import { StudiesSection } from './StudiesSection';
 import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
+    const { handleScroll } = useOutletContext<{ handleScroll: (e: React.UIEvent<HTMLElement>) => void }>();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
@@ -18,7 +19,12 @@ export function ProjectDetailPage() {
         const params = new URLSearchParams(location.search);
         return params.get('section') || 'details';
     });
-    const [studiesExpanded, setStudiesExpanded] = useState(false);
+
+    // Sidebar items state
+    const [studiesExpanded, setStudiesExpanded] = useState(true);
+    const [listsExpanded, setListsExpanded] = useState(true);
+    const [recentStudies, setRecentStudies] = useState<StudySummary[]>([]);
+    const [recentLists, setRecentLists] = useState<ManagedList[]>([]);
 
     // Creation mode state
     const isCreateMode = id === 'new';
@@ -35,6 +41,32 @@ export function ProjectDetailPage() {
     const [serverError, setServerError] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const loadSidebarItems = useCallback(async (pid: string) => {
+        try {
+            const [studiesData, listsData] = await Promise.all([
+                studiesApi.getAll(pid).catch(() => [] as StudySummary[]),
+                managedListsApi.getAll(pid).catch(() => [] as ManagedList[])
+            ]);
+
+            const sortedStudies = [...studiesData]
+                .sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime())
+                .slice(0, 6);
+
+            const sortedLists = [...listsData]
+                .sort((a, b) => {
+                    const tA = new Date(a.modifiedOn || a.firstSnapshotDate || 0).getTime();
+                    const tB = new Date(b.modifiedOn || b.firstSnapshotDate || 0).getTime();
+                    return tB - tA;
+                })
+                .slice(0, 6);
+
+            setRecentStudies(sortedStudies);
+            setRecentLists(sortedLists);
+        } catch (e) {
+            console.error('Failed to load sidebar items', e);
+        }
+    }, []);
+
     useEffect(() => {
         if (isCreateMode) {
             // In create mode, load clients and commissioning markets for the dropdowns
@@ -45,6 +77,12 @@ export function ProjectDetailPage() {
             loadProject(id);
         }
     }, [id, isCreateMode]);
+
+    useEffect(() => {
+        if (!isCreateMode && project?.id) {
+            loadSidebarItems(project.id);
+        }
+    }, [isCreateMode, project?.id, loadSidebarItems]);
 
     const loadClients = async () => {
         try {
@@ -164,13 +202,20 @@ export function ProjectDetailPage() {
                                     <li>
                                         <button
                                             className={`nav-item-accordion ${studiesExpanded ? 'expanded' : ''}`}
-                                            onClick={() => setStudiesExpanded(!studiesExpanded)}
+                                            onClick={() => {
+                                                if (!studiesExpanded) setStudiesExpanded(true);
+                                                setActiveSection('studies');
+                                            }}
                                         >
                                             <div className="nav-item-content">
                                                 <FlaskConical size={16} />
                                                 <span>Studies</span>
                                             </div>
-                                            <ChevronDown size={14} className={`chevron ${studiesExpanded ? 'rotated' : ''}`} />
+                                            <ChevronDown
+                                                size={14}
+                                                className={`chevron ${studiesExpanded ? 'rotated' : ''}`}
+                                                onClick={(e) => { e.stopPropagation(); setStudiesExpanded(!studiesExpanded); }}
+                                            />
                                         </button>
                                         {studiesExpanded && (
                                             <ul className="sub-nav-list">
@@ -182,17 +227,63 @@ export function ProjectDetailPage() {
                                                         All Studies Overview
                                                     </button>
                                                 </li>
+                                                {recentStudies.map(study => (
+                                                    <li key={study.studyId}>
+                                                        <button
+                                                            className="sub-nav-item recent-item"
+                                                            title={study.name}
+                                                            onClick={() => setActiveSection('studies')}
+                                                        >
+                                                            <span className={`status-dot status-${study.status?.toLowerCase() || 'draft'}`}></span>
+                                                            <span className="truncate">{study.name}</span>
+                                                        </button>
+                                                    </li>
+                                                ))}
                                             </ul>
                                         )}
                                     </li>
                                     <li>
                                         <button
-                                            className={`nav-item ${activeSection === 'lists' ? 'active' : ''}`}
-                                            onClick={() => setActiveSection('lists')}
+                                            className={`nav-item-accordion ${listsExpanded ? 'expanded' : ''}`}
+                                            onClick={() => {
+                                                if (!listsExpanded) setListsExpanded(true);
+                                                setActiveSection('lists');
+                                            }}
                                         >
-                                            <List size={16} />
-                                            <span>Managed Lists</span>
+                                            <div className="nav-item-content">
+                                                <List size={16} />
+                                                <span>Managed Lists</span>
+                                            </div>
+                                            <ChevronDown
+                                                size={14}
+                                                className={`chevron ${listsExpanded ? 'rotated' : ''}`}
+                                                onClick={(e) => { e.stopPropagation(); setListsExpanded(!listsExpanded); }}
+                                            />
                                         </button>
+                                        {listsExpanded && (
+                                            <ul className="sub-nav-list">
+                                                <li>
+                                                    <button
+                                                        className={`sub-nav-item ${activeSection === 'lists' ? 'active' : ''}`}
+                                                        onClick={() => setActiveSection('lists')}
+                                                    >
+                                                        All Lists Overview
+                                                    </button>
+                                                </li>
+                                                {recentLists.map(list => (
+                                                    <li key={list.id}>
+                                                        <button
+                                                            className="sub-nav-item recent-item"
+                                                            title={list.name}
+                                                            onClick={() => navigate(`/projects/${project!.id}/managed-lists/${list.id}`)}
+                                                        >
+                                                            <span className={`status-dot status-${list.status?.toLowerCase() || 'active'}`}></span>
+                                                            <span className="truncate">{list.name}</span>
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                     </li>
                                     <li>
                                         <button
@@ -231,7 +322,7 @@ export function ProjectDetailPage() {
                 </aside>
 
                 {/* Main Content */}
-                <main className="detail-main">
+                <main className="detail-main" onScroll={handleScroll}>
                     {activeSection === 'details' && (
                         <section className="detail-section">
                             <div className="section-header">
@@ -460,11 +551,11 @@ export function ProjectDetailPage() {
                     )}
 
                     {!isCreateMode && activeSection === 'studies' && project && (
-                        <StudiesSection projectId={project.id} />
+                        <StudiesSection projectId={project.id} onListUpdate={() => loadSidebarItems(project.id)} />
                     )}
 
                     {!isCreateMode && activeSection === 'lists' && project && (
-                        <ManagedListsSection projectId={project.id} />
+                        <ManagedListsSection projectId={project.id} onListUpdate={() => loadSidebarItems(project.id)} />
                     )}
                 </main>
             </div>
