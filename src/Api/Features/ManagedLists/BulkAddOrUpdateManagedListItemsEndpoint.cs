@@ -48,7 +48,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
             .ToListAsync(cancellationToken);
 
         var existingItemsDict = existingItems
-            .ToDictionary(item => item.Value.ToLower(), item => item);
+            .ToDictionary(item => item.Code.ToLower(), item => item);
 
         // Track codes within this batch to detect duplicates
         var codesInBatch = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -66,26 +66,26 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
             var validationError = ValidateItem(input);
             if (validationError != null)
             {
-                results.Add(new BulkOperationRowResult(rowIndex, input.Value, "rejected", validationError));
+                results.Add(new BulkOperationRowResult(rowIndex, input.Code, "rejected", validationError));
                 rejectedCount++;
                 continue;
             }
 
             // Check for duplicates within the batch
-            if (codesInBatch.Contains(input.Value))
+            if (codesInBatch.Contains(input.Code))
             {
                 results.Add(new BulkOperationRowResult(
                     rowIndex, 
-                    input.Value, 
+                    input.Code, 
                     "rejected", 
-                    $"Duplicate code '{input.Value}' found in the import batch."));
+                    $"Duplicate code '{input.Code}' found in the import batch."));
                 rejectedCount++;
                 continue;
             }
 
-            codesInBatch.Add(input.Value);
+            codesInBatch.Add(input.Code);
 
-            var valueLower = input.Value.ToLower();
+            var valueLower = input.Code.ToLower();
 
             // Check if item exists
             if (existingItemsDict.TryGetValue(valueLower, out var existingItem))
@@ -101,14 +101,14 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
                     existingItem.ModifiedBy = "System"; // TODO: Replace with real user when auth is available
 
                     updatedItemIds.Add(existingItem.Id);
-                    results.Add(new BulkOperationRowResult(rowIndex, input.Value, "updated", null));
+                    results.Add(new BulkOperationRowResult(rowIndex, input.Code, "updated", null));
                     updatedCount++;
                 }
                 else
                 {
                     results.Add(new BulkOperationRowResult(
                         rowIndex, 
-                        input.Value, 
+                        input.Code, 
                         "skipped", 
                         "Item already exists and updates are not allowed."));
                     skippedCount++;
@@ -121,7 +121,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
                 {
                     Id = Guid.NewGuid(),
                     ManagedListId = managedListId,
-                    Value = input.Value,
+                    Code = input.Code,
                     Label = input.Label,
                     SortOrder = input.SortOrder,
                     IsActive = input.IsActive,
@@ -132,7 +132,7 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
 
                 db.ManagedListItems.Add(newItem);
                 insertedItemIds.Add(newItem.Id);
-                results.Add(new BulkOperationRowResult(rowIndex, input.Value, "inserted", null));
+                results.Add(new BulkOperationRowResult(rowIndex, input.Code, "inserted", null));
                 insertedCount++;
             }
         }
@@ -168,20 +168,20 @@ public static class BulkAddOrUpdateManagedListItemsEndpoint
 
     private static string? ValidateItem(BulkManagedListItemInput item)
     {
-        // Validate Value (Code)
-        if (string.IsNullOrWhiteSpace(item.Value))
+        // Validate Code
+        if (string.IsNullOrWhiteSpace(item.Code))
         {
-            return "Item value (code) is required.";
+            return "Item code is required.";
         }
 
-        if (item.Value.Length > 100)
+        if (item.Code.Length > 100)
         {
-            return "Item value (code) must not exceed 100 characters.";
+            return "Item code must not exceed 100 characters.";
         }
 
-        if (!Regex.IsMatch(item.Value, @"^[a-zA-Z][a-zA-Z0-9_]*$"))
+        if (!Regex.IsMatch(item.Code, @"^[a-zA-Z][a-zA-Z0-9_]*$"))
         {
-            return "Item value (code) must start with a letter and contain only alphanumeric characters and underscores.";
+            return "Item code must start with a letter and contain only alphanumeric characters and underscores.";
         }
 
         // Validate Label (Name)

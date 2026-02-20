@@ -1,92 +1,243 @@
+/* =============================================
+   Managed Lists Section — Dynamics 365 list style
+   ============================================= */
+
 .managed-lists-section {
-    padding: 24px;
-}
-
-.lists-grid {
-    display: grid;
-    gap: 16px;
-    margin-top: 20px;
-}
-
-.list-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: all 0.2s;
-}
-
-.list-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.list-card.expanded {
-    border-color: #3b82f6;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.list-card-header {
-    padding: 16px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
+    flex-direction: column;
+    height: 100%;
     background: #fff;
 }
 
-.list-info h3 {
-    margin: 0 0 4px 0;
-    font-size: 16px;
+/* ---- Toolbar ---- */
+.list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    min-height: 46px;
+}
+
+.list-toolbar__left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.list-view-label {
+    font-size: 14px;
     font-weight: 600;
     color: #1e293b;
 }
 
-.list-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
+.list-view-chevron {
     color: #64748b;
 }
 
-.status-badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-    font-size: 11px;
+.list-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.status-badge.active {
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.toolbar-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.toolbar-btn--primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.toolbar-btn--primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* ---- Table Wrapper ---- */
+.list-table-wrapper {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* ---- Data Table ---- */
+.list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.list-table thead tr {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.list-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #475569;
+    white-space: nowrap;
+    border-right: 1px solid #e2e8f0;
+    user-select: none;
+}
+
+.list-table th:last-child {
+    border-right: none;
+}
+
+.list-table th.col-sortable {
+    cursor: pointer;
+}
+
+.list-table th.col-sortable:hover {
+    background: #f1f5f9;
+}
+
+.list-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.1s;
+}
+
+.list-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.list-table tbody tr.row-selected {
+    background: #eff6ff;
+}
+
+.list-table tbody tr.row-selected:hover {
+    background: #dbeafe;
+}
+
+.list-table tbody tr.row-expanded {
+    background: #f0f9ff;
+}
+
+.list-table tbody tr.row-clickable {
+    cursor: pointer;
+}
+
+.list-table td {
+    padding: 8px 12px;
+    color: #334155;
+    vertical-align: middle;
+}
+
+/* ---- Column Variants ---- */
+.col-check {
+    width: 36px;
+    text-align: center;
+    padding-left: 12px !important;
+    padding-right: 6px !important;
+}
+
+.col-link {
+    color: #2563eb !important;
+    font-weight: 500;
+}
+
+.col-num {
+    text-align: right;
+}
+
+.col-date {
+    white-space: nowrap;
+    color: #64748b !important;
+    font-size: 12px;
+}
+
+.col-actions {
+    width: 48px;
+    text-align: center;
+}
+
+/* ---- Sort Icons ---- */
+.sort-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 3px;
+    color: #475569;
+}
+
+.sort-icon--inactive {
+    color: #cbd5e1;
+}
+
+/* ---- Status Pills ---- */
+.status-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-pill--active {
     background: #dcfce7;
     color: #166534;
 }
 
-.status-badge.inactive {
+.status-pill--inactive {
     background: #f1f5f9;
     color: #64748b;
 }
 
-.list-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.status-pill--draft {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.status-pill--final {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* ---- Expanded Items Panel ---- */
+.items-expansion-row>td {
+    padding: 0 !important;
+    border-bottom: 2px solid #e2e8f0;
 }
 
 .list-items-panel {
-    border-top: 1px solid #e2e8f0;
     background: #f8fafc;
-    padding: 16px;
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 20px;
 }
 
-.items-header h4 {
+.items-panel-header h4 {
     margin: 0 0 12px 0;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
     color: #475569;
 }
 
 .add-item-form {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .form-row {
@@ -95,7 +246,7 @@
 }
 
 .code-input {
-    width: 100px;
+    width: 110px;
 }
 
 .label-input {
@@ -111,15 +262,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #3b82f6;
+    background: #2563eb;
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .add-item-btn:hover {
-    background: #2563eb;
+    background: #1d4ed8;
 }
 
 .items-list table {
@@ -134,14 +286,15 @@
 
 .items-list th {
     background: #f1f5f9;
-    padding: 8px 12px;
+    padding: 7px 10px;
     text-align: left;
     font-weight: 600;
     color: #475569;
+    font-size: 12px;
 }
 
 .items-list td {
-    padding: 8px 12px;
+    padding: 7px 10px;
     border-top: 1px solid #e2e8f0;
     color: #334155;
 }
@@ -157,9 +310,60 @@
     color: #94a3b8;
     text-align: center;
     padding: 12px;
+    margin: 0;
 }
 
-/* Modal Styles */
+/* ---- Row count footer ---- */
+.list-footer {
+    padding: 6px 16px;
+    font-size: 12px;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    color: #94a3b8;
+    gap: 12px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.empty-icon {
+    color: #cbd5e1;
+}
+
+/* ---- Icon Buttons ---- */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.15s;
+}
+
+.icon-btn.delete-btn:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+/* ---- Modal Styles ---- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -228,7 +432,6 @@
 
 .cancel-btn,
 .save-btn {
-    /* Relying on global styles but ensuring flex behavior */
     display: flex;
     align-items: center;
     justify-content: center;

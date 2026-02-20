@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, X, List, ChevronRight, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, RefreshCw, X, List, ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import {
     managedListsApi,
     type ManagedList,
-    type CreateManagedListRequest,
-    type ManagedListItemRequest
+    type CreateManagedListRequest
 } from '../services/api';
 import './ManagedListsSection.css';
 
@@ -12,13 +12,19 @@ interface ManagedListsSectionProps {
     projectId: string;
 }
 
+type SortField = 'name' | 'status' | 'itemCount' | 'description';
+type SortDirection = 'asc' | 'desc';
+
 export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
+    const navigate = useNavigate();
     const [managedLists, setManagedLists] = useState<ManagedList[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [expandedListId, setExpandedListId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [sortField, setSortField] = useState<SortField>('name');
+    const [sortDir, setSortDir] = useState<SortDirection>('asc');
 
     // Create Form State
     const [createFormData, setCreateFormData] = useState<CreateManagedListRequest>({
@@ -26,15 +32,6 @@ export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
         name: '',
         description: ''
     });
-
-    // Item Management State
-    const [newItemData, setNewItemData] = useState<ManagedListItemRequest>({
-        code: '',
-        label: '',
-        sortOrder: 0,
-        isActive: true
-    });
-    const [itemSubmitting, setItemSubmitting] = useState(false);
 
     const loadManagedLists = useCallback(async () => {
         try {
@@ -54,27 +51,16 @@ export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
         loadManagedLists();
     }, [loadManagedLists]);
 
-    useEffect(() => {
-        // Reset sort order when switching lists
-        if (expandedListId) {
-            const list = managedLists.find(l => l.id === expandedListId);
-            if (list) {
-                const maxSort = list.items?.length > 0
-                    ? Math.max(...list.items.map(i => i.sortOrder)) + 10
-                    : 10;
-                setNewItemData(prev => ({ ...prev, sortOrder: maxSort }));
-            }
-        }
-    }, [expandedListId, managedLists]);
-
     const handleCreateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await managedListsApi.create(createFormData);
+            const created = await managedListsApi.create(createFormData);
             await loadManagedLists();
             setShowCreateModal(false);
             setCreateFormData({ projectId, name: '', description: '' });
+            // Navigate directly to the new list
+            navigate(`/projects/${projectId}/managed-lists/${created.id}`);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 alert(err.message || 'Failed to create managed list');
@@ -89,84 +75,61 @@ export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
     const handleDeleteList = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         if (!confirm('Are you sure you want to delete this managed list? This cannot be undone.')) return;
-
         try {
             await managedListsApi.delete(id);
             setManagedLists(prev => prev.filter(l => l.id !== id));
-            if (expandedListId === id) setExpandedListId(null);
         } catch {
             alert('Failed to delete managed list');
         }
     };
 
-    const handleAddItem = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!expandedListId) return;
-
-        setItemSubmitting(true);
-        try {
-            const newItem = await managedListsApi.addItem(expandedListId, newItemData);
-
-            // Update local state to avoid full reload
-            setManagedLists(prev => prev.map(list => {
-                if (list.id === expandedListId) {
-                    return {
-                        ...list,
-                        items: [...(list.items || []), newItem].sort((a, b) => a.sortOrder - b.sortOrder)
-                    };
-                }
-                return list;
-            }));
-
-            // Reset form for next item
-            setNewItemData(prev => ({
-                code: '',
-                label: '',
-                sortOrder: prev.sortOrder + 10,
-                isActive: true
-            }));
-
-            // Focus code input
-            const codeInput = document.getElementById('item-code-input');
-            if (codeInput) codeInput.focus();
-
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                alert(err.message || 'Failed to add item');
-            } else {
-                alert('Failed to add item');
-            }
-        } finally {
-            setItemSubmitting(false);
-        }
-    };
-
-    const handleDeleteItem = async (itemId: string) => {
-        if (!expandedListId) return;
-        if (!confirm('Remove this item?')) return;
-
-        try {
-            await managedListsApi.deleteItem(expandedListId, itemId);
-            setManagedLists(prev => prev.map(list => {
-                if (list.id === expandedListId) {
-                    return {
-                        ...list,
-                        items: list.items.filter(i => i.id !== itemId)
-                    };
-                }
-                return list;
-            }));
-        } catch {
-            alert('Failed to delete item');
-        }
-    };
-
-    const toggleListExpansion = (id: string) => {
-        if (expandedListId === id) {
-            setExpandedListId(null);
+    const toggleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
         } else {
-            setExpandedListId(id);
+            setSortField(field);
+            setSortDir('asc');
         }
+    };
+
+    const sortedLists = [...managedLists].sort((a, b) => {
+        let aVal: string | number = '';
+        let bVal: string | number = '';
+        switch (sortField) {
+            case 'name': aVal = a.name; bVal = b.name; break;
+            case 'status': aVal = a.status || ''; bVal = b.status || ''; break;
+            case 'itemCount': aVal = a.items?.length || 0; bVal = b.items?.length || 0; break;
+            case 'description': aVal = a.description || ''; bVal = b.description || ''; break;
+        }
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const allChecked = sortedLists.length > 0 && selectedIds.size === sortedLists.length;
+    const someChecked = selectedIds.size > 0 && !allChecked;
+
+    const toggleAll = () => {
+        if (allChecked || someChecked) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(sortedLists.map(l => l.id)));
+        }
+    };
+
+    const toggleRow = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) return <ChevronsUpDown size={13} className="sort-icon sort-icon--inactive" />;
+        return sortDir === 'asc'
+            ? <ChevronUp size={13} className="sort-icon" />
+            : <ChevronDown size={13} className="sort-icon" />;
     };
 
     if (loading) return <div className="loading-container">Loading managed lists...</div>;
@@ -174,130 +137,101 @@ export function ManagedListsSection({ projectId }: ManagedListsSectionProps) {
 
     return (
         <section className="managed-lists-section">
-            <div className="section-header">
-                <h2 className="section-title">Managed Lists</h2>
-                <button className="add-btn" onClick={() => setShowCreateModal(true)}>
-                    <Plus size={16} />
-                    <span>Create List</span>
-                </button>
+            {/* Toolbar */}
+            <div className="list-toolbar">
+                <div className="list-toolbar__left">
+                    <span className="list-view-label">Active Managed Lists</span>
+                    <ChevronDown size={15} className="list-view-chevron" />
+                </div>
+                <div className="list-toolbar__right">
+                    <button className="toolbar-btn toolbar-btn--primary" onClick={() => setShowCreateModal(true)}>
+                        <Plus size={15} />
+                        New Managed List
+                    </button>
+                    <button className="toolbar-btn" onClick={loadManagedLists} title="Refresh">
+                        <RefreshCw size={15} />
+                        Refresh
+                    </button>
+                </div>
             </div>
 
-            <div className="lists-container">
+            {/* Table */}
+            <div className="list-table-wrapper">
                 {managedLists.length === 0 ? (
                     <div className="empty-state">
                         <List size={48} className="empty-icon" />
                         <p>No managed lists created yet.</p>
                     </div>
                 ) : (
-                    <div className="lists-grid">
-                        {managedLists.map(list => (
-                            <div key={list.id} className={`list-card ${expandedListId === list.id ? 'expanded' : ''}`}>
-                                <div className="list-card-header" onClick={() => toggleListExpansion(list.id)}>
-                                    <div className="list-info">
-                                        <h3 className="list-name">{list.name}</h3>
-                                        <div className="list-meta">
-                                            <span className={`status-badge ${list.status.toLowerCase()}`}>
-                                                {list.status}
-                                            </span>
-                                            <span className="item-count">
-                                                {list.items?.length || 0} items
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="list-actions">
+                    <table className="list-table">
+                        <thead>
+                            <tr>
+                                <th className="col-check">
+                                    <input
+                                        type="checkbox"
+                                        checked={allChecked}
+                                        ref={el => { if (el) el.indeterminate = someChecked; }}
+                                        onChange={toggleAll}
+                                    />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('name')}>
+                                    Name <SortIcon field="name" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('status')}>
+                                    Status <SortIcon field="status" />
+                                </th>
+                                <th className="col-sortable col-num" onClick={() => toggleSort('itemCount')}>
+                                    Question Count <SortIcon field="itemCount" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('description')}>
+                                    Description <SortIcon field="description" />
+                                </th>
+                                <th className="col-actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sortedLists.map(list => (
+                                <tr
+                                    key={list.id}
+                                    className={`${selectedIds.has(list.id) ? 'row-selected' : ''} row-clickable`}
+                                    onClick={() => navigate(`/projects/${projectId}/managed-lists/${list.id}`)}
+                                >
+                                    <td className="col-check" onClick={e => e.stopPropagation()}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(list.id)}
+                                            onChange={() => toggleRow(list.id)}
+                                        />
+                                    </td>
+                                    <td className="col-link">{list.name}</td>
+                                    <td>
+                                        <span className={`status-pill status-pill--${list.status.toLowerCase()}`}>
+                                            {list.status}
+                                        </span>
+                                    </td>
+                                    <td className="col-num">{list.items?.length || 0}</td>
+                                    <td>{list.description || '—'}</td>
+                                    <td className="col-actions" onClick={e => e.stopPropagation()}>
                                         <button
                                             className="icon-btn delete-btn"
                                             onClick={(e) => handleDeleteList(list.id, e)}
                                             title="Delete List"
                                         >
-                                            <Trash2 size={16} />
+                                            <X size={14} />
                                         </button>
-                                        <div className="expand-icon">
-                                            {expandedListId === list.id ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {expandedListId === list.id && (
-                                    <div className="list-items-panel">
-                                        <div className="items-header">
-                                            <h4>List Items</h4>
-                                        </div>
-
-                                        {/* Add Item Form */}
-                                        <form className="add-item-form" onSubmit={handleAddItem}>
-                                            <div className="form-row">
-                                                <input
-                                                    id="item-code-input"
-                                                    type="text"
-                                                    placeholder="Code (e.g. 1)"
-                                                    className="form-input code-input"
-                                                    value={newItemData.code}
-                                                    onChange={e => setNewItemData({ ...newItemData, code: e.target.value })}
-                                                    required
-                                                />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Label (e.g. Yes)"
-                                                    className="form-input label-input"
-                                                    value={newItemData.label}
-                                                    onChange={e => setNewItemData({ ...newItemData, label: e.target.value })}
-                                                    required
-                                                />
-                                                <input
-                                                    type="number"
-                                                    placeholder="Order"
-                                                    className="form-input order-input"
-                                                    value={newItemData.sortOrder}
-                                                    onChange={e => setNewItemData({ ...newItemData, sortOrder: parseInt(e.target.value) })}
-                                                />
-                                                <button type="submit" className="add-item-btn" disabled={itemSubmitting}>
-                                                    <Plus size={16} />
-                                                </button>
-                                            </div>
-                                        </form>
-
-                                        {/* Items List */}
-                                        <div className="items-list">
-                                            {(list.items || []).length === 0 ? (
-                                                <p className="no-items">No items added.</p>
-                                            ) : (
-                                                <table>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Order</th>
-                                                            <th>Code</th>
-                                                            <th>Label</th>
-                                                            <th>Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {list.items.map(item => (
-                                                            <tr key={item.id}>
-                                                                <td>{item.sortOrder}</td>
-                                                                <td className="code-cell">{item.code}</td>
-                                                                <td>{item.label}</td>
-                                                                <td>
-                                                                    <button
-                                                                        className="icon-btn delete-btn"
-                                                                        onClick={() => handleDeleteItem(item.id)}
-                                                                    >
-                                                                        <X size={14} />
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
+
+            {managedLists.length > 0 && (
+                <div className="list-footer">
+                    Rows: {managedLists.length}
+                </div>
+            )}
 
             {/* Create Modal */}
             {showCreateModal && (

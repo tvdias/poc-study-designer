@@ -290,7 +290,7 @@ public class SubsetManagementService : ISubsetManagementService
         var members = subset.Memberships
             .Select(m => new SubsetMembershipDto(
                 m.ManagedListItemId,
-                m.ManagedListItem.Value,
+                m.ManagedListItem.Code,
                 m.ManagedListItem.Label,
                 m.ManagedListItem.SortOrder
             ))

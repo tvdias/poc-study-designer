@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
 import { projectsApi, clientsApi, commissioningMarketsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest } from '../services/api';
 import { QuestionnaireSection } from './QuestionnaireSection';
@@ -10,10 +10,14 @@ import './ProjectDetailPage.css';
 export function ProjectDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeSection, setActiveSection] = useState('details');
+    const [activeSection, setActiveSection] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get('section') || 'details';
+    });
     const [studiesExpanded, setStudiesExpanded] = useState(false);
 
     // Creation mode state

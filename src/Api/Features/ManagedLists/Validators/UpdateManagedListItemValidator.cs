@@ -7,10 +7,10 @@ public class UpdateManagedListItemValidator : AbstractValidator<UpdateManagedLis
 {
     public UpdateManagedListItemValidator()
     {
-        RuleFor(x => x.Value)
-            .NotEmpty().WithMessage("Item value (code) is required.")
-            .MaximumLength(100).WithMessage("Item value (code) must not exceed 100 characters.")
-            .Must(BeValidCodeFormat).WithMessage("Item value (code) must start with a letter and contain only alphanumeric characters and underscores.");
+        RuleFor(x => x.Code)
+            .NotEmpty().WithMessage("Item code is required.")
+            .MaximumLength(100).WithMessage("Item code must not exceed 100 characters.")
+            .Must(BeValidCodeFormat).WithMessage("Item code must start with a letter and contain only alphanumeric characters and underscores.");
         
         RuleFor(x => x.Label)
             .NotEmpty().WithMessage("Item label (name) is required.")

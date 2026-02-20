@@ -373,12 +373,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ManagedListItem>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Value).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100).HasColumnName("Value");
             entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             
-            // Unique constraint: Value (Code) must be unique within the same ManagedList (case-insensitive)
-            entity.HasIndex(e => new { e.ManagedListId, e.Value }).IsUnique();
+            // Unique constraint: Code must be unique within the same ManagedList (case-insensitive)
+            entity.HasIndex(e => new { e.ManagedListId, e.Code }).IsUnique().HasDatabaseName("IX_ManagedListItems_ManagedListId_Value");
         });
 
         modelBuilder.Entity<QuestionManagedList>(entity =>

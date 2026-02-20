@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, FlaskConical, Calendar, FileText } from 'lucide-react';
+import { Plus, RefreshCw, X, FlaskConical, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import {
     studiesApi,
     fieldworkMarketsApi,
@@ -13,6 +13,9 @@ interface StudiesSectionProps {
     projectId: string;
 }
 
+type SortField = 'name' | 'version' | 'status' | 'category' | 'fieldworkMarketName' | 'createdOn';
+type SortDirection = 'asc' | 'desc';
+
 export function StudiesSection({ projectId }: StudiesSectionProps) {
     const [studies, setStudies] = useState<StudySummary[]>([]);
     const [loading, setLoading] = useState(true);
@@ -21,6 +24,9 @@ export function StudiesSection({ projectId }: StudiesSectionProps) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fieldworkMarkets, setFieldworkMarkets] = useState<FieldworkMarket[]>([]);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [sortField, setSortField] = useState<SortField>('name');
+    const [sortDir, setSortDir] = useState<SortDirection>('asc');
 
     // Create Form State
     const [createFormData, setCreateFormData] = useState<CreateStudyRequest>({
@@ -90,63 +96,151 @@ export function StudiesSection({ projectId }: StudiesSectionProps) {
         }
     };
 
+    const toggleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDir('asc');
+        }
+    };
+
+    const sortedStudies = [...studies].sort((a, b) => {
+        let aVal: string | number = '';
+        let bVal: string | number = '';
+        switch (sortField) {
+            case 'name': aVal = a.name; bVal = b.name; break;
+            case 'version': aVal = a.version; bVal = b.version; break;
+            case 'status': aVal = a.status; bVal = b.status; break;
+            case 'category': aVal = a.category || ''; bVal = b.category || ''; break;
+            case 'fieldworkMarketName': aVal = a.fieldworkMarketName || ''; bVal = b.fieldworkMarketName || ''; break;
+            case 'createdOn': aVal = a.createdOn; bVal = b.createdOn; break;
+        }
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const allChecked = sortedStudies.length > 0 && selectedIds.size === sortedStudies.length;
+    const someChecked = selectedIds.size > 0 && !allChecked;
+
+    const toggleAll = () => {
+        if (allChecked || someChecked) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(sortedStudies.map(s => s.studyId)));
+        }
+    };
+
+    const toggleRow = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) return <ChevronsUpDown size={13} className="sort-icon sort-icon--inactive" />;
+        return sortDir === 'asc'
+            ? <ChevronUp size={13} className="sort-icon" />
+            : <ChevronDown size={13} className="sort-icon" />;
+    };
+
     if (loading) return <div className="loading-container">Loading studies...</div>;
     if (error) return <div className="error-container">{error}</div>;
 
     return (
         <section className="studies-section">
-            <div className="section-header">
-                <h2 className="section-title">Studies</h2>
-                <button
-                    className="add-btn"
-                    onClick={() => setShowCreateModal(true)}
-                >
-                    <Plus size={16} />
-                    <span>New Study</span>
-                </button>
+            {/* Toolbar */}
+            <div className="list-toolbar">
+                <div className="list-toolbar__left">
+                    <span className="list-view-label">Active Studies</span>
+                    <ChevronDown size={15} className="list-view-chevron" />
+                </div>
+                <div className="list-toolbar__right">
+                    <button className="toolbar-btn toolbar-btn--primary" onClick={() => setShowCreateModal(true)}>
+                        <Plus size={15} />
+                        New Study
+                    </button>
+                    <button className="toolbar-btn" onClick={loadStudies} title="Refresh">
+                        <RefreshCw size={15} />
+                        Refresh
+                    </button>
+                </div>
             </div>
 
-            <div className="studies-container">
+            {/* Table */}
+            <div className="list-table-wrapper">
                 {studies.length === 0 ? (
                     <div className="empty-state">
                         <FlaskConical size={48} className="empty-icon" />
                         <p>No studies created yet.</p>
                     </div>
                 ) : (
-                    <div className="studies-grid">
-                        {studies.map(study => (
-                            <div key={study.studyId} className="study-card">
-                                <div className="study-header">
-                                    <div className="study-title-wrapper">
-                                        <h3 className="study-title">{study.name}</h3>
-                                        <span className={`status-badge ${study.status.toLowerCase()}`}>
+                    <table className="list-table">
+                        <thead>
+                            <tr>
+                                <th className="col-check">
+                                    <input
+                                        type="checkbox"
+                                        checked={allChecked}
+                                        ref={el => { if (el) el.indeterminate = someChecked; }}
+                                        onChange={toggleAll}
+                                    />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('name')}>
+                                    Name <SortIcon field="name" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('version')}>
+                                    Version N… <SortIcon field="version" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('status')}>
+                                    Status Reason <SortIcon field="status" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('category')}>
+                                    Category <SortIcon field="category" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('fieldworkMarketName')}>
+                                    Fieldwork Market <SortIcon field="fieldworkMarketName" />
+                                </th>
+                                <th className="col-sortable" onClick={() => toggleSort('createdOn')}>
+                                    Created On <SortIcon field="createdOn" />
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sortedStudies.map(study => (
+                                <tr key={study.studyId} className={selectedIds.has(study.studyId) ? 'row-selected' : ''}>
+                                    <td className="col-check">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(study.studyId)}
+                                            onChange={() => toggleRow(study.studyId)}
+                                        />
+                                    </td>
+                                    <td className="col-link">{study.name}</td>
+                                    <td>{study.version}</td>
+                                    <td>
+                                        <span className={`status-pill status-pill--${study.status.toLowerCase().replace(/\s+/g, '-')}`}>
                                             {study.status}
                                         </span>
-                                    </div>
-                                    <span className="version-badge">v{study.version}</span>
-                                </div>
-
-                                <div className="study-meta">
-                                    <div className="meta-item">
-                                        <FileText size={14} />
-                                        <span>{study.questionCount} Questions</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <Calendar size={14} />
-                                        <span>{new Date(study.createdOn).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-
-                                <div className="study-footer">
-                                    <button className="view-btn">
-                                        View Details
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                    </td>
+                                    <td>{study.category}</td>
+                                    <td>{study.fieldworkMarketName}</td>
+                                    <td className="col-date">{new Date(study.createdOn).toLocaleDateString('en-GB', { day: '2-digit', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
+
+            {studies.length > 0 && (
+                <div className="list-footer">
+                    Rows: {studies.length}
+                </div>
+            )}
 
             {/* Create Modal */}
             {showCreateModal && (
@@ -154,7 +248,7 @@ export function StudiesSection({ projectId }: StudiesSectionProps) {
                     <div className="modal-content">
                         <div className="modal-header">
                             <h3>Create New Study</h3>
-                            <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
+                            <button className="close-btn" onClick={() => setShowCreateModal(false)}><X size={20} /></button>
                         </div>
                         <form onSubmit={handleCreateSubmit}>
                             <div className="modal-body">

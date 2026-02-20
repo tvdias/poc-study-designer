@@ -32,7 +32,7 @@ public static class GetManagedListByIdEndpoint
         var items = managedList.Items
             .OrderBy(i => i.SortOrder)
             .ThenBy(i => i.Label)
-            .Select(i => new ManagedListItemDto(i.Id, i.Value, i.Label, i.SortOrder, i.IsActive, i.Metadata))
+            .Select(i => new ManagedListItemDto(i.Id, i.Code, i.Label, i.SortOrder, i.IsActive, i.Metadata))
             .ToList();
 
         var response = new GetManagedListByIdResponse(
