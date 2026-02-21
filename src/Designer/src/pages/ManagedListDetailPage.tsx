@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, RefreshCw, X, CheckCircle2, Info } from 'lucide-react';
+import { Plus, RefreshCw, X, CheckCircle2, Info } from 'lucide-react';
 import {
     managedListsApi,
     studiesApi,
@@ -43,6 +43,8 @@ export function ManagedListDetailPage() {
     const [originalAllocations, setOriginalAllocations] = useState<Record<string, Record<string, boolean>>>({});
     const [hasAllocationChanges, setHasAllocationChanges] = useState(false);
     const [allocationSubmitting, setAllocationSubmitting] = useState(false);
+    const [studyRowSearch, setStudyRowSearch] = useState('');
+    const [studyColSearch, setStudyColSearch] = useState('');
 
     // Question Allocation tab state
     const [questions, setQuestions] = useState<QuestionnaireLine[]>([]);
@@ -50,6 +52,8 @@ export function ManagedListDetailPage() {
     const [originalQuestionAllocations, setOriginalQuestionAllocations] = useState<Record<string, Record<string, boolean>>>({});
     const [hasQuestionAllocationChanges, setHasQuestionAllocationChanges] = useState(false);
     const [questionAllocationSubmitting, setQuestionAllocationSubmitting] = useState(false);
+    const [questionRowSearch, setQuestionRowSearch] = useState('');
+    const [questionColSearch, setQuestionColSearch] = useState('');
 
     const loadList = useCallback(async () => {
         if (!listId) return;
@@ -385,11 +389,29 @@ export function ManagedListDetailPage() {
             return next;
         });
     };
+    const matchesSearch = useCallback((text: string, search: string) => {
+        if (!search) return true;
+        return (text || '').toLowerCase().includes(search.toLowerCase());
+    }, []);
 
     const filteredItems = (list?.items || []).filter(item =>
         !filterText ||
         item.label.toLowerCase().includes(filterText.toLowerCase()) ||
         item.code.toLowerCase().includes(filterText.toLowerCase())
+    );
+
+    const filteredStudyRows = (list?.items || []).filter(item =>
+        matchesSearch(item.label, studyRowSearch) || matchesSearch(item.code, studyRowSearch)
+    );
+    const filteredStudyCols = studies.filter(study =>
+        matchesSearch(study.name, studyColSearch) || matchesSearch(study.status, studyColSearch)
+    );
+
+    const filteredQuestionRows = (list?.items || []).filter(item =>
+        matchesSearch(item.label, questionRowSearch) || matchesSearch(item.code, questionRowSearch)
+    );
+    const filteredQuestionCols = questions.filter(q =>
+        matchesSearch(q.variableName, questionColSearch) || matchesSearch(q.questionTitle || q.questionText || '', questionColSearch)
     );
 
     if (loading) return <div className="ml-detail-loading">Loading managed list…</div>;
@@ -776,6 +798,16 @@ export function ManagedListDetailPage() {
                         <div className="ml-allocation-toolbar">
                             <div className="ml-allocation-toolbar__left">
                                 <span className="ml-allocation-count">Study Selection</span>
+                                <div className="ml-search-box" style={{ marginLeft: '16px' }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                                    <input type="text" placeholder="Filter rows..." value={studyRowSearch} onChange={e => setStudyRowSearch(e.target.value)} className="ml-search-input" />
+                                    {studyRowSearch && <X size={14} onClick={() => setStudyRowSearch('')} style={{ cursor: 'pointer', color: '#94a3b8' }} />}
+                                </div>
+                                <div className="ml-search-box" style={{ marginLeft: '8px' }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                                    <input type="text" placeholder="Filter columns..." value={studyColSearch} onChange={e => setStudyColSearch(e.target.value)} className="ml-search-input" />
+                                    {studyColSearch && <X size={14} onClick={() => setStudyColSearch('')} style={{ cursor: 'pointer', color: '#94a3b8' }} />}
+                                </div>
                             </div>
                             <div className="ml-allocation-toolbar__right">
                                 <button
@@ -815,9 +847,9 @@ export function ManagedListDetailPage() {
                                                     Copy all codes to all draft studies
                                                 </button>
                                             </th>
-                                            {studies.map(study => {
+                                            {filteredStudyCols.map(study => {
                                                 const isDraft = study.status === 'Draft';
-                                                const isAllSelected = list?.items?.length > 0 && list.items.every(item => allocations[study.studyId]?.[item.id]);
+                                                const isAllSelected = filteredStudyRows.length > 0 && filteredStudyRows.every(item => allocations[study.studyId]?.[item.id]);
 
                                                 return (
                                                     <th key={study.studyId} className="alloc-col-study">
@@ -840,8 +872,8 @@ export function ManagedListDetailPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {list.items.map(item => {
-                                            const draftStudies = studies.filter(s => s.status === 'Draft');
+                                        {filteredStudyRows.map(item => {
+                                            const draftStudies = filteredStudyCols.filter(s => s.status === 'Draft');
                                             const isAllDraftSelected = draftStudies.length > 0 && draftStudies.every(s => allocations[s.studyId]?.[item.id]);
 
                                             return (
@@ -861,7 +893,7 @@ export function ManagedListDetailPage() {
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    {studies.map(study => {
+                                                    {filteredStudyCols.map(study => {
                                                         const isSelected = allocations[study.studyId]?.[item.id] || false;
                                                         const isOriginal = originalAllocations[study.studyId]?.[item.id] || false;
                                                         const isChanged = isSelected !== isOriginal;
@@ -896,6 +928,16 @@ export function ManagedListDetailPage() {
                         <div className="ml-allocation-toolbar">
                             <div className="ml-allocation-toolbar__left">
                                 <span className="ml-allocation-count">Question Selection</span>
+                                <div className="ml-search-box" style={{ marginLeft: '16px' }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                                    <input type="text" placeholder="Filter rows..." value={questionRowSearch} onChange={e => setQuestionRowSearch(e.target.value)} className="ml-search-input" />
+                                    {questionRowSearch && <X size={14} onClick={() => setQuestionRowSearch('')} style={{ cursor: 'pointer', color: '#94a3b8' }} />}
+                                </div>
+                                <div className="ml-search-box" style={{ marginLeft: '8px' }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                                    <input type="text" placeholder="Filter columns..." value={questionColSearch} onChange={e => setQuestionColSearch(e.target.value)} className="ml-search-input" />
+                                    {questionColSearch && <X size={14} onClick={() => setQuestionColSearch('')} style={{ cursor: 'pointer', color: '#94a3b8' }} />}
+                                </div>
                             </div>
                             <div className="ml-allocation-toolbar__right">
                                 <button
@@ -931,8 +973,8 @@ export function ManagedListDetailPage() {
                                                     Copy all codes to all questions
                                                 </button>
                                             </th>
-                                            {questions.map(q => {
-                                                const isAllSelected = list?.items?.length > 0 && list.items.every(item => questionAllocations[q.id]?.[item.id]);
+                                            {filteredQuestionCols.map(q => {
+                                                const isAllSelected = filteredQuestionRows.length > 0 && filteredQuestionRows.every(item => questionAllocations[q.id]?.[item.id]);
 
                                                 return (
                                                     <th key={q.id} className="alloc-col-study">
@@ -954,8 +996,8 @@ export function ManagedListDetailPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {list.items.map(item => {
-                                            const isAllSelected = questions.length > 0 && questions.every(q => questionAllocations[q.id]?.[item.id]);
+                                        {filteredQuestionRows.map(item => {
+                                            const isAllSelected = filteredQuestionCols.length > 0 && filteredQuestionCols.every(q => questionAllocations[q.id]?.[item.id]);
 
                                             return (
                                                 <tr key={item.id}>
@@ -974,7 +1016,7 @@ export function ManagedListDetailPage() {
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    {questions.map(q => {
+                                                    {filteredQuestionCols.map(q => {
                                                         const isSelected = questionAllocations[q.id]?.[item.id] || false;
                                                         const isOriginal = originalQuestionAllocations[q.id]?.[item.id] || false;
                                                         const isChanged = isSelected !== isOriginal;
