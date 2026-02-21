@@ -16,6 +16,8 @@
     display: flex;
     flex-direction: column;
     background: #fff;
+    height: 100%;
+    max-height: 100%;
 }
 
 /* ---- Page Header ---- */
@@ -137,6 +139,9 @@
 /* ---- Tab content container ---- */
 .ml-tab-content {
     flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 /* =============================================
@@ -323,6 +328,8 @@
 .ml-entities-tab {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .ml-entities-toolbar {
@@ -560,6 +567,9 @@
 /* ---- Entities Table ---- */
 .ml-entities-table-wrapper {
     background: #fff;
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
 }
 
 .ml-entities-table {
@@ -714,6 +724,8 @@
 .ml-allocation-tab {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .ml-allocation-toolbar {
@@ -750,6 +762,9 @@
 
 .ml-allocation-matrix-wrapper {
     background: #f8fafc;
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
 }
 
 .ml-allocation-matrix {
