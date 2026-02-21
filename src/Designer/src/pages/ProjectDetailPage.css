@@ -236,7 +236,7 @@
 /* Main Content */
 .detail-main {
     flex: 1;
-    overflow-y: auto;
+    overflow: auto;
     padding: 1.5rem;
     background-color: rgba(248, 250, 252, 0.5);
 }

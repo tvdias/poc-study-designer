@@ -15,7 +15,6 @@
 .ml-detail-page {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
     background: #fff;
 }
 
@@ -138,7 +137,6 @@
 /* ---- Tab content container ---- */
 .ml-tab-content {
     flex: 1;
-    overflow: auto;
 }
 
 /* =============================================
@@ -147,6 +145,8 @@
 
 .ml-general-tab {
     padding: 0;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .ml-fields-section {
@@ -291,12 +291,6 @@
    Entities Tab
    ============================================= */
 
-.ml-entities-tab {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
 /* ---- Success Banner ---- */
 .ml-success-banner {
     display: flex;
@@ -326,16 +320,30 @@
     background: #dcfce7;
 }
 
-/* ---- Entities Toolbar ---- */
+.ml-entities-tab {
+    display: flex;
+    flex-direction: column;
+}
+
 .ml-entities-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
+    padding: 12px 20px;
     border-bottom: 1px solid #e2e8f0;
     background: #fff;
-    flex-wrap: wrap;
-    gap: 8px;
+    position: sticky;
+    top: -1.5rem;
+    /* Negate the parent padding to stick to the very top */
+    z-index: 45;
+    /* Below global header (50) but above content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin: 0 -1.5rem 0;
+    /* Bleed out to the edges of the padded container */
+    padding-left: calc(20px + 1.5rem);
+    padding-right: calc(20px + 1.5rem);
+    height: 56px;
+    box-sizing: border-box;
 }
 
 .ml-entities-toolbar__left {
@@ -556,19 +564,25 @@
 
 /* ---- Entities Table ---- */
 .ml-entities-table-wrapper {
-    overflow-x: auto;
-    border-top: 1px solid #e2e8f0;
+    background: #fff;
 }
 
 .ml-entities-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 13px;
+}
+
+.ml-entities-table thead {
+    position: sticky;
+    top: calc(56px - 1.5rem);
+    /* Toolbar height - negate padding */
+    z-index: 44;
 }
 
 .ml-entities-table thead tr {
     background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
 }
 
 .ml-entities-table th {
@@ -706,7 +720,6 @@
 .ml-allocation-tab {
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 
 .ml-allocation-toolbar {
@@ -716,8 +729,16 @@
     padding: 12px 24px;
     border-bottom: 1px solid #e2e8f0;
     background: #fff;
-    flex-wrap: wrap;
-    gap: 8px;
+    position: sticky;
+    top: -1.5rem;
+    /* Negate parent padding */
+    z-index: 45;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin: 0 -1.5rem 0;
+    padding-left: calc(24px + 1.5rem);
+    padding-right: calc(24px + 1.5rem);
+    height: 56px;
+    box-sizing: border-box;
 }
 
 .ml-allocation-toolbar__left {
@@ -737,8 +758,6 @@
 }
 
 .ml-allocation-matrix-wrapper {
-    flex: 1;
-    overflow: auto;
     background: #f8fafc;
 }
 
@@ -771,17 +790,18 @@
 }
 
 .ml-allocation-matrix thead th.alloc-col-entity {
-    z-index: 20;
+    z-index: 48;
     /* Higher z-index for the top-left corner cell */
     vertical-align: top;
+    top: calc(56px - 1.5rem);
 }
 
 /* Column headers (Studies) */
 .ml-allocation-matrix thead th {
     position: sticky;
-    top: 0;
+    top: calc(56px - 1.5rem);
     background: #fff;
-    z-index: 15;
+    z-index: 43;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
