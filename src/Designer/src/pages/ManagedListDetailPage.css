@@ -16,6 +16,8 @@
     display: flex;
     flex-direction: column;
     background: #fff;
+    height: 100%;
+    overflow: hidden;
 }
 
 /* ---- Page Header ---- */
@@ -137,6 +139,9 @@
 /* ---- Tab content container ---- */
 .ml-tab-content {
     flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* =============================================
@@ -323,6 +328,8 @@
 .ml-entities-tab {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .ml-entities-toolbar {
@@ -333,17 +340,12 @@
     border-bottom: 1px solid #e2e8f0;
     background: #fff;
     position: sticky;
-    top: -1.5rem;
-    /* Negate the parent padding to stick to the very top */
+    top: 0;
     z-index: 45;
-    /* Below global header (50) but above content */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    margin: 0 -1.5rem 0;
-    /* Bleed out to the edges of the padded container */
-    padding-left: calc(20px + 1.5rem);
-    padding-right: calc(20px + 1.5rem);
     height: 56px;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .ml-entities-toolbar__left {
@@ -565,6 +567,8 @@
 /* ---- Entities Table ---- */
 .ml-entities-table-wrapper {
     background: #fff;
+    flex: 1;
+    overflow: auto;
 }
 
 .ml-entities-table {
@@ -576,8 +580,7 @@
 
 .ml-entities-table thead {
     position: sticky;
-    top: calc(56px - 1.5rem);
-    /* Toolbar height - negate padding */
+    top: 56px;
     z-index: 44;
 }
 
@@ -720,6 +723,8 @@
 .ml-allocation-tab {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .ml-allocation-toolbar {
@@ -730,15 +735,12 @@
     border-bottom: 1px solid #e2e8f0;
     background: #fff;
     position: sticky;
-    top: -1.5rem;
-    /* Negate parent padding */
+    top: 0;
     z-index: 45;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    margin: 0 -1.5rem 0;
-    padding-left: calc(24px + 1.5rem);
-    padding-right: calc(24px + 1.5rem);
     height: 56px;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .ml-allocation-toolbar__left {
@@ -759,6 +761,8 @@
 
 .ml-allocation-matrix-wrapper {
     background: #f8fafc;
+    flex: 1;
+    overflow: auto;
 }
 
 .ml-allocation-matrix {
@@ -793,13 +797,13 @@
     z-index: 48;
     /* Higher z-index for the top-left corner cell */
     vertical-align: top;
-    top: calc(56px - 1.5rem);
+    top: 56px;
 }
 
 /* Column headers (Studies) */
 .ml-allocation-matrix thead th {
     position: sticky;
-    top: calc(56px - 1.5rem);
+    top: 56px;
     background: #fff;
     z-index: 43;
     text-align: center;
