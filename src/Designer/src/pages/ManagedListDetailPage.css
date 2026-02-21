@@ -139,9 +139,6 @@
 /* ---- Tab content container ---- */
 .ml-tab-content {
     flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
 }
 
 /* =============================================
@@ -328,8 +325,6 @@
 .ml-entities-tab {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-height: 0;
 }
 
 .ml-entities-toolbar {
@@ -567,9 +562,7 @@
 /* ---- Entities Table ---- */
 .ml-entities-table-wrapper {
     background: #fff;
-    overflow: auto;
-    flex: 1;
-    min-height: 0;
+    overflow-x: auto;
 }
 
 .ml-entities-table {
@@ -581,7 +574,7 @@
 
 .ml-entities-table thead {
     position: sticky;
-    top: 0;
+    top: calc(56px - 1.5rem);
     z-index: 44;
 }
 
@@ -724,8 +717,6 @@
 .ml-allocation-tab {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-height: 0;
 }
 
 .ml-allocation-toolbar {
@@ -762,9 +753,7 @@
 
 .ml-allocation-matrix-wrapper {
     background: #f8fafc;
-    overflow: auto;
-    flex: 1;
-    min-height: 0;
+    overflow-x: auto;
 }
 
 .ml-allocation-matrix {
@@ -799,13 +788,13 @@
     z-index: 48;
     /* Higher z-index for the top-left corner cell */
     vertical-align: top;
-    top: 0;
+    top: calc(56px - 1.5rem);
 }
 
 /* Column headers (Studies) */
 .ml-allocation-matrix thead th {
     position: sticky;
-    top: 0;
+    top: calc(56px - 1.5rem);
     background: #fff;
     z-index: 43;
     text-align: center;
