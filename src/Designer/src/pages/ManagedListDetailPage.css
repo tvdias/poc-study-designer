@@ -37,27 +37,6 @@
     gap: 12px;
 }
 
-.ml-back-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    background: #fff;
-    color: #475569;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.15s;
-}
-
-.ml-back-btn:hover {
-    background: #f1f5f9;
-    color: #1e293b;
-    border-color: #cbd5e1;
-}
-
 .ml-title-block {
     display: flex;
     flex-direction: column;
@@ -70,12 +49,6 @@
     font-weight: 700;
     color: #0f172a;
     line-height: 1.2;
-}
-
-.ml-subtitle {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 400;
 }
 
 .ml-status-pill {
@@ -785,8 +758,8 @@
 }
 
 /* Fixed first column for entity row headers */
-.alloc-col-entity,
-.alloc-cell-entity {
+.ml-allocation-matrix .alloc-col-entity,
+.ml-allocation-matrix .alloc-cell-entity {
     position: sticky;
     left: 0;
     background: #fff;
@@ -797,7 +770,7 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.02);
 }
 
-.alloc-col-entity {
+.ml-allocation-matrix thead th.alloc-col-entity {
     z-index: 20;
     /* Higher z-index for the top-left corner cell */
     vertical-align: top;

@@ -15,7 +15,8 @@ import './ManagedListDetailPage.css';
 type Tab = 'general' | 'entities' | 'study_allocation' | 'question_allocation';
 
 export function ManagedListDetailPage() {
-    const { projectId, listId } = useParams<{ projectId: string; listId: string }>();
+    const { id: routeId, projectId: routeProjectId, listId } = useParams<{ id?: string; projectId?: string; listId: string }>();
+    const projectId = routeProjectId || routeId;
     const navigate = useNavigate();
 
     const [list, setList] = useState<ManagedList | null>(null);
@@ -399,15 +400,8 @@ export function ManagedListDetailPage() {
             {/* Page Header */}
             <div className="ml-detail-header">
                 <div className="ml-detail-breadcrumb">
-                    <button
-                        className="ml-back-btn"
-                        onClick={() => navigate(`/projects/${projectId}?section=lists`)}
-                    >
-                        <ArrowLeft size={16} />
-                    </button>
                     <div className="ml-title-block">
                         <h1 className="ml-title">{list.name}</h1>
-                        <span className="ml-subtitle">Managed List</span>
                     </div>
                     <span className={`ml-status-pill ml-status-pill--${list.status.toLowerCase()}`}>
                         {list.status}
