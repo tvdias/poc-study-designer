@@ -575,7 +575,8 @@
 .ml-entities-table thead {
     position: sticky;
     top: calc(56px - 1.5rem);
-    z-index: 44;
+    z-index: 46;
+    background: #fff;
 }
 
 .ml-entities-table thead tr {
@@ -785,7 +786,7 @@
 }
 
 .ml-allocation-matrix thead th.alloc-col-entity {
-    z-index: 48;
+    z-index: 47;
     /* Higher z-index for the top-left corner cell */
     vertical-align: top;
     top: calc(56px - 1.5rem);
@@ -796,7 +797,7 @@
     position: sticky;
     top: calc(56px - 1.5rem);
     background: #fff;
-    z-index: 43;
+    z-index: 46;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
