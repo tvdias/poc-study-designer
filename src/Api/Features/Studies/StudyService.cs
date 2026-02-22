@@ -43,6 +43,12 @@ public interface IStudyService
         StudyStatus newStatus,
         string userId,
         CancellationToken cancellationToken = default);
+
+    Task<UpdateStudyResponse> UpdateStudyAsync(
+        Guid studyId,
+        UpdateStudyRequest request,
+        string userId,
+        CancellationToken cancellationToken = default);
 }
 
 public class StudyService : IStudyService
@@ -909,6 +915,77 @@ public class StudyService : IStudyService
         _logger.LogInformation(
             "RecalculateStudySubsets: resolved {Count} null subset links for Study {StudyId}",
             subsetLinks.Count, studyId);
+    }
+
+    public async Task<UpdateStudyResponse> UpdateStudyAsync(
+        Guid studyId,
+        UpdateStudyRequest request,
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Updating study {StudyId}", studyId);
+
+        var study = await _context.Studies.FindAsync([studyId], cancellationToken);
+        if (study == null)
+        {
+            throw new InvalidOperationException($"Study {studyId} not found.");
+        }
+
+        var previousStatus = study.Status;
+        var previousFieldworkMarketId = study.FieldworkMarketId;
+
+        // Validate name uniqueness if changing name
+        var trimmedName = request.Name.Trim();
+        if (study.Name != trimmedName)
+        {
+            await ValidateStudyNameUniquenessAsync(study.ProjectId, trimmedName, study.MasterStudyId, cancellationToken);
+        }
+
+        study.Name = trimmedName;
+        study.Category = request.Category.Trim();
+        study.MaconomyJobNumber = request.MaconomyJobNumber.Trim();
+        study.ProjectOperationsUrl = request.ProjectOperationsUrl.Trim();
+        study.ScripterNotes = request.ScripterNotes;
+        study.FieldworkMarketId = request.FieldworkMarketId;
+
+        if (request.Status.HasValue && request.Status.Value != previousStatus)
+        {
+            study.Status = request.Status.Value;
+        }
+
+        study.ModifiedOn = DateTime.UtcNow;
+        study.ModifiedBy = userId;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        // Delete FieldworkLanguage records for the old market when the market changes
+        if (request.FieldworkMarketId != previousFieldworkMarketId)
+        {
+            var languagesToDelete = await _context.FieldworkLanguages
+                .Where(fl => fl.StudyId == studyId && fl.FieldworkMarketId == previousFieldworkMarketId)
+                .ToListAsync(cancellationToken);
+
+            if (languagesToDelete.Count > 0)
+            {
+                _context.FieldworkLanguages.RemoveRange(languagesToDelete);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        // Execute status transition side-effects after persisting the new status
+        if (request.Status.HasValue && request.Status.Value != previousStatus)
+        {
+            await TransitionStudyStatusAsync(
+                studyId,
+                previousStatus,
+                request.Status.Value,
+                userId,
+                cancellationToken);
+        }
+
+        _logger.LogInformation("Successfully updated study {StudyId}", studyId);
+
+        return new UpdateStudyResponse(study.Id, study.Name, study.Status);
     }
 
     private async Task UpdateProjectCountersAsync(

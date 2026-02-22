@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Tags;
 
@@ -16,23 +14,17 @@ public static class DeleteTagEndpoint
 
     public static async Task<Results<NoContent, NotFound>> HandleAsync(
         Guid id,
-        ApplicationDbContext db,
+        ITagService tagService,
         CancellationToken cancellationToken)
     {
-        var tag = await db.Tags.FindAsync([id], cancellationToken);
-
-        if (tag is null)
+        try
+        {
+            await tagService.DeleteTagAsync(id, cancellationToken);
+            return TypedResults.NoContent();
+        }
+        catch (InvalidOperationException)
         {
             return TypedResults.NotFound();
         }
-
-        // Soft delete
-        tag.IsActive = false;
-        tag.ModifiedOn = DateTime.UtcNow;
-        tag.ModifiedBy = "System"; // TODO: Replace with real user
-
-        await db.SaveChangesAsync(cancellationToken);
-
-        return TypedResults.NoContent();
     }
 }

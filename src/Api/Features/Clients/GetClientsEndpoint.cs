@@ -1,5 +1,4 @@
-using Api.Data;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Api.Features.Clients;
 
@@ -13,21 +12,29 @@ public static class GetClientsEndpoint
             .WithTags("Clients");
     }
 
-    public static async Task<List<GetClientsResponse>> HandleAsync(
+    public static async Task<Results<Ok<GetClientsResponse>, BadRequest<string>>> HandleAsync(
         string? query,
-        ApplicationDbContext db,
+        IClientService clientService,
         CancellationToken cancellationToken)
     {
-        var clientsQuery = db.Clients.Where(c => c.IsActive);
-
-        if (!string.IsNullOrWhiteSpace(query))
+        try
         {
-            var pattern = $"%{query.Trim()}%";
-            clientsQuery = clientsQuery.Where(c => EF.Functions.ILike(c.AccountName, pattern));
-        }
+            var response = await clientService.GetClientsAsync(cancellationToken);
+            
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var pattern = query.Trim().ToLower();
+                var filtered = response.Clients
+                    .Where(c => c.AccountName.ToLower().Contains(pattern))
+                    .ToList();
+                return TypedResults.Ok(new GetClientsResponse(filtered));
+            }
 
-        return await clientsQuery
-            .Select(c => new GetClientsResponse(c.Id, c.AccountName, c.CompanyNumber, c.CustomerNumber, c.CompanyCode, c.CreatedOn))
-            .ToListAsync(cancellationToken);
+            return TypedResults.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return TypedResults.BadRequest(ex.Message);
+        }
     }
 }

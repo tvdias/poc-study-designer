@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Tags;
 
@@ -19,20 +17,16 @@ public static class GetTagByIdEndpoint
 
     public static async Task<Results<Ok<GetTagByIdResponse>, NotFound>> HandleAsync(
         Guid id,
-        ApplicationDbContext db,
+        ITagService tagService,
         CancellationToken cancellationToken)
     {
-        var tag = await db.Tags
-            .Where(t => t.IsActive)
-            .Where(t => t.Id == id)
-            .Select(t => new GetTagByIdResponse(t.Id, t.Name))
-            .FirstOrDefaultAsync(cancellationToken);
+        var tag = await tagService.GetTagByIdAsync(id, cancellationToken);
 
         if (tag is null)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(new GetTagByIdResponse(tag.Id, tag.Name));
+        return TypedResults.Ok(tag);
     }
 }

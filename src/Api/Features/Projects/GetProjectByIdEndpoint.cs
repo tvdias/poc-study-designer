@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Projects;
 
@@ -34,46 +32,15 @@ public static class GetProjectByIdEndpoint
     {
         app.MapGet("/projects/{id:guid}", async Task<Results<Ok<GetProjectByIdResponse>, NotFound>> (
             Guid id,
-            ApplicationDbContext db,
+            IProjectService projectService,
             CancellationToken ct) =>
         {
-            var project = await db.Projects
-                .Include(p => p.Client)
-                .Include(p => p.CommissioningMarket)
-                .Include(p => p.Product)
-                .FirstOrDefaultAsync(p => p.Id == id, ct);
+            var response = await projectService.GetProjectByIdAsync(id, ct);
 
-            if (project == null)
+            if (response == null)
             {
                 return TypedResults.NotFound();
             }
-
-            var questionnaireLineCount = await db.QuestionnaireLines
-                .CountAsync(ql => ql.ProjectId == id, ct);
-
-            var response = new GetProjectByIdResponse(
-                project.Id,
-                project.Name,
-                project.Description,
-                project.ClientId,
-                project.Client?.AccountName,
-                project.CommissioningMarketId,
-                project.CommissioningMarket?.Name,
-                project.Methodology,
-                project.ProductId,
-                project.Product?.Name,
-                project.Owner,
-                project.Status,
-                project.CostManagementEnabled,
-                project.HasStudies,
-                project.StudyCount,
-                project.LastStudyModifiedOn,
-                questionnaireLineCount,
-                project.CreatedOn,
-                project.CreatedBy,
-                project.ModifiedOn,
-                project.ModifiedBy
-            );
 
             return TypedResults.Ok(response);
         })

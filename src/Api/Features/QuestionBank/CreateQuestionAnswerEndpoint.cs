@@ -1,7 +1,5 @@
-using Api.Data;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.QuestionBank;
 
@@ -18,7 +16,7 @@ public static class CreateQuestionAnswerEndpoint
     public static async Task<Results<CreatedAtRoute<CreateQuestionAnswerResponse>, ValidationProblem, NotFound, Conflict<string>>> HandleAsync(
         Guid questionId,
         CreateQuestionAnswerRequest request,
-        ApplicationDbContext db,
+        IQuestionBankService questionBankService,
         IValidator<CreateQuestionAnswerRequest> validator,
         CancellationToken cancellationToken)
     {
@@ -28,51 +26,18 @@ public static class CreateQuestionAnswerEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var question = await db.QuestionBankItems.FindAsync(new object[] { questionId }, cancellationToken);
-        if (question == null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        var answer = new QuestionAnswer
-        {
-            Id = Guid.NewGuid(),
-            QuestionBankItemId = questionId,
-            AnswerText = request.AnswerText,
-            AnswerCode = request.AnswerCode,
-            AnswerLocation = request.AnswerLocation,
-            IsOpen = request.IsOpen,
-            IsFixed = request.IsFixed,
-            IsExclusive = request.IsExclusive,
-            IsActive = request.IsActive,
-            CustomProperty = request.CustomProperty,
-            Facets = request.Facets,
-            Version = request.Version,
-            DisplayOrder = request.DisplayOrder,
-            CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
-        };
-
-        db.QuestionAnswers.Add(answer);
-
         try
         {
-            await db.SaveChangesAsync(cancellationToken);
+            var response = await questionBankService.CreateQuestionAnswerAsync(questionId, request, "System", cancellationToken);
+            return TypedResults.CreatedAtRoute(response, "GetQuestionBankItemById", new { id = questionId });
         }
-        catch (DbUpdateException ex)
+        catch (InvalidOperationException ex)
         {
-            if (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) == true
-                || ex.InnerException?.Message.Contains("constraint", StringComparison.OrdinalIgnoreCase) == true)
+            if (ex.Message.Contains("not found"))
             {
-                return TypedResults.Conflict($"Answer with code '{request.AnswerCode}' already exists for this question.");
+                return TypedResults.NotFound();
             }
-
-            throw;
+            return TypedResults.Conflict(ex.Message);
         }
-
-        return TypedResults.CreatedAtRoute(
-            new CreateQuestionAnswerResponse(answer.Id, answer.AnswerText),
-            "GetQuestionBankItemById",
-            new { id = questionId });
     }
 }

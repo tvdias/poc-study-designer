@@ -1,8 +1,17 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Clients;
+
+public record GetClientByIdResponse(
+    Guid Id,
+    string AccountName,
+    string? CompanyNumber,
+    string? CustomerNumber,
+    string? CompanyCode,
+    DateTime CreatedOn,
+    string CreatedBy,
+    DateTime? ModifiedOn,
+    string? ModifiedBy);
 
 public static class GetClientByIdEndpoint
 {
@@ -14,22 +23,12 @@ public static class GetClientByIdEndpoint
             .WithTags("Clients");
     }
 
-    public static async Task<Results<Ok<GetClientsResponse>, NotFound>> HandleAsync(
+    public static async Task<Results<Ok<GetClientByIdResponse>, NotFound>> HandleAsync(
         Guid id,
-        ApplicationDbContext db,
+        IClientService clientService,
         CancellationToken cancellationToken)
     {
-        var clientResponse = await db.Clients
-            .Where(c => c.IsActive)
-            .Where(c => c.Id == id)
-            .Select(c => new GetClientsResponse(
-                c.Id,
-                c.AccountName,
-                c.CompanyNumber,
-                c.CustomerNumber,
-                c.CompanyCode,
-                c.CreatedOn))
-            .FirstOrDefaultAsync(cancellationToken);
+        var clientResponse = await clientService.GetClientByIdAsync(id, cancellationToken);
 
         if (clientResponse is null)
         {

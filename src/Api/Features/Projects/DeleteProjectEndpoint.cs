@@ -1,4 +1,3 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Api.Features.Projects;
@@ -9,19 +8,18 @@ public static class DeleteProjectEndpoint
     {
         app.MapDelete("/projects/{id:guid}", async Task<Results<NoContent, NotFound>> (
             Guid id,
-            ApplicationDbContext db,
+            IProjectService projectService,
             CancellationToken ct) =>
         {
-            var project = await db.Projects.FindAsync([id], ct);
-            if (project == null)
+            try
+            {
+                await projectService.DeleteProjectAsync(id, ct);
+                return TypedResults.NoContent();
+            }
+            catch (InvalidOperationException)
             {
                 return TypedResults.NotFound();
             }
-
-            db.Projects.Remove(project);
-            await db.SaveChangesAsync(ct);
-
-            return TypedResults.NoContent();
         })
         .WithName("DeleteProject")
         .WithOpenApi();

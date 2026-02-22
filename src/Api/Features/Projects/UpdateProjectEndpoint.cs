@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 
 namespace Api.Features.Projects;
@@ -54,7 +52,7 @@ public static class UpdateProjectEndpoint
         app.MapPut("/projects/{id:guid}", async Task<Results<Ok<UpdateProjectResponse>, ValidationProblem, NotFound, ProblemHttpResult>> (
             Guid id,
             UpdateProjectRequest request,
-            ApplicationDbContext db,
+            IProjectService projectService,
             IValidator<UpdateProjectRequest> validator,
             CancellationToken ct) =>
         {
@@ -64,53 +62,23 @@ public static class UpdateProjectEndpoint
                 return TypedResults.ValidationProblem(validationResult.ToDictionary());
             }
 
-            var project = await db.Projects.FindAsync([id], ct);
-            if (project == null)
+            try
             {
-                return TypedResults.NotFound();
+                var response = await projectService.UpdateProjectAsync(id, request, "system", ct);
+                return TypedResults.Ok(response);
             }
-
-            // Check if another project with the same name exists for this client
-            var trimmedName = request.Name.Trim();
-            var isNameDuplicated = await db.Projects.AnyAsync(p => p.ClientId == request.ClientId && p.Name.ToLower() == trimmedName.ToLower() && p.Id != id, ct);
-            if (isNameDuplicated)
+            catch (InvalidOperationException ex)
             {
+                if (ex.Message.Contains("not found"))
+                {
+                    return TypedResults.NotFound();
+                }
                 return TypedResults.Problem(
-                    detail: "A project with this name already exists for this client",
+                    detail: ex.Message,
                     statusCode: StatusCodes.Status409Conflict,
                     title: "Project Name Conflict"
                 );
             }
-
-            project.Name = trimmedName;
-            project.Description = request.Description;
-            project.ClientId = request.ClientId;
-            project.CommissioningMarketId = request.CommissioningMarketId;
-            project.Methodology = request.Methodology;
-            project.ProductId = request.ProductId;
-            project.Owner = request.Owner;
-            project.Status = request.Status;
-            project.CostManagementEnabled = request.CostManagementEnabled;
-            project.ModifiedOn = DateTime.UtcNow;
-            project.ModifiedBy = "system";
-
-            await db.SaveChangesAsync(ct);
-
-            var response = new UpdateProjectResponse(
-                project.Id,
-                project.Name,
-                project.Description,
-                project.ClientId,
-                project.CommissioningMarketId,
-                project.Methodology,
-                project.ProductId,
-                project.Owner,
-                project.Status,
-                project.CostManagementEnabled,
-                project.ModifiedOn.Value
-            );
-
-            return TypedResults.Ok(response);
         })
         .WithName("UpdateProject")
         .WithOpenApi();

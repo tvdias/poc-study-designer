@@ -1,4 +1,3 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Api.Features.Clients;
@@ -15,19 +14,17 @@ public static class DeleteClientEndpoint
 
     public static async Task<Results<NoContent, NotFound>> HandleAsync(
         Guid id,
-        ApplicationDbContext db,
+        IClientService clientService,
         CancellationToken cancellationToken)
     {
-        var client = await db.Clients.FindAsync([id], cancellationToken);
-
-        if (client is null)
+        try
+        {
+            await clientService.DeleteClientAsync(id, cancellationToken);
+            return TypedResults.NoContent();
+        }
+        catch (InvalidOperationException)
         {
             return TypedResults.NotFound();
         }
-
-        db.Clients.Remove(client);
-        await db.SaveChangesAsync(cancellationToken);
-
-        return TypedResults.NoContent();
     }
 }
