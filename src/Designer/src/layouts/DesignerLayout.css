@@ -25,6 +25,52 @@
     transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
 }
 
+.designer-header.header-expanded {
+    height: 80px;
+}
+
+.designer-header.header-collapsed {
+    height: 40px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.scrolled .service-name {
+    font-size: 1rem;
+}
+
+.scrolled .user-avatar {
+    width: 24px;
+    height: 24px;
+    border-width: 1px;
+}
+
+.scrolled .header-action-btn {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 11px;
+}
+
+.scrolled .header-action-btn .zap-icon,
+.scrolled .header-action-btn .chevron-icon,
+.scrolled .header-action-btn svg:not(.lucide-zap):not(.lucide-chevron-down) {
+    width: 12px;
+    height: 12px;
+}
+
+.scrolled .bell-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.scrolled .header-logo {
+    height: 16px !important;
+}
+
+.scrolled .main-layout {
+    margin-top: 40px;
+}
+
 .header-left {
     display: flex;
     align-items: center;

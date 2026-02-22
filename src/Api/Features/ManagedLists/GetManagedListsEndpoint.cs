@@ -16,15 +16,16 @@ public static class GetManagedListsEndpoint
     public static async Task<List<GetManagedListsResponse>> HandleAsync(
         Guid? projectId,
         string? query,
-        bool includeInactive,
-        int page,
-        int pageSize,
+        bool? includeInactive,
+        int? page,
+        int? pageSize,
         ApplicationDbContext db,
         CancellationToken cancellationToken)
     {
         // Set default values
-        page = page <= 0 ? 1 : page;
-        pageSize = pageSize <= 0 ? 50 : Math.Min(pageSize, 100);
+        var effectivePage = (page ?? 0) <= 0 ? 1 : page!.Value;
+        var effectivePageSize = (pageSize ?? 0) <= 0 ? 50 : Math.Min(pageSize!.Value, 100);
+        var effectiveIncludeInactive = includeInactive ?? false;
 
         var managedListsQuery = db.ManagedLists.AsQueryable();
 
@@ -35,7 +36,7 @@ public static class GetManagedListsEndpoint
         }
 
         // Filter by status
-        if (!includeInactive)
+        if (!effectiveIncludeInactive)
         {
             managedListsQuery = managedListsQuery.Where(ml => ml.Status == ManagedListStatus.Active);
         }
@@ -51,8 +52,8 @@ public static class GetManagedListsEndpoint
 
         return await managedListsQuery
             .OrderBy(ml => ml.Name)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((effectivePage - 1) * effectivePageSize)
+            .Take(effectivePageSize)
             .Select(ml => new GetManagedListsResponse(
                 ml.Id,
                 ml.ProjectId,

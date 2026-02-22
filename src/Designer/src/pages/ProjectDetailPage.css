@@ -62,7 +62,7 @@
     margin: 0;
 }
 
-.nav-list > li {
+.nav-list>li {
     margin-bottom: 0.125rem;
 }
 
@@ -144,6 +144,49 @@
     color: #0f172a;
 }
 
+.sub-nav-item.recent-item {
+    display: flex;
+    align-items: center;
+    padding-left: 2rem;
+}
+
+.status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    margin-right: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.status-active,
+.status-ready,
+.status-final,
+.status-completed {
+    background-color: #22c55e;
+}
+
+.status-draft {
+    background-color: #cbd5e1;
+    border: 1px solid #94a3b8;
+}
+
+.status-onhold,
+.status-archived,
+.status-inactive {
+    background-color: #a8a29e;
+}
+
+.status-abandoned {
+    background-color: #ef4444;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Utilities */
 .utilities-section {
     border-top: 1px solid #e2e8f0;
@@ -193,7 +236,7 @@
 /* Main Content */
 .detail-main {
     flex: 1;
-    overflow-y: auto;
+    overflow: auto;
     padding: 1.5rem;
     background-color: rgba(248, 250, 252, 0.5);
 }
@@ -408,4 +451,3 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
-

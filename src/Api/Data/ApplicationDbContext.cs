@@ -50,6 +50,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<StudyQuestionnaireLine> StudyQuestionnaireLines => Set<StudyQuestionnaireLine>();
     public DbSet<StudyManagedListAssignment> StudyManagedListAssignments => Set<StudyManagedListAssignment>();
     public DbSet<StudyQuestionSubsetLink> StudyQuestionSubsetLinks => Set<StudyQuestionSubsetLink>();
+    public DbSet<FieldworkLanguage> FieldworkLanguages => Set<FieldworkLanguage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -301,7 +302,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Methodology)
                 .HasConversion<string>()
                 .HasMaxLength(50);
-            entity.HasIndex(e => e.Name).IsUnique(); // Ensure project names are unique
+            entity.HasIndex(e => new { e.ClientId, e.Name }).IsUnique(); // Project names unique per client
             
             entity.HasOne(e => e.Client)
                 .WithMany()
@@ -373,12 +374,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ManagedListItem>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Value).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100).HasColumnName("Value");
             entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             
-            // Unique constraint: Value (Code) must be unique within the same ManagedList (case-insensitive)
-            entity.HasIndex(e => new { e.ManagedListId, e.Value }).IsUnique();
+            // Unique constraint: Code must be unique within the same ManagedList (case-insensitive)
+            entity.HasIndex(e => new { e.ManagedListId, e.Code }).IsUnique().HasDatabaseName("IX_ManagedListItems_ManagedListId_Value");
         });
 
         modelBuilder.Entity<QuestionManagedList>(entity =>
@@ -462,13 +463,9 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Description).HasMaxLength(2000);
-            entity.Property(e => e.StatusReason).HasMaxLength(500);
-            entity.Property(e => e.VersionComment).HasMaxLength(1000);
-            entity.Property(e => e.VersionReason).HasMaxLength(1000);
             
             // Unique constraint: one version number per project study lineage
-            entity.HasIndex(e => new { e.ProjectId, e.MasterStudyId, e.VersionNumber }).IsUnique();
+            entity.HasIndex(e => new { e.ProjectId, e.MasterStudyId, e.Version }).IsUnique();
             
             entity.HasOne(e => e.Project)
                 .WithMany()
@@ -561,6 +558,26 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.SubsetDefinition)
                 .WithMany()
                 .HasForeignKey(e => e.SubsetDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<FieldworkLanguage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.LanguageName).IsRequired().HasMaxLength(100);
+
+            // Unique: one language code per study per fieldwork market
+            entity.HasIndex(e => new { e.StudyId, e.FieldworkMarketId, e.LanguageCode }).IsUnique();
+
+            entity.HasOne(e => e.Study)
+                .WithMany()
+                .HasForeignKey(e => e.StudyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.FieldworkMarket)
+                .WithMany()
+                .HasForeignKey(e => e.FieldworkMarketId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

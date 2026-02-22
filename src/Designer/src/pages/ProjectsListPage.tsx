@@ -57,14 +57,24 @@ export function ProjectsListPage() {
                     {/* Toolbar */}
                     <div className="toolbar">
                         <form onSubmit={handleSearch} className="search-form">
-                            <div className="search-wrapper">
-                                <Search className="search-icon" size={16} />
+                            <div className="search-wrapper" style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                <Search
+                                    size={16}
+                                    style={{
+                                        position: 'absolute',
+                                        left: '12px',
+                                        color: '#94a3b8',
+                                        pointerEvents: 'none',
+                                        zIndex: 1
+                                    }}
+                                />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search projects..."
                                     className="search-input"
+                                    style={{ paddingLeft: '36px' }}
                                 />
                             </div>
                         </form>

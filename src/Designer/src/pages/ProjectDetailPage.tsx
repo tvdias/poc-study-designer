@@ -1,18 +1,49 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { LayoutDashboard, FileQuestion, FlaskConical, List, Users, ChevronDown, FileDown, History, Save } from 'lucide-react';
-import { projectsApi, clientsApi, commissioningMarketsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest } from '../services/api';
+import { projectsApi, clientsApi, commissioningMarketsApi, studiesApi, managedListsApi, type Project, type Client, type CommissioningMarket, type CreateProjectRequest, type StudySummary, type ManagedList } from '../services/api';
 import { QuestionnaireSection } from './QuestionnaireSection';
+import { ManagedListsSection } from './ManagedListsSection';
+import { StudiesSection } from './StudiesSection';
+import { ManagedListDetailPage } from './ManagedListDetailPage';
+import { StudyDetailPage } from './StudyDetailPage';
 import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
-    const { id } = useParams<{ id: string }>();
+    const { handleScroll } = useOutletContext<{ handleScroll: (e: React.UIEvent<HTMLElement>) => void }>();
+    const { id: routeId, projectId, listId, studyId } = useParams<{ id?: string, projectId?: string, listId?: string, studyId?: string }>();
+    const id = routeId || projectId;
     const navigate = useNavigate();
+    const location = useLocation();
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeSection, setActiveSection] = useState('details');
-    const [studiesExpanded, setStudiesExpanded] = useState(false);
+    const [activeSection, setActiveSection] = useState(() => {
+        if (listId) return 'lists';
+        if (studyId) return 'studies';
+        const params = new URLSearchParams(location.search);
+        return params.get('section') || 'details';
+    });
+
+    useEffect(() => {
+        if (listId) setActiveSection('lists');
+        else if (studyId) setActiveSection('studies');
+    }, [listId, studyId]);
+
+    const changeSection = (section: string) => {
+        setActiveSection(section);
+        if ((listId || studyId) && id !== 'new') {
+            navigate(`/projects/${id}?section=${section}`);
+        } else if (!listId && !studyId && id !== 'new') {
+            navigate(`/projects/${id}?section=${section}`, { replace: true });
+        }
+    };
+
+    // Sidebar items state
+    const [studiesExpanded, setStudiesExpanded] = useState(true);
+    const [listsExpanded, setListsExpanded] = useState(true);
+    const [recentStudies, setRecentStudies] = useState<StudySummary[]>([]);
+    const [recentLists, setRecentLists] = useState<ManagedList[]>([]);
 
     // Creation mode state
     const isCreateMode = id === 'new';
@@ -29,6 +60,32 @@ export function ProjectDetailPage() {
     const [serverError, setServerError] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const loadSidebarItems = useCallback(async (pid: string) => {
+        try {
+            const [studiesData, listsData] = await Promise.all([
+                studiesApi.getAll(pid).catch(() => [] as StudySummary[]),
+                managedListsApi.getAll(pid).catch(() => [] as ManagedList[])
+            ]);
+
+            const sortedStudies = [...studiesData]
+                .sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime())
+                .slice(0, 6);
+
+            const sortedLists = [...listsData]
+                .sort((a, b) => {
+                    const tA = new Date(a.modifiedOn || a.firstSnapshotDate || 0).getTime();
+                    const tB = new Date(b.modifiedOn || b.firstSnapshotDate || 0).getTime();
+                    return tB - tA;
+                })
+                .slice(0, 6);
+
+            setRecentStudies(sortedStudies);
+            setRecentLists(sortedLists);
+        } catch (e) {
+            console.error('Failed to load sidebar items', e);
+        }
+    }, []);
+
     useEffect(() => {
         if (isCreateMode) {
             // In create mode, load clients and commissioning markets for the dropdowns
@@ -39,6 +96,12 @@ export function ProjectDetailPage() {
             loadProject(id);
         }
     }, [id, isCreateMode]);
+
+    useEffect(() => {
+        if (!isCreateMode && project?.id) {
+            loadSidebarItems(project.id);
+        }
+    }, [isCreateMode, project?.id, loadSidebarItems]);
 
     const loadClients = async () => {
         try {
@@ -138,7 +201,7 @@ export function ProjectDetailPage() {
                             <li>
                                 <button
                                     className={`nav-item ${activeSection === 'details' ? 'active' : ''}`}
-                                    onClick={() => setActiveSection('details')}
+                                    onClick={() => changeSection('details')}
                                 >
                                     <LayoutDashboard size={16} />
                                     <span>Details</span>
@@ -149,7 +212,7 @@ export function ProjectDetailPage() {
                                     <li>
                                         <button
                                             className={`nav-item ${activeSection === 'questionnaire' ? 'active' : ''}`}
-                                            onClick={() => setActiveSection('questionnaire')}
+                                            onClick={() => changeSection('questionnaire')}
                                         >
                                             <FileQuestion size={16} />
                                             <span>Questionnaire</span>
@@ -158,40 +221,77 @@ export function ProjectDetailPage() {
                                     <li>
                                         <button
                                             className={`nav-item-accordion ${studiesExpanded ? 'expanded' : ''}`}
-                                            onClick={() => setStudiesExpanded(!studiesExpanded)}
+                                            onClick={() => {
+                                                if (!studiesExpanded) setStudiesExpanded(true);
+                                                changeSection('studies');
+                                            }}
                                         >
                                             <div className="nav-item-content">
                                                 <FlaskConical size={16} />
                                                 <span>Studies</span>
                                             </div>
-                                            <ChevronDown size={14} className={`chevron ${studiesExpanded ? 'rotated' : ''}`} />
+                                            <ChevronDown
+                                                size={14}
+                                                className={`chevron ${studiesExpanded ? 'rotated' : ''}`}
+                                                onClick={(e) => { e.stopPropagation(); setStudiesExpanded(!studiesExpanded); }}
+                                            />
                                         </button>
                                         {studiesExpanded && (
                                             <ul className="sub-nav-list">
-                                                <li>
-                                                    <button
-                                                        className={`sub-nav-item ${activeSection === 'studies' ? 'active' : ''}`}
-                                                        onClick={() => setActiveSection('studies')}
-                                                    >
-                                                        All Studies Overview
-                                                    </button>
-                                                </li>
+                                                {recentStudies.map(study => (
+                                                    <li key={study.studyId}>
+                                                        <button
+                                                            className={`sub-nav-item recent-item ${studyId === study.studyId ? 'active' : ''}`}
+                                                            title={study.name}
+                                                            onClick={() => navigate(`/projects/${project!.id}/studies/${study.studyId}`)}
+                                                        >
+                                                            <span className={`status-dot status-${study.status?.toLowerCase() || 'draft'}`}></span>
+                                                            <span className="truncate">{study.name}</span>
+                                                        </button>
+                                                    </li>
+                                                ))}
                                             </ul>
                                         )}
                                     </li>
                                     <li>
                                         <button
-                                            className={`nav-item ${activeSection === 'lists' ? 'active' : ''}`}
-                                            onClick={() => setActiveSection('lists')}
+                                            className={`nav-item-accordion ${listsExpanded ? 'expanded' : ''}`}
+                                            onClick={() => {
+                                                if (!listsExpanded) setListsExpanded(true);
+                                                changeSection('lists');
+                                            }}
                                         >
-                                            <List size={16} />
-                                            <span>Managed Lists</span>
+                                            <div className="nav-item-content">
+                                                <List size={16} />
+                                                <span>Managed Lists</span>
+                                            </div>
+                                            <ChevronDown
+                                                size={14}
+                                                className={`chevron ${listsExpanded ? 'rotated' : ''}`}
+                                                onClick={(e) => { e.stopPropagation(); setListsExpanded(!listsExpanded); }}
+                                            />
                                         </button>
+                                        {listsExpanded && (
+                                            <ul className="sub-nav-list">
+                                                {recentLists.map(list => (
+                                                    <li key={list.id}>
+                                                        <button
+                                                            className="sub-nav-item recent-item"
+                                                            title={list.name}
+                                                            onClick={() => navigate(`/projects/${project!.id}/managed-lists/${list.id}`)}
+                                                        >
+                                                            <span className={`status-dot status-${list.status?.toLowerCase() || 'active'}`}></span>
+                                                            <span className="truncate">{list.name}</span>
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                     </li>
                                     <li>
                                         <button
                                             className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
-                                            onClick={() => setActiveSection('users')}
+                                            onClick={() => changeSection('users')}
                                         >
                                             <Users size={16} />
                                             <span>Access Team</span>
@@ -225,8 +325,8 @@ export function ProjectDetailPage() {
                 </aside>
 
                 {/* Main Content */}
-                <main className="detail-main">
-                    {activeSection === 'details' && (
+                <main className="detail-main" onScroll={handleScroll}>
+                    {activeSection === 'details' && !listId && (
                         <section className="detail-section">
                             <div className="section-header">
                                 <h2 className="section-title">{isCreateMode ? 'Create Project' : 'Project Details'}</h2>
@@ -234,7 +334,7 @@ export function ProjectDetailPage() {
                                     <span className="project-id">ID: {project.id.substring(0, 13)}</span>
                                 )}
                             </div>
-                            
+
                             {isCreateMode ? (
                                 /* Creation Form */
                                 <form onSubmit={handleCreateProject}>
@@ -243,7 +343,7 @@ export function ProjectDetailPage() {
                                             {serverError}
                                         </div>
                                     )}
-                                    
+
                                     <div className="section-content">
                                         <div className="form-grid">
                                             <div className="form-group col-span-2">
@@ -263,7 +363,7 @@ export function ProjectDetailPage() {
                                                     <div className="field-error">{validationErrors.Name[0]}</div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="form-group col-span-2">
                                                 <label className="form-label">Client Account</label>
                                                 <select
@@ -282,7 +382,7 @@ export function ProjectDetailPage() {
                                                     <div className="field-error">{validationErrors.ClientId[0]}</div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="form-group col-span-2">
                                                 <label className="form-label">Commissioning Market</label>
                                                 <select
@@ -320,7 +420,7 @@ export function ProjectDetailPage() {
                                                     <div className="field-error">{validationErrors.Methodology[0]}</div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="form-group col-span-2">
                                                 <label className="form-label">Description</label>
                                                 <textarea
@@ -337,15 +437,15 @@ export function ProjectDetailPage() {
                                         </div>
                                     </div>
                                     <div className="section-footer">
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={() => navigate('/projects')}
                                             className="cancel-btn"
                                             disabled={isSubmitting}
                                         >
                                             Cancel
                                         </button>
-                                        <button 
+                                        <button
                                             type="submit"
                                             className="save-btn"
                                             disabled={isSubmitting}
@@ -358,110 +458,115 @@ export function ProjectDetailPage() {
                             ) : project ? (
                                 /* View Mode */
                                 <>
-                            <div className="section-content">
-                                <div className="form-grid">
-                                    <div className="form-group col-span-2">
-                                        <label className="form-label">Project Name</label>
-                                        <input
-                                            type="text"
-                                            value={project.name}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Status</label>
-                                        <select className="form-select" value={project.status} disabled>
-                                            <option value="Active">Active</option>
-                                            <option value="OnHold">On Hold</option>
-                                            <option value="Closed">Closed</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Cost Management</label>
-                                        <div className="toggle-wrapper">
-                                            <input
-                                                type="checkbox"
-                                                checked={project.costManagementEnabled}
-                                                disabled
-                                                className="toggle-input"
-                                            />
-                                            <span className="toggle-label">
-                                                {project.costManagementEnabled ? 'Enabled' : 'Disabled'}
-                                            </span>
+                                    <div className="section-content">
+                                        <div className="form-grid">
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Project Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.name}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Status</label>
+                                                <select className="form-select" value={project.status} disabled>
+                                                    <option value="Active">Active</option>
+                                                    <option value="OnHold">On Hold</option>
+                                                    <option value="Closed">Closed</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Cost Management</label>
+                                                <div className="toggle-wrapper">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={project.costManagementEnabled}
+                                                        disabled
+                                                        className="toggle-input"
+                                                    />
+                                                    <span className="toggle-label">
+                                                        {project.costManagementEnabled ? 'Enabled' : 'Disabled'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Client Account</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.clientName || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Commissioning Market</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.commissioningMarketName || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Methodology</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.methodology || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Owner</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.owner || '-'}
+                                                    className="form-input"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="form-group col-span-2">
+                                                <label className="form-label">Description</label>
+                                                <textarea
+                                                    rows={2}
+                                                    value={project.description || ''}
+                                                    className="form-textarea"
+                                                    readOnly
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Client Account</label>
-                                        <input
-                                            type="text"
-                                            value={project.clientName || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
+                                    <div className="section-footer">
+                                        <button className="save-btn">
+                                            <Save size={14} />
+                                            <span>Save Details</span>
+                                        </button>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Commissioning Market</label>
-                                        <input
-                                            type="text"
-                                            value={project.commissioningMarketName || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Methodology</label>
-                                        <input
-                                            type="text"
-                                            value={project.methodology || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Owner</label>
-                                        <input
-                                            type="text"
-                                            value={project.owner || '-'}
-                                            className="form-input"
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="form-group col-span-2">
-                                        <label className="form-label">Description</label>
-                                        <textarea
-                                            rows={2}
-                                            value={project.description || ''}
-                                            className="form-textarea"
-                                            readOnly
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="section-footer">
-                                <button className="save-btn">
-                                    <Save size={14} />
-                                    <span>Save Details</span>
-                                </button>
-                            </div>
                                 </>
                             ) : null}
                         </section>
                     )}
 
-                    {!isCreateMode && activeSection === 'questionnaire' && project && (
+                    {!isCreateMode && activeSection === 'questionnaire' && project && !listId && (
                         <QuestionnaireSection projectId={project.id} />
                     )}
 
-                    {!isCreateMode && activeSection === 'studies' && (
-                        <section className="detail-section">
-                            <div className="section-header">
-                                <h2 className="section-title">Studies</h2>
-                            </div>
-                            <div className="section-content">
-                                <p className="placeholder-text">Studies section coming soon...</p>
-                            </div>
-                        </section>
+                    {!isCreateMode && activeSection === 'studies' && project && !listId && !studyId && (
+                        <StudiesSection projectId={project.id} onListUpdate={() => loadSidebarItems(project.id)} />
+                    )}
+
+                    {!isCreateMode && activeSection === 'lists' && project && !listId && !studyId && (
+                        <ManagedListsSection projectId={project.id} onListUpdate={() => loadSidebarItems(project.id)} />
+                    )}
+
+                    {!isCreateMode && project && listId && (
+                        <ManagedListDetailPage />
+                    )}
+
+                    {!isCreateMode && project && studyId && (
+                        <StudyDetailPage />
                     )}
                 </main>
             </div>

@@ -10,12 +10,20 @@ public class UpdateStudyValidator : AbstractValidator<UpdateStudyRequest>
             .NotEmpty().WithMessage("Name is required")
             .MaximumLength(200).WithMessage("Name cannot exceed 200 characters");
 
-        RuleFor(x => x.Description)
-            .MaximumLength(2000).WithMessage("Description cannot exceed 2000 characters")
-            .When(x => !string.IsNullOrEmpty(x.Description));
+        RuleFor(x => x.Category)
+            .NotEmpty().WithMessage("Category is required")
+            .MaximumLength(100).WithMessage("Category cannot exceed 100 characters");
 
-        RuleFor(x => x.StatusReason)
-            .MaximumLength(500).WithMessage("StatusReason cannot exceed 500 characters")
-            .When(x => !string.IsNullOrEmpty(x.StatusReason));
+        RuleFor(x => x.MaconomyJobNumber)
+            .NotEmpty().WithMessage("MaconomyJobNumber is required")
+            .MaximumLength(50).WithMessage("MaconomyJobNumber cannot exceed 50 characters");
+
+        RuleFor(x => x.ProjectOperationsUrl)
+            .NotEmpty().WithMessage("ProjectOperationsUrl is required")
+            .MaximumLength(500).WithMessage("ProjectOperationsUrl cannot exceed 500 characters")
+            .Must(uri => Uri.TryCreate(uri, UriKind.Absolute, out _)).WithMessage("ProjectOperationsUrl must be a valid URL");
+
+        RuleFor(x => x.FieldworkMarketId)
+            .NotEmpty().WithMessage("FieldworkMarketId is required");
     }
 }

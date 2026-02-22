@@ -221,6 +221,7 @@ api.MapCreateStudyEndpoint();
 api.MapCreateStudyVersionEndpoint();
 api.MapGetStudiesEndpoint();
 api.MapGetStudyByIdEndpoint();
+api.MapGetStudyQuestionsEndpoint();
 api.MapUpdateStudyEndpoint();
 
 app.MapDefaultEndpoints();

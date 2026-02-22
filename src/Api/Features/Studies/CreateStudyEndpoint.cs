@@ -13,7 +13,7 @@ public static class CreateStudyEndpoint
             .WithTags("Studies");
     }
 
-    public static async Task<Results<CreatedAtRoute<CreateStudyResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
+    public static async Task<Results<CreatedAtRoute<CreateStudyResponse>, ValidationProblem, ProblemHttpResult>> HandleAsync(
         CreateStudyRequest request,
         IStudyService studyService,
         IValidator<CreateStudyRequest> validator,
@@ -32,7 +32,11 @@ public static class CreateStudyEndpoint
         }
         catch (InvalidOperationException ex)
         {
-            return TypedResults.Conflict(ex.Message);
+            return TypedResults.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Project Configuration Conflict"
+            );
         }
     }
 }

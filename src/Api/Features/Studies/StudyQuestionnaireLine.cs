@@ -29,6 +29,8 @@ public class StudyQuestionnaireLine : AuditableEntity
     public int? AnswerMax { get; set; }
     public string? QuestionFormatDetails { get; set; }
     public bool IsDummy { get; set; }
+    public bool LockAnswerCode { get; set; } = false;
+    public bool EditCustomAnswerCode { get; set; } = false;
     
     // Navigation properties
     public ICollection<StudyManagedListAssignment> ManagedListAssignments { get; set; } = new List<StudyManagedListAssignment>();

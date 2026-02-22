@@ -51,7 +51,7 @@ public static class UpdateProjectEndpoint
 {
     public static void MapUpdateProjectEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/projects/{id:guid}", async Task<Results<Ok<UpdateProjectResponse>, ValidationProblem, NotFound, Conflict<string>>> (
+        app.MapPut("/projects/{id:guid}", async Task<Results<Ok<UpdateProjectResponse>, ValidationProblem, NotFound, ProblemHttpResult>> (
             Guid id,
             UpdateProjectRequest request,
             ApplicationDbContext db,
@@ -70,15 +70,19 @@ public static class UpdateProjectEndpoint
                 return TypedResults.NotFound();
             }
 
-            // Check if another project with the same name exists
-            var existingProject = await db.Projects.FirstOrDefaultAsync(
-                p => p.Name == request.Name && p.Id != id, ct);
-            if (existingProject != null)
+            // Check if another project with the same name exists for this client
+            var trimmedName = request.Name.Trim();
+            var isNameDuplicated = await db.Projects.AnyAsync(p => p.ClientId == request.ClientId && p.Name.ToLower() == trimmedName.ToLower() && p.Id != id, ct);
+            if (isNameDuplicated)
             {
-                return TypedResults.Conflict("A project with this name already exists");
+                return TypedResults.Problem(
+                    detail: "A project with this name already exists for this client",
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Project Name Conflict"
+                );
             }
 
-            project.Name = request.Name;
+            project.Name = trimmedName;
             project.Description = request.Description;
             project.ClientId = request.ClientId;
             project.CommissioningMarketId = request.CommissioningMarketId;

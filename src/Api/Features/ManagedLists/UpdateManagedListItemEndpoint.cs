@@ -37,24 +37,24 @@ public static class UpdateManagedListItemEndpoint
             return TypedResults.NotFound($"Managed list item with ID '{itemId}' not found in managed list '{managedListId}'.");
         }
 
-        // Check for duplicate Value (Code) within the same ManagedList (case-insensitive)
+        // Check for duplicate Code within the same ManagedList (case-insensitive)
         // Exclude the current item from the duplicate check
         var duplicateExists = await db.ManagedListItems
             .AnyAsync(i => i.ManagedListId == managedListId && 
                           i.Id != itemId &&
-                          i.Value.ToLower() == request.Value.ToLower(), 
+                          i.Code.ToLower() == request.Code.ToLower(), 
                       cancellationToken);
         
         if (duplicateExists)
         {
-            return TypedResults.Conflict($"Another item with code '{request.Value}' already exists in this managed list.");
+            return TypedResults.Conflict($"Another item with code '{request.Code}' already exists in this managed list.");
         }
 
         // Track if activation status changed (US5 - AC-AUTO-03, AC-AUTO-04)
         var wasActive = item.IsActive;
         var willBeActive = request.IsActive;
 
-        item.Value = request.Value;
+        item.Code = request.Code;
         item.Label = request.Label;
         item.SortOrder = request.SortOrder;
         item.IsActive = request.IsActive;
@@ -82,7 +82,7 @@ public static class UpdateManagedListItemEndpoint
         var response = new UpdateManagedListItemResponse(
             item.Id,
             item.ManagedListId,
-            item.Value,
+            item.Code,
             item.Label,
             item.SortOrder,
             item.IsActive,

@@ -1,0 +1,918 @@
+/* =============================================
+   Managed List Detail Page
+   ============================================= */
+
+.ml-detail-loading,
+.ml-detail-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.ml-detail-page {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+/* ---- Page Header ---- */
+.ml-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ml-detail-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ml-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ml-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.ml-status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ml-status-pill--active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.ml-status-pill--inactive {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.ml-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ml-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ml-action-btn:hover {
+    background: #f1f5f9;
+}
+
+.ml-action-btn--danger {
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.ml-action-btn--danger:hover {
+    background: #fef2f2;
+}
+
+/* ---- Tabs ---- */
+.ml-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 24px;
+    background: #fff;
+}
+
+.ml-tab {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+}
+
+.ml-tab:hover {
+    color: #1e293b;
+}
+
+.ml-tab--active {
+    color: #1e40af;
+    border-bottom-color: #1e40af;
+    font-weight: 600;
+}
+
+/* ---- Tab content container ---- */
+.ml-tab-content {
+    flex: 1;
+}
+
+/* =============================================
+   General Tab
+   ============================================= */
+
+.ml-general-tab {
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.ml-fields-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ml-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 48px;
+    max-width: 900px;
+}
+
+@media (max-width: 640px) {
+    .ml-fields-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ml-fields-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ml-field {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    align-items: start;
+    gap: 8px;
+}
+
+.ml-field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    padding-top: 6px;
+}
+
+.ml-required {
+    color: #dc2626;
+    margin-right: 2px;
+}
+
+.ml-field-input {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #1e293b;
+    width: 100%;
+}
+
+.ml-field-input--invalid {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.ml-field-error-text {
+    color: #dc2626;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.ml-field-textarea {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #1e293b;
+    width: 100%;
+    resize: vertical;
+}
+
+/* ---- Questionnaire Lines Sub-panel ---- */
+.ml-sub-panel {
+    margin: 0 24px 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ml-sub-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.ml-sub-panel-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.ml-sub-panel-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.ml-sub-table-wrapper {
+    overflow-x: auto;
+}
+
+.ml-sub-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ml-sub-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #475569;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ml-sub-table td {
+    padding: 8px 12px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ml-sub-panel-footer {
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #64748b;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* =============================================
+   Entities Tab
+   ============================================= */
+
+/* ---- Success Banner ---- */
+.ml-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f0fdf4;
+    border-bottom: 1px solid #bbf7d0;
+    color: #166534;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.ml-banner-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #166534;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 3px;
+}
+
+.ml-banner-close:hover {
+    background: #dcfce7;
+}
+
+.ml-entities-tab {
+    display: flex;
+    flex-direction: column;
+}
+
+.ml-entities-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    position: sticky;
+    top: -1.5rem;
+    /* Negate the parent padding to stick to the very top */
+    z-index: 45;
+    /* Below global header (50) but above content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin: 0 -1.5rem 0;
+    /* Bleed out to the edges of the padded container */
+    padding-left: calc(20px + 1.5rem);
+    padding-right: calc(20px + 1.5rem);
+    height: 56px;
+    box-sizing: border-box;
+}
+
+.ml-entities-toolbar__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ml-entities-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.ml-count-pill {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.ml-entities-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ml-search-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 4px 10px;
+    background: #fff;
+    color: #94a3b8;
+}
+
+.ml-search-input {
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #334155;
+    width: 160px;
+    background: transparent;
+}
+
+.ml-search-input::placeholder {
+    color: #94a3b8;
+}
+
+/* Reuse shared toolbar button styles */
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.toolbar-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.toolbar-btn--primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.toolbar-btn--primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* ---- Add Item Form Panel ---- */
+.ml-add-form-panel {
+    margin: 16px 20px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #eff6ff;
+    padding: 16px;
+}
+
+.ml-add-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.ml-add-form-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+.ml-close-form-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 4px;
+}
+
+.ml-close-form-btn:hover {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.ml-item-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.ml-add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ml-add-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+@media (max-width: 640px) {
+    .ml-add-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ml-add-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ml-add-field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+}
+
+.ml-add-field--small {
+    max-width: 120px;
+}
+
+.ml-add-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.ml-cancel-btn {
+    padding: 6px 16px;
+    font-size: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.ml-cancel-btn:hover {
+    background: #f1f5f9;
+}
+
+.ml-save-btn {
+    padding: 6px 20px;
+    font-size: 13px;
+    border: none;
+    border-radius: 5px;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.ml-save-btn:hover {
+    background: #1d4ed8;
+}
+
+.ml-save-btn:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* ---- Entities Table ---- */
+.ml-entities-table-wrapper {
+    background: #fff;
+}
+
+.ml-entities-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.ml-entities-table thead {
+    position: sticky;
+    top: calc(56px - 1.5rem);
+    /* Toolbar height - negate padding */
+    z-index: 44;
+}
+
+.ml-entities-table thead tr {
+    background: #f8fafc;
+}
+
+.ml-entities-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.ml-entities-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.1s;
+}
+
+.ml-entities-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.ml-entities-table td {
+    padding: 9px 12px;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.col-name {
+    min-width: 200px;
+}
+
+.col-code {
+    min-width: 140px;
+}
+
+.col-order {
+    width: 100px;
+}
+
+.col-active {
+    width: 100px;
+}
+
+.col-actions {
+    width: 48px;
+    text-align: center;
+}
+
+.col-link {
+    color: #2563eb !important;
+    font-weight: 500;
+}
+
+.ml-code-cell {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.ml-active-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ml-active-pill--yes {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.ml-active-pill--no {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.ml-delete-item-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: all 0.15s;
+}
+
+.ml-delete-item-btn:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+.ml-entities-footer {
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+/* ---- Empty State ---- */
+.ml-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 24px;
+    gap: 12px;
+    color: #94a3b8;
+}
+
+.ml-empty-icon {
+    opacity: 0.6;
+}
+
+.ml-empty-state p {
+    margin: 0;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.ml-empty-rows {
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+/* =============================================
+   Study Allocation Tab
+   ============================================= */
+
+.ml-allocation-tab {
+    display: flex;
+    flex-direction: column;
+}
+
+.ml-allocation-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    position: sticky;
+    top: -1.5rem;
+    /* Negate parent padding */
+    z-index: 45;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin: 0 -1.5rem 0;
+    padding-left: calc(24px + 1.5rem);
+    padding-right: calc(24px + 1.5rem);
+    height: 56px;
+    box-sizing: border-box;
+}
+
+.ml-allocation-toolbar__left {
+    display: flex;
+    align-items: center;
+}
+
+.ml-allocation-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.ml-allocation-toolbar__right {
+    display: flex;
+    gap: 8px;
+}
+
+.ml-allocation-matrix-wrapper {
+    background: #f8fafc;
+}
+
+.ml-allocation-matrix {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    min-width: max-content;
+}
+
+.ml-allocation-matrix th,
+.ml-allocation-matrix td {
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 16px;
+}
+
+/* Fixed first column for entity row headers */
+.ml-allocation-matrix .alloc-col-entity,
+.ml-allocation-matrix .alloc-cell-entity {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 10;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.02);
+}
+
+.ml-allocation-matrix thead th.alloc-col-entity {
+    z-index: 48;
+    /* Higher z-index for the top-left corner cell */
+    vertical-align: top;
+    top: calc(56px - 1.5rem);
+}
+
+/* Column headers (Studies) */
+.ml-allocation-matrix thead th {
+    position: sticky;
+    top: calc(56px - 1.5rem);
+    background: #fff;
+    z-index: 43;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.alloc-col-study {
+    min-width: 150px;
+}
+
+.alloc-study-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #0f172a;
+    margin-bottom: 4px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.alloc-study-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.alloc-study-status--draft {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.alloc-study-status--final,
+.alloc-study-status--completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.alloc-study-status--archived,
+.alloc-study-status--abandoned {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.alloc-copy-btn {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+}
+
+.alloc-copy-btn:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+.alloc-copy-btn:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Entity row headers */
+.alloc-cell-entity {
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.alloc-entity-code {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Matrix cells */
+.alloc-cell-checkbox {
+    text-align: center;
+    vertical-align: middle;
+    background: #fff;
+}
+
+.alloc-checkbox-wrapper {
+    display: inline-flex;
+    position: relative;
+    padding: 4px;
+    /* Give room for indicator */
+}
+
+.alloc-checkbox-wrapper input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.alloc-checkbox-wrapper input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Unsaved change indicator */
+.alloc-checkbox-wrapper.is-changed::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+    box-shadow: 0 0 0 1px #fff;
+}

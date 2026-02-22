@@ -36,22 +36,22 @@ public static class CreateManagedListItemEndpoint
             return TypedResults.NotFound($"Managed list with ID '{managedListId}' not found.");
         }
 
-        // Check for duplicate Value (Code) within the same ManagedList (case-insensitive)
+        // Check for duplicate Code within the same ManagedList (case-insensitive)
         var duplicateExists = await db.ManagedListItems
             .AnyAsync(item => item.ManagedListId == managedListId && 
-                             item.Value.ToLower() == request.Value.ToLower(), 
+                             item.Code.ToLower() == request.Code.ToLower(), 
                       cancellationToken);
         
         if (duplicateExists)
         {
-            return TypedResults.Conflict($"An item with code '{request.Value}' already exists in this managed list.");
+            return TypedResults.Conflict($"An item with code '{request.Code}' already exists in this managed list.");
         }
 
         var item = new ManagedListItem
         {
             Id = Guid.NewGuid(),
             ManagedListId = managedListId,
-            Value = request.Value,
+            Code = request.Code,
             Label = request.Label,
             SortOrder = request.SortOrder,
             IsActive = true,
@@ -69,7 +69,7 @@ public static class CreateManagedListItemEndpoint
         var response = new CreateManagedListItemResponse(
             item.Id,
             item.ManagedListId,
-            item.Value,
+            item.Code,
             item.Label,
             item.SortOrder,
             item.IsActive,

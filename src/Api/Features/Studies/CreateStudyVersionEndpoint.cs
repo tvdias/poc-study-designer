@@ -13,25 +13,14 @@ public static class CreateStudyVersionEndpoint
             .WithTags("Studies");
     }
 
-    public static async Task<Results<CreatedAtRoute<CreateStudyVersionResponse>, ValidationProblem, Conflict<string>>> HandleAsync(
+    public static async Task<Results<CreatedAtRoute<CreateStudyVersionResponse>, Conflict<string>>> HandleAsync(
         Guid parentStudyId,
-        CreateStudyVersionRequest request,
         IStudyService studyService,
-        IValidator<CreateStudyVersionRequest> validator,
         CancellationToken cancellationToken)
     {
-        // Merge parentStudyId from route into request
-        var mergedRequest = request with { ParentStudyId = parentStudyId };
-
-        var validationResult = await validator.ValidateAsync(mergedRequest, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return TypedResults.ValidationProblem(validationResult.ToDictionary());
-        }
-
         try
         {
-            var response = await studyService.CreateStudyVersionAsync(mergedRequest, "System", cancellationToken);
+            var response = await studyService.CreateStudyVersionAsync(parentStudyId, "System", cancellationToken);
             return TypedResults.CreatedAtRoute(response, "GetStudyById", new { id = response.StudyId });
         }
         catch (InvalidOperationException ex)
