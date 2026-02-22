@@ -10,12 +10,6 @@ public static class ProductTemplatesFeatureExtensions
         group.MapUpdateProductTemplateEndpoint();
         group.MapDeleteProductTemplateEndpoint();
 
-        group.MapCreateProductTemplateLineEndpoint();
-        group.MapGetProductTemplateLinesEndpoint();
-        group.MapGetProductTemplateLineByIdEndpoint();
-        group.MapUpdateProductTemplateLineEndpoint();
-        group.MapDeleteProductTemplateLineEndpoint();
-
         return group;
     }
 }

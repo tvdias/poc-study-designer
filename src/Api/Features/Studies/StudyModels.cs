@@ -113,3 +113,8 @@ public record GetStudyQuestionsResponse
 {
     public required List<StudyQuestionnaireLineDto> Questions { get; init; }
 }
+
+public record UpdateStudyResponse(
+    Guid Id,
+    string Name,
+    StudyStatus Status);

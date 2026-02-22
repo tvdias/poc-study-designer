@@ -2,6 +2,17 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Api.Features.Clients;
 
+public record GetClientByIdResponse(
+    Guid Id,
+    string AccountName,
+    string? CompanyNumber,
+    string? CustomerNumber,
+    string? CompanyCode,
+    DateTime CreatedOn,
+    string CreatedBy,
+    DateTime? ModifiedOn,
+    string? ModifiedBy);
+
 public static class GetClientByIdEndpoint
 {
     public static void MapGetClientByIdEndpoint(this IEndpointRouteBuilder app)
