@@ -50,6 +50,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<StudyQuestionnaireLine> StudyQuestionnaireLines => Set<StudyQuestionnaireLine>();
     public DbSet<StudyManagedListAssignment> StudyManagedListAssignments => Set<StudyManagedListAssignment>();
     public DbSet<StudyQuestionSubsetLink> StudyQuestionSubsetLinks => Set<StudyQuestionSubsetLink>();
+    public DbSet<FieldworkLanguage> FieldworkLanguages => Set<FieldworkLanguage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -557,6 +558,26 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.SubsetDefinition)
                 .WithMany()
                 .HasForeignKey(e => e.SubsetDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<FieldworkLanguage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.LanguageName).IsRequired().HasMaxLength(100);
+
+            // Unique: one language code per study per fieldwork market
+            entity.HasIndex(e => new { e.StudyId, e.FieldworkMarketId, e.LanguageCode }).IsUnique();
+
+            entity.HasOne(e => e.Study)
+                .WithMany()
+                .HasForeignKey(e => e.StudyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.FieldworkMarket)
+                .WithMany()
+                .HasForeignKey(e => e.FieldworkMarketId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

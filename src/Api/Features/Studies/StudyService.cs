@@ -36,6 +36,13 @@ public interface IStudyService
     Task<GetStudyQuestionsResponse?> GetStudyQuestionsAsync(
         Guid studyId,
         CancellationToken cancellationToken = default);
+
+    Task TransitionStudyStatusAsync(
+        Guid studyId,
+        StudyStatus previousStatus,
+        StudyStatus newStatus,
+        string userId,
+        CancellationToken cancellationToken = default);
 }
 
 public class StudyService : IStudyService
@@ -364,7 +371,9 @@ public class StudyService : IStudyService
                 AnswerMin = q.AnswerMin,
                 AnswerMax = q.AnswerMax,
                 QuestionFormatDetails = q.QuestionFormatDetails,
-                IsDummy = q.IsDummy
+                IsDummy = q.IsDummy,
+                LockAnswerCode = q.LockAnswerCode,
+                EditCustomAnswerCode = q.EditCustomAnswerCode
             })
             .ToListAsync(cancellationToken);
 
@@ -491,46 +500,165 @@ public class StudyService : IStudyService
         string userId,
         CancellationToken cancellationToken)
     {
-        // Get all subset links from project questionnaire
+        // Get all subset links from project questionnaire, including any existing subset memberships
         var projectSubsetLinks = await _context.QuestionSubsetLinks
             .Include(qsl => qsl.SubsetDefinition)
+                .ThenInclude(sd => sd!.Memberships)
             .Where(qsl => qsl.ProjectId == projectId)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+
+        // Pre-load all questionnaire lines for this project to avoid N+1 queries
+        var projectQuestions = await _context.QuestionnaireLines
+            .Where(q => q.ProjectId == projectId)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        // Cache of ManagedListId -> resolved SubsetDefinitionId to avoid duplicate snapshot creation
+        var resolvedSubsetCache = new Dictionary<Guid, Guid>();
 
         var studySubsetLinks = new List<StudyQuestionSubsetLink>();
 
         foreach (var projectLink in projectSubsetLinks)
         {
-            // Find corresponding study question by matching with original questionnaire line
-            var projectQuestion = await _context.QuestionnaireLines
-                .Where(q => q.Id == projectLink.QuestionnaireLineId)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(cancellationToken);
-
+            var projectQuestion = projectQuestions.FirstOrDefault(q => q.Id == projectLink.QuestionnaireLineId);
             if (projectQuestion == null) continue;
 
             var studyQuestion = studyQuestions.FirstOrDefault(sq => sq.SortOrder == projectQuestion.SortOrder);
             if (studyQuestion == null) continue;
 
-            // For V1, copy subset reference if it exists
-            // SubsetDefinitionId == null means full selection (all active MLEs)
-            var studyLink = new StudyQuestionSubsetLink
+            Guid? resolvedSubsetId;
+
+            if (projectLink.SubsetDefinitionId.HasValue)
+            {
+                // Already a partial subset — reuse the existing SubsetDefinition as the snapshot
+                resolvedSubsetId = projectLink.SubsetDefinitionId;
+            }
+            else
+            {
+                // Full-list selection (null SubsetDefinitionId) — must be resolved into a concrete
+                // SubsetDefinition snapshot so the study is immutable from the moment of creation.
+                if (resolvedSubsetCache.TryGetValue(projectLink.ManagedListId, out var cachedId))
+                {
+                    resolvedSubsetId = cachedId;
+                }
+                else
+                {
+                    resolvedSubsetId = await ResolveFullListSnapshotAsync(
+                        projectId,
+                        projectLink.ManagedListId,
+                        userId,
+                        cancellationToken);
+
+                    if (resolvedSubsetId.HasValue)
+                        resolvedSubsetCache[projectLink.ManagedListId] = resolvedSubsetId.Value;
+                }
+            }
+
+            studySubsetLinks.Add(new StudyQuestionSubsetLink
             {
                 Id = Guid.NewGuid(),
                 StudyId = studyId,
                 StudyQuestionnaireLineId = studyQuestion.Id,
                 ManagedListId = projectLink.ManagedListId,
-                SubsetDefinitionId = projectLink.SubsetDefinitionId, // Reuse subset if defined
+                SubsetDefinitionId = resolvedSubsetId,
                 CreatedBy = userId,
                 CreatedOn = DateTime.UtcNow
-            };
-
-            studySubsetLinks.Add(studyLink);
+            });
         }
 
         _context.StudyQuestionSubsetLinks.AddRange(studySubsetLinks);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Resolves a full-list (null subset) selection into a concrete SubsetDefinition snapshot
+    /// containing all currently active ManagedListItems for the given managed list.
+    /// Reuses an existing SubsetDefinition with the same signature if one already exists.
+    /// Returns null if the managed list has no active items.
+    /// </summary>
+    private async Task<Guid?> ResolveFullListSnapshotAsync(
+        Guid projectId,
+        Guid managedListId,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var activeItemIds = await _context.ManagedListItems
+            .Where(mli => mli.ManagedListId == managedListId && mli.IsActive)
+            .OrderBy(mli => mli.SortOrder)
+            .Select(mli => mli.Id)
+            .ToListAsync(cancellationToken);
+
+        if (activeItemIds.Count == 0)
+        {
+            _logger.LogWarning(
+                "ManagedList {ManagedListId} has no active items; skipping snapshot for project {ProjectId}",
+                managedListId, projectId);
+            return null;
+        }
+
+        var signature = SubsetSignatureBuilder.BuildSignature(activeItemIds);
+
+        // Reuse an existing SubsetDefinition with the same signature (content-addressable)
+        var existing = await _context.SubsetDefinitions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                sd => sd.ProjectId == projectId
+                   && sd.ManagedListId == managedListId
+                   && sd.SignatureHash == signature,
+                cancellationToken);
+
+        if (existing != null)
+        {
+            _logger.LogInformation(
+                "Reusing existing SubsetDefinition {SubsetId} for full-list snapshot of ManagedList {ManagedListId}",
+                existing.Id, managedListId);
+            return existing.Id;
+        }
+
+        // Fetch managed list name for naming the subset
+        var managedListName = await _context.ManagedLists
+            .Where(ml => ml.Id == managedListId)
+            .Select(ml => ml.Name)
+            .FirstOrDefaultAsync(cancellationToken) ?? managedListId.ToString();
+
+        // Count existing subsets to generate a unique sequential name
+        var existingCount = await _context.SubsetDefinitions
+            .CountAsync(sd => sd.ProjectId == projectId && sd.ManagedListId == managedListId, cancellationToken);
+
+        var subsetName = $"{managedListName}_SUB{existingCount + 1}";
+
+        var snapshot = new SubsetDefinition
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = projectId,
+            ManagedListId = managedListId,
+            Name = subsetName,
+            SignatureHash = signature,
+            Status = SubsetStatus.Active,
+            CreatedOn = DateTime.UtcNow,
+            CreatedBy = userId
+        };
+
+        foreach (var itemId in activeItemIds)
+        {
+            snapshot.Memberships.Add(new SubsetMembership
+            {
+                Id = Guid.NewGuid(),
+                SubsetDefinitionId = snapshot.Id,
+                ManagedListItemId = itemId,
+                CreatedOn = DateTime.UtcNow
+            });
+        }
+
+        _context.SubsetDefinitions.Add(snapshot);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Created full-list snapshot SubsetDefinition {SubsetId} ({Name}) with {Count} items for ManagedList {ManagedListId}",
+            snapshot.Id, snapshot.Name, activeItemIds.Count, managedListId);
+
+        return snapshot.Id;
     }
 
     private async Task<List<StudyQuestionnaireLine>> CopyStudyQuestionnairesAsync(
@@ -645,6 +773,142 @@ public class StudyService : IStudyService
 
         _context.StudyQuestionSubsetLinks.AddRange(studySubsetLinks);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task TransitionStudyStatusAsync(
+        Guid studyId,
+        StudyStatus previousStatus,
+        StudyStatus newStatus,
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Study {StudyId} transitioning from {From} to {To}",
+            studyId, previousStatus, newStatus);
+
+        if (previousStatus == StudyStatus.Draft && newStatus == StudyStatus.ReadyForScripting)
+        {
+            await ApplyReadyForScriptingTransitionAsync(studyId, userId, cancellationToken);
+        }
+        else if (previousStatus == StudyStatus.ReadyForScripting && newStatus == StudyStatus.Approved)
+        {
+            await ApplyApprovedTransitionAsync(studyId, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Draft -> ReadyForScripting:
+    /// Recalculate subsets for the study, then lock all active study questionnaire lines
+    /// (LockAnswerCode = true, EditCustomAnswerCode = false) as per UpdateStudyPostOperation.cs.
+    /// </summary>
+    private async Task ApplyReadyForScriptingTransitionAsync(
+        Guid studyId,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        // Recalculate / re-snapshot subsets for this study
+        await RecalculateStudySubsetsAsync(studyId, userId, cancellationToken);
+
+        // Lock all active study questionnaire lines
+        var lines = await _context.StudyQuestionnaireLines
+            .Where(q => q.StudyId == studyId && q.IsActive)
+            .ToListAsync(cancellationToken);
+
+        foreach (var line in lines)
+        {
+            line.LockAnswerCode = true;
+            line.EditCustomAnswerCode = false;
+            line.ModifiedOn = DateTime.UtcNow;
+            line.ModifiedBy = userId;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "ReadyForScripting transition: locked {Count} questionnaire lines for Study {StudyId}",
+            lines.Count, studyId);
+    }
+
+    /// <summary>
+    /// ReadyForScripting -> Approved:
+    /// Lock answer codes on all active study questionnaire lines
+    /// (LockAnswerCode = true) as per UpdateStudyPostOperation.cs ApprovedForLaunch logic.
+    /// </summary>
+    private async Task ApplyApprovedTransitionAsync(
+        Guid studyId,
+        CancellationToken cancellationToken)
+    {
+        var lines = await _context.StudyQuestionnaireLines
+            .Where(q => q.StudyId == studyId && q.IsActive)
+            .ToListAsync(cancellationToken);
+
+        foreach (var line in lines)
+        {
+            line.LockAnswerCode = true;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Approved transition: locked answer codes on {Count} questionnaire lines for Study {StudyId}",
+            lines.Count, studyId);
+    }
+
+    /// <summary>
+    /// Re-evaluates each StudyQuestionSubsetLink for the study.
+    /// For links that still point to a valid SubsetDefinition, the snapshot is kept as-is.
+    /// For links with a null SubsetDefinitionId (should not occur after V1 fix, but defensive),
+    /// a new full-list snapshot is created.
+    /// </summary>
+    private async Task RecalculateStudySubsetsAsync(
+        Guid studyId,
+        string userId,
+        CancellationToken cancellationToken)
+    {
+        var study = await _context.Studies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == studyId, cancellationToken);
+
+        if (study == null) return;
+
+        var subsetLinks = await _context.StudyQuestionSubsetLinks
+            .Where(sl => sl.StudyId == studyId && sl.SubsetDefinitionId == null)
+            .ToListAsync(cancellationToken);
+
+        if (subsetLinks.Count == 0)
+        {
+            _logger.LogInformation("RecalculateStudySubsets: all links already have concrete SubsetDefinitions for Study {StudyId}", studyId);
+            return;
+        }
+
+        var resolvedCache = new Dictionary<Guid, Guid>();
+
+        foreach (var link in subsetLinks)
+        {
+            if (!resolvedCache.TryGetValue(link.ManagedListId, out var resolvedId))
+            {
+                var snapshotId = await ResolveFullListSnapshotAsync(
+                    study.ProjectId,
+                    link.ManagedListId,
+                    userId,
+                    cancellationToken);
+
+                if (!snapshotId.HasValue) continue;
+
+                resolvedId = snapshotId.Value;
+                resolvedCache[link.ManagedListId] = resolvedId;
+            }
+
+            link.SubsetDefinitionId = resolvedId;
+            link.ModifiedOn = DateTime.UtcNow;
+            link.ModifiedBy = userId;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "RecalculateStudySubsets: resolved {Count} null subset links for Study {StudyId}",
+            subsetLinks.Count, studyId);
     }
 
     private async Task UpdateProjectCountersAsync(

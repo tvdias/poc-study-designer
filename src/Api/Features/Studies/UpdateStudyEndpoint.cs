@@ -54,14 +54,18 @@ public static class UpdateStudyEndpoint
             }
         }
 
+        var previousFieldworkMarketId = study.FieldworkMarketId;
+
         study.Name = trimmedName;
         study.Category = request.Category.Trim();
         study.MaconomyJobNumber = request.MaconomyJobNumber.Trim();
         study.ProjectOperationsUrl = request.ProjectOperationsUrl.Trim();
         study.ScripterNotes = request.ScripterNotes;
         study.FieldworkMarketId = request.FieldworkMarketId;
-        
-        if (request.Status.HasValue)
+
+        var previousStatus = study.Status;
+
+        if (request.Status.HasValue && request.Status.Value != previousStatus)
         {
             study.Status = request.Status.Value;
         }
@@ -70,6 +74,31 @@ public static class UpdateStudyEndpoint
         study.ModifiedBy = "System"; // TODO: Get from auth context
 
         await db.SaveChangesAsync(cancellationToken);
+
+        // Delete FieldworkLanguage records for the old market when the market changes
+        if (request.FieldworkMarketId != previousFieldworkMarketId)
+        {
+            var languagesToDelete = await db.FieldworkLanguages
+                .Where(fl => fl.StudyId == studyId && fl.FieldworkMarketId == previousFieldworkMarketId)
+                .ToListAsync(cancellationToken);
+
+            if (languagesToDelete.Count > 0)
+            {
+                db.FieldworkLanguages.RemoveRange(languagesToDelete);
+                await db.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        // Execute status transition side-effects after persisting the new status
+        if (request.Status.HasValue && request.Status.Value != previousStatus)
+        {
+            await studyService.TransitionStudyStatusAsync(
+                studyId,
+                previousStatus,
+                request.Status.Value,
+                "System", // TODO: Get from auth context
+                cancellationToken);
+        }
 
         return TypedResults.Ok();
     }

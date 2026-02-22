@@ -105,6 +105,8 @@ public record StudyQuestionnaireLineDto
     public int? AnswerMax { get; init; }
     public string? QuestionFormatDetails { get; init; }
     public bool IsDummy { get; init; }
+    public bool LockAnswerCode { get; init; }
+    public bool EditCustomAnswerCode { get; init; }
 }
 
 public record GetStudyQuestionsResponse
