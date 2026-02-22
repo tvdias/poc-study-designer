@@ -11,6 +11,7 @@ function App() {
         <Route path="/" element={<DesignerLayout />}>
           <Route index element={<ProjectsListPage />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
+          <Route path="projects/:projectId/studies/:studyId" element={<ProjectDetailPage />} />
           <Route path="projects/:projectId/managed-lists/:listId" element={<ProjectDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

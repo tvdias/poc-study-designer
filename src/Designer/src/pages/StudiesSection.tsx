@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCw, X, FlaskConical, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
     studiesApi,
     fieldworkMarketsApi,
@@ -18,6 +19,7 @@ type SortField = 'name' | 'version' | 'status' | 'category' | 'fieldworkMarketNa
 type SortDirection = 'asc' | 'desc';
 
 export function StudiesSection({ projectId, onListUpdate }: StudiesSectionProps) {
+    const navigate = useNavigate();
     const [studies, setStudies] = useState<StudySummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -213,8 +215,12 @@ export function StudiesSection({ projectId, onListUpdate }: StudiesSectionProps)
                         </thead>
                         <tbody>
                             {sortedStudies.map(study => (
-                                <tr key={study.studyId} className={selectedIds.has(study.studyId) ? 'row-selected' : ''}>
-                                    <td className="col-check">
+                                <tr
+                                    key={study.studyId}
+                                    className={`${selectedIds.has(study.studyId) ? 'row-selected' : ''} row-clickable`}
+                                    onClick={() => navigate(`/projects/${projectId}/studies/${study.studyId}`)}
+                                >
+                                    <td className="col-check" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
                                             checked={selectedIds.has(study.studyId)}

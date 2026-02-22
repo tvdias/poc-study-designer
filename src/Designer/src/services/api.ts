@@ -438,6 +438,64 @@ export const managedListsApi = {
     }
 };
 
+export interface UpdateStudyRequest {
+    name: string;
+    status?: 'Draft' | 'Final' | 'Archived' | 'Completed' | 'Abandoned';
+    category: string;
+    fieldworkMarketId: string;
+    maconomyJobNumber: string;
+    projectOperationsUrl: string;
+    scripterNotes?: string;
+}
+
+export interface GetStudyDetailsResponse {
+    studyId: string;
+    projectId: string;
+    projectName: string;
+    name: string;
+    version: number;
+    status: 'Draft' | 'Final' | 'Archived' | 'Completed' | 'Abandoned';
+    masterStudyId?: string;
+    parentStudyId?: string;
+    createdOn: string;
+    createdBy?: string;
+    modifiedOn?: string;
+    modifiedBy?: string;
+    questionCount: number;
+    category?: string;
+    maconomyJobNumber?: string;
+    projectOperationsUrl?: string;
+    scripterNotes?: string;
+    fieldworkMarketId?: string;
+    fieldworkMarketName?: string;
+}
+
+export interface StudyQuestionnaireLine {
+    id: string;
+    studyId: string;
+    questionBankItemId?: string;
+    sortOrder: number;
+    variableName: string;
+    version: number;
+    questionText?: string;
+    questionTitle?: string;
+    questionType?: string;
+    classification?: string;
+    questionRationale?: string;
+    scraperNotes?: string;
+    customNotes?: string;
+    rowSortOrder?: number;
+    columnSortOrder?: number;
+    answerMin?: number;
+    answerMax?: number;
+    questionFormatDetails?: string;
+    isDummy: boolean;
+}
+
+export interface GetStudyQuestionsResponse {
+    questions: StudyQuestionnaireLine[];
+}
+
 export interface CreateStudyResponse {
     studyId: string;
 }
@@ -448,6 +506,19 @@ export const studiesApi = {
         if (!response.ok) throw new Error('Failed to fetch studies');
         const data = await response.json();
         return data.studies; // Response wrapper
+    },
+
+    getById: async (id: string): Promise<GetStudyDetailsResponse> => {
+        const response = await fetch(`${API_BASE}/studies/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch study details');
+        return response.json();
+    },
+
+    getQuestions: async (id: string): Promise<StudyQuestionnaireLine[]> => {
+        const response = await fetch(`${API_BASE}/studies/${id}/questions`);
+        if (!response.ok) throw new Error('Failed to fetch study questions');
+        const data = await response.json();
+        return data.questions;
     },
 
     create: async (data: CreateStudyRequest): Promise<CreateStudyResponse> => {
@@ -462,5 +533,26 @@ export const studiesApi = {
             throw { status: response.status, ...errorData };
         }
         return response.json();
+    },
+
+    update: async (id: string, data: UpdateStudyRequest): Promise<GetStudyDetailsResponse> => {
+        const response = await fetch(`${API_BASE}/studies/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw { status: response.status, ...errorData };
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/studies/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete study');
     }
 };

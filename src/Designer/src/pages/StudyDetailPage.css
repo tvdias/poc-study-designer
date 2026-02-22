@@ -1,0 +1,577 @@
+/* =============================================
+   Study Detail Page
+   ============================================= */
+
+.std-detail-loading,
+.std-detail-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.std-detail-page {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    height: 100%;
+}
+
+/* ---- Page Header ---- */
+.std-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.std-detail-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.std-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.std-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.std-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.std-version-badge {
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.std-status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.std-status-pill--draft {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.std-status-pill--final {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.std-status-pill--archived {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.std-status-pill--completed {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.std-status-pill--abandoned {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.std-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.std-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.std-action-btn:hover {
+    background: #f1f5f9;
+}
+
+.std-action-btn--primary {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
+
+.std-action-btn--primary:hover {
+    background: #1d4ed8;
+}
+
+.std-action-btn--primary:disabled {
+    background: #93c5fd;
+    border-color: #93c5fd;
+    cursor: not-allowed;
+}
+
+.std-action-btn--danger {
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.std-action-btn--danger:hover {
+    background: #fef2f2;
+}
+
+/* ---- Tabs ---- */
+.std-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 24px;
+    background: #fff;
+}
+
+.std-tab {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+}
+
+.std-tab:hover {
+    color: #1e293b;
+}
+
+.std-tab--active {
+    color: #1e40af;
+    border-bottom-color: #1e40af;
+    font-weight: 600;
+}
+
+/* ---- Tab content container ---- */
+.std-tab-content {
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+}
+
+/* =============================================
+   General Tab
+   ============================================= */
+
+.std-general-tab {
+    padding: 24px;
+    max-width: 1200px;
+}
+
+.std-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+}
+
+@media (max-width: 768px) {
+    .std-fields-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
+
+.std-fields-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.std-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Field horizontal layout like Managed List */
+.std-field-horizontal {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: start;
+    gap: 12px;
+}
+
+.std-field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    padding-top: 8px;
+}
+
+.std-required {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.std-field-input,
+.std-field-select,
+.std-field-textarea {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1e293b;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.std-field-input:focus,
+.std-field-select:focus,
+.std-field-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.std-field-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.std-input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.std-input-with-icon .std-field-input {
+    padding-right: 36px;
+}
+
+.std-input-icon-link {
+    position: absolute;
+    right: 10px;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.std-input-icon-link:hover {
+    color: #2563eb;
+}
+
+
+
+/* Success Banner */
+.std-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 12px 24px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.std-banner-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #166534;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+/* Coming Soon placeholder */
+.std-coming-soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 100px 24px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.std-coming-soon-icon {
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.std-coming-soon h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: #64748b;
+}
+
+.std-coming-soon p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Fieldwork Market Languages Table */
+.std-market-languages {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+}
+
+.std-market-languages-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.std-market-languages-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.std-market-languages-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.std-icon-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.std-icon-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.std-market-languages-table-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.std-market-languages-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: #fff;
+}
+
+.std-market-languages-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.std-market-languages-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.std-table-empty {
+    padding: 60px 24px !important;
+    text-align: center;
+}
+
+.std-empty-message {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.std-table-footer {
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Questions Tab Styles */
+.std-questions-tab {
+    padding: 24px;
+    height: 100%;
+}
+
+.std-questions-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.std-section-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.std-toolbar-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.std-toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.std-toolbar-btn:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.std-questions-table-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.std-questions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+}
+
+.std-questions-table th {
+    background: #f8fafc;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.std-questions-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.std-questions-table tr:hover {
+    background: #f8fafc;
+}
+
+.std-questions-table .col-check {
+    width: 48px;
+    text-align: center;
+}
+
+.std-questions-table .col-bold {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.std-questions-table .col-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.std-questions-table .col-actions {
+    width: 48px;
+    text-align: right;
+}
+
+.std-icon-link {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.std-icon-link:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.std-table-empty {
+    padding: 100px 24px !important;
+    text-align: center;
+}

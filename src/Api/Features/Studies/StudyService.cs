@@ -32,6 +32,10 @@ public interface IStudyService
         string name,
         Guid masterStudyId,
         CancellationToken cancellationToken = default);
+
+    Task<GetStudyQuestionsResponse?> GetStudyQuestionsAsync(
+        Guid studyId,
+        CancellationToken cancellationToken = default);
 }
 
 public class StudyService : IStudyService
@@ -330,6 +334,44 @@ public class StudyService : IStudyService
             .FirstOrDefaultAsync(cancellationToken);
 
         return study;
+    }
+
+    public async Task<GetStudyQuestionsResponse?> GetStudyQuestionsAsync(Guid studyId, CancellationToken cancellationToken = default)
+    {
+        var exists = await _context.Studies.AnyAsync(s => s.Id == studyId, cancellationToken);
+        if (!exists) return null;
+
+        var questions = await _context.StudyQuestionnaireLines
+            .Where(q => q.StudyId == studyId)
+            .OrderBy(q => q.SortOrder)
+            .Select(q => new StudyQuestionnaireLineDto
+            {
+                Id = q.Id,
+                StudyId = q.StudyId,
+                QuestionBankItemId = q.QuestionBankItemId,
+                SortOrder = q.SortOrder,
+                VariableName = q.VariableName,
+                Version = q.Version,
+                QuestionText = q.QuestionText,
+                QuestionTitle = q.QuestionTitle,
+                QuestionType = q.QuestionType,
+                Classification = q.Classification,
+                QuestionRationale = q.QuestionRationale,
+                ScraperNotes = q.ScraperNotes,
+                CustomNotes = q.CustomNotes,
+                RowSortOrder = q.RowSortOrder,
+                ColumnSortOrder = q.ColumnSortOrder,
+                AnswerMin = q.AnswerMin,
+                AnswerMax = q.AnswerMax,
+                QuestionFormatDetails = q.QuestionFormatDetails,
+                IsDummy = q.IsDummy
+            })
+            .ToListAsync(cancellationToken);
+
+        return new GetStudyQuestionsResponse
+        {
+            Questions = questions
+        };
     }
 
     public async Task ValidateStudyNameUniquenessAsync(

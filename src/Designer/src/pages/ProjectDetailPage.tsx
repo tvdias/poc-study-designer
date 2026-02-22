@@ -6,11 +6,12 @@ import { QuestionnaireSection } from './QuestionnaireSection';
 import { ManagedListsSection } from './ManagedListsSection';
 import { StudiesSection } from './StudiesSection';
 import { ManagedListDetailPage } from './ManagedListDetailPage';
+import { StudyDetailPage } from './StudyDetailPage';
 import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
     const { handleScroll } = useOutletContext<{ handleScroll: (e: React.UIEvent<HTMLElement>) => void }>();
-    const { id: routeId, projectId, listId } = useParams<{ id?: string, projectId?: string, listId?: string }>();
+    const { id: routeId, projectId, listId, studyId } = useParams<{ id?: string, projectId?: string, listId?: string, studyId?: string }>();
     const id = routeId || projectId;
     const navigate = useNavigate();
     const location = useLocation();
@@ -19,19 +20,21 @@ export function ProjectDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState(() => {
         if (listId) return 'lists';
+        if (studyId) return 'studies';
         const params = new URLSearchParams(location.search);
         return params.get('section') || 'details';
     });
 
     useEffect(() => {
         if (listId) setActiveSection('lists');
-    }, [listId]);
+        else if (studyId) setActiveSection('studies');
+    }, [listId, studyId]);
 
     const changeSection = (section: string) => {
         setActiveSection(section);
-        if (listId && id !== 'new') {
+        if ((listId || studyId) && id !== 'new') {
             navigate(`/projects/${id}?section=${section}`);
-        } else if (!listId && id !== 'new') {
+        } else if (!listId && !studyId && id !== 'new') {
             navigate(`/projects/${id}?section=${section}`, { replace: true });
         }
     };
@@ -238,9 +241,9 @@ export function ProjectDetailPage() {
                                                 {recentStudies.map(study => (
                                                     <li key={study.studyId}>
                                                         <button
-                                                            className="sub-nav-item recent-item"
+                                                            className={`sub-nav-item recent-item ${studyId === study.studyId ? 'active' : ''}`}
                                                             title={study.name}
-                                                            onClick={() => changeSection('studies')}
+                                                            onClick={() => navigate(`/projects/${project!.id}/studies/${study.studyId}`)}
                                                         >
                                                             <span className={`status-dot status-${study.status?.toLowerCase() || 'draft'}`}></span>
                                                             <span className="truncate">{study.name}</span>
@@ -550,16 +553,20 @@ export function ProjectDetailPage() {
                         <QuestionnaireSection projectId={project.id} />
                     )}
 
-                    {!isCreateMode && activeSection === 'studies' && project && !listId && (
+                    {!isCreateMode && activeSection === 'studies' && project && !listId && !studyId && (
                         <StudiesSection projectId={project.id} onListUpdate={() => loadSidebarItems(project.id)} />
                     )}
 
-                    {!isCreateMode && activeSection === 'lists' && project && !listId && (
+                    {!isCreateMode && activeSection === 'lists' && project && !listId && !studyId && (
                         <ManagedListsSection projectId={project.id} onListUpdate={() => loadSidebarItems(project.id)} />
                     )}
 
                     {!isCreateMode && project && listId && (
                         <ManagedListDetailPage />
+                    )}
+
+                    {!isCreateMode && project && studyId && (
+                        <StudyDetailPage />
                     )}
                 </main>
             </div>

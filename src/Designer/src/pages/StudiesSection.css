@@ -133,6 +133,10 @@
     background: #dbeafe;
 }
 
+.row-clickable {
+    cursor: pointer;
+}
+
 .list-table td {
     padding: 8px 12px;
     color: #334155;

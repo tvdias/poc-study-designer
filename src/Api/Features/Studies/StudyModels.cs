@@ -83,3 +83,31 @@ public record GetStudyDetailsResponse
     public Guid? FieldworkMarketId { get; init; }
     public string? FieldworkMarketName { get; init; }
 }
+
+public record StudyQuestionnaireLineDto
+{
+    public required Guid Id { get; init; }
+    public required Guid StudyId { get; init; }
+    public Guid? QuestionBankItemId { get; init; }
+    public required int SortOrder { get; init; }
+    public required string VariableName { get; init; }
+    public required int Version { get; init; }
+    public string? QuestionText { get; init; }
+    public string? QuestionTitle { get; init; }
+    public string? QuestionType { get; init; }
+    public string? Classification { get; init; }
+    public string? QuestionRationale { get; init; }
+    public string? ScraperNotes { get; init; }
+    public string? CustomNotes { get; init; }
+    public int? RowSortOrder { get; init; }
+    public int? ColumnSortOrder { get; init; }
+    public int? AnswerMin { get; init; }
+    public int? AnswerMax { get; init; }
+    public string? QuestionFormatDetails { get; init; }
+    public bool IsDummy { get; init; }
+}
+
+public record GetStudyQuestionsResponse
+{
+    public required List<StudyQuestionnaireLineDto> Questions { get; init; }
+}
