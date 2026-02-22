@@ -1,19 +1,19 @@
 using Api.Data;
-using Api.Features.Tags;
-using Api.Features.CommissioningMarkets;
-using Api.Features.FieldworkMarkets;
-using Api.Features.Modules;
 using Api.Features.Clients;
+using Api.Features.CommissioningMarkets;
 using Api.Features.ConfigurationQuestions;
-using Api.Features.Products;
-using Api.Features.ProductTemplates;
-using Api.Features.QuestionBank;
-using Api.Features.MetricGroups;
-using Api.Features.Projects;
-using Api.Features.QuestionnaireLines;
+using Api.Features.FieldworkMarkets;
 using Api.Features.ManagedLists;
-using Api.Features.Studies;
+using Api.Features.MetricGroups;
+using Api.Features.Modules;
+using Api.Features.ProductTemplates;
+using Api.Features.Products;
+using Api.Features.Projects;
+using Api.Features.QuestionBank;
+using Api.Features.QuestionnaireLines;
 using Api.Features.Seed;
+using Api.Features.Studies;
+using Api.Features.Tags;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -26,9 +26,17 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddScoped<ISubsetManagementService, SubsetManagementService>();
+
+// Register feature services
+builder.Services.AddClientsFeature();
+builder.Services.AddProjectsFeature();
+builder.Services.AddStudiesFeature();
+builder.Services.AddManagedListsFeature();
+builder.Services.AddTagsFeature();
+builder.Services.AddQuestionBankFeature();
+builder.Services.AddQuestionnaireLinesFeature();
 builder.Services.AddScoped<IAutoAssociationService, AutoAssociationService>();
-builder.Services.AddScoped<IStudyService, StudyService>();
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
@@ -56,173 +64,26 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 
 var api = app.MapGroup("/api");
 
+// Map feature endpoints
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
-    api.MapSeedDataEndpoint();
+    api.MapSeedEndpoints();
 }
 
-// Clients
-api.MapCreateClientEndpoint();
-api.MapGetClientsEndpoint();
-api.MapGetClientByIdEndpoint();
-api.MapUpdateClientEndpoint();
-api.MapDeleteClientEndpoint();
-
-// Commissioning Markets
-api.MapCreateCommissioningMarketEndpoint();
-api.MapGetCommissioningMarketsEndpoint();
-api.MapGetCommissioningMarketByIdEndpoint();
-api.MapUpdateCommissioningMarketEndpoint();
-api.MapDeleteCommissioningMarketEndpoint();
-
-// Configuration Answers
-api.MapCreateConfigurationAnswerEndpoint();
-api.MapGetConfigurationAnswersEndpoint();
-api.MapGetConfigurationAnswerByIdEndpoint();
-api.MapUpdateConfigurationAnswerEndpoint();
-api.MapDeleteConfigurationAnswerEndpoint();
-
-// Configuration Questions
-api.MapCreateConfigurationQuestionEndpoint();
-api.MapGetConfigurationQuestionsEndpoint();
-api.MapGetConfigurationQuestionByIdEndpoint();
-api.MapUpdateConfigurationQuestionEndpoint();
-api.MapDeleteConfigurationQuestionEndpoint();
-
-// Dependency Rules
-api.MapCreateDependencyRuleEndpoint();
-api.MapGetDependencyRulesEndpoint();
-api.MapGetDependencyRuleByIdEndpoint();
-api.MapUpdateDependencyRuleEndpoint();
-api.MapDeleteDependencyRuleEndpoint();
-
-// Fieldwork Markets
-api.MapCreateFieldworkMarketEndpoint();
-api.MapGetFieldworkMarketsEndpoint();
-api.MapGetFieldworkMarketByIdEndpoint();
-api.MapUpdateFieldworkMarketEndpoint();
-api.MapDeleteFieldworkMarketEndpoint();
-
-// Metric Groups
-api.MapCreateMetricGroupEndpoint();
-api.MapGetMetricGroupsEndpoint();
-api.MapGetMetricGroupByIdEndpoint();
-api.MapUpdateMetricGroupEndpoint();
-api.MapDeleteMetricGroupEndpoint();
-
-// Modules
-api.MapCreateModuleEndpoint();
-api.MapGetModulesEndpoint();
-api.MapGetModuleByIdEndpoint();
-api.MapUpdateModuleEndpoint();
-api.MapDeleteModuleEndpoint();
-
-// Module Questions
-api.MapCreateModuleQuestionEndpoint();
-api.MapGetModuleQuestionsEndpoint();
-api.MapGetModuleQuestionByIdEndpoint();
-api.MapUpdateModuleQuestionEndpoint();
-api.MapDeleteModuleQuestionEndpoint();
-
-// Products
-api.MapCreateProductEndpoint();
-api.MapGetProductsEndpoint();
-api.MapGetProductByIdEndpoint();
-api.MapUpdateProductEndpoint();
-api.MapDeleteProductEndpoint();
-
-// Product Config Questions
-api.MapCreateProductConfigQuestionEndpoint();
-api.MapGetProductConfigQuestionByIdEndpoint();
-api.MapUpdateProductConfigQuestionEndpoint();
-api.MapDeleteProductConfigQuestionEndpoint();
-
-// Product Config Question Display Rules
-api.MapCreateProductConfigQuestionDisplayRuleEndpoint();
-api.MapGetProductConfigQuestionDisplayRulesEndpoint();
-api.MapGetProductConfigQuestionDisplayRuleByIdEndpoint();
-api.MapUpdateProductConfigQuestionDisplayRuleEndpoint();
-api.MapDeleteProductConfigQuestionDisplayRuleEndpoint();
-
-// Product Templates
-api.MapCreateProductTemplateEndpoint();
-api.MapGetProductTemplatesEndpoint();
-api.MapGetProductTemplateByIdEndpoint();
-api.MapUpdateProductTemplateEndpoint();
-api.MapDeleteProductTemplateEndpoint();
-
-// Product Template Lines
-api.MapCreateProductTemplateLineEndpoint();
-api.MapGetProductTemplateLinesEndpoint();
-api.MapGetProductTemplateLineByIdEndpoint();
-api.MapUpdateProductTemplateLineEndpoint();
-api.MapDeleteProductTemplateLineEndpoint();
-
-// Question Answers
-api.MapCreateQuestionAnswerEndpoint();
-api.MapUpdateQuestionAnswerEndpoint();
-api.MapDeleteQuestionAnswerEndpoint();
-
-// Question Bank Items
-api.MapCreateQuestionBankItemEndpoint();
-api.MapGetQuestionBankItemsEndpoint();
-api.MapGetQuestionBankItemByIdEndpoint();
-api.MapUpdateQuestionBankItemEndpoint();
-api.MapDeleteQuestionBankItemEndpoint();
-
-// Tags
-api.MapCreateTagEndpoint();
-api.MapGetTagsEndpoint();
-api.MapGetTagByIdEndpoint();
-api.MapUpdateTagEndpoint();
-api.MapDeleteTagEndpoint();
-
-// Projects
-api.MapCreateProjectEndpoint();
-api.MapGetProjectsEndpoint();
-api.MapGetProjectByIdEndpoint();
-api.MapUpdateProjectEndpoint();
-api.MapDeleteProjectEndpoint();
-
-// Questionnaire Lines
-api.MapAddQuestionnaireLineEndpoint();
-api.MapGetQuestionnaireLinesEndpoint();
-api.MapUpdateQuestionnaireLineEndpoint();
-api.MapUpdateQuestionnaireLinesSortOrderEndpoint();
-api.MapDeleteQuestionnaireLineEndpoint();
-
-// Managed Lists
-api.MapCreateManagedListEndpoint();
-api.MapGetManagedListsEndpoint();
-api.MapGetManagedListByIdEndpoint();
-api.MapUpdateManagedListEndpoint();
-api.MapDeactivateManagedListEndpoint();
-api.MapDeleteManagedListEndpoint();
-
-// Subset Definitions
-api.MapSaveQuestionSelectionEndpoint();
-api.MapGetSubsetDetailsEndpoint();
-api.MapGetSubsetsForProjectEndpoint();
-api.MapDeleteSubsetEndpoint();
-api.MapRefreshProjectSummaryEndpoint();
-
-// Managed List Items
-api.MapCreateManagedListItemEndpoint();
-api.MapUpdateManagedListItemEndpoint();
-api.MapDeleteManagedListItemEndpoint();
-api.MapBulkAddOrUpdateManagedListItemsEndpoint();
-
-// Managed List Assignments
-api.MapAssignManagedListToQuestionEndpoint();
-api.MapUnassignManagedListFromQuestionEndpoint();
-
-// Studies
-api.MapCreateStudyEndpoint();
-api.MapCreateStudyVersionEndpoint();
-api.MapGetStudiesEndpoint();
-api.MapGetStudyByIdEndpoint();
-api.MapGetStudyQuestionsEndpoint();
-api.MapUpdateStudyEndpoint();
+api.MapClientsEndpoints();
+api.MapProjectsEndpoints();
+api.MapStudiesEndpoints();
+api.MapCommissioningMarketsEndpoints();
+api.MapConfigurationQuestionsEndpoints();
+api.MapFieldworkMarketsEndpoints();
+api.MapMetricGroupsEndpoints();
+api.MapModulesEndpoints();
+api.MapProductsEndpoints();
+api.MapProductTemplatesEndpoints();
+api.MapQuestionBankEndpoints();
+api.MapQuestionnaireLinesEndpoints();
+api.MapManagedListsEndpoints();
+api.MapTagsEndpoints();
 
 app.MapDefaultEndpoints();
 app.UseFileServer();

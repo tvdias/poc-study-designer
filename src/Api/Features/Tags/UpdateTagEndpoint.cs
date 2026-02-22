@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 
 namespace Api.Features.Tags;
@@ -18,7 +16,7 @@ public static class UpdateTagEndpoint
     public static async Task<Results<Ok<UpdateTagResponse>, NotFound, ValidationProblem>> HandleAsync(
         Guid id,
         UpdateTagRequest request,
-        ApplicationDbContext db,
+        ITagService tagService,
         IValidator<UpdateTagRequest> validator,
         CancellationToken cancellationToken)
     {
@@ -28,19 +26,14 @@ public static class UpdateTagEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var tag = await db.Tags.FindAsync([id], cancellationToken);
-
-        if (tag is null)
+        try
+        {
+            var response = await tagService.UpdateTagAsync(id, request, "System", cancellationToken);
+            return TypedResults.Ok(response);
+        }
+        catch (InvalidOperationException)
         {
             return TypedResults.NotFound();
         }
-
-        tag.Name = request.Name;
-        tag.ModifiedOn = DateTime.UtcNow;
-        tag.ModifiedBy = "System"; // TODO: Replace with real user
-
-        await db.SaveChangesAsync(cancellationToken);
-
-        return TypedResults.Ok(new UpdateTagResponse(tag.Id, tag.Name));
     }
 }

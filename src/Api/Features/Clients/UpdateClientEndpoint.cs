@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 
 namespace Api.Features.Clients;
@@ -18,7 +16,7 @@ public static class UpdateClientEndpoint
     public static async Task<Results<Ok<UpdateClientResponse>, NotFound, ValidationProblem>> HandleAsync(
         Guid id,
         UpdateClientRequest request,
-        ApplicationDbContext db,
+        IClientService clientService,
         IValidator<UpdateClientRequest> validator,
         CancellationToken cancellationToken)
     {
@@ -28,31 +26,14 @@ public static class UpdateClientEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var client = await db.Clients
-            .Where(c => c.IsActive)
-            .Where(c => c.Id == id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (client is null)
+        try
+        {
+            var response = await clientService.UpdateClientAsync(id, request, "System", cancellationToken);
+            return TypedResults.Ok(response);
+        }
+        catch (InvalidOperationException)
         {
             return TypedResults.NotFound();
         }
-
-        client.AccountName = request.AccountName;
-        client.CompanyNumber = request.CompanyNumber;
-        client.CustomerNumber = request.CustomerNumber;
-        client.CompanyCode = request.CompanyCode;
-        client.ModifiedOn = DateTime.UtcNow;
-        client.ModifiedBy = "System"; // TODO: Replace with real user
-
-        await db.SaveChangesAsync(cancellationToken);
-
-        return TypedResults.Ok(new UpdateClientResponse(
-            client.Id,
-            client.AccountName,
-            client.CompanyNumber,
-            client.CustomerNumber,
-            client.CompanyCode,
-            client.CreatedOn));
     }
 }

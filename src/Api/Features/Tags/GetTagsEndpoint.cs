@@ -1,5 +1,4 @@
-using Api.Data;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Api.Features.Tags;
 
@@ -13,22 +12,19 @@ public static class GetTagsEndpoint
             .WithTags("Tags");
     }
 
-    public static async Task<List<GetTagsResponse>> HandleAsync(
+    public static async Task<Results<Ok<List<GetTagsResponse>>, BadRequest<string>>> HandleAsync(
         string? query,
-        ApplicationDbContext db,
+        ITagService tagService,
         CancellationToken cancellationToken)
     {
-        var tagsQuery = db.Tags
-            .Where(t => t.IsActive);
-
-        if (!string.IsNullOrWhiteSpace(query))
+        try
         {
-            var pattern = $"%{query.Trim()}%";
-            tagsQuery = tagsQuery.Where(t => EF.Functions.ILike(t.Name, pattern));
+            var response = await tagService.GetTagsAsync(query, cancellationToken);
+            return TypedResults.Ok(response);
         }
-
-        return await tagsQuery
-            .Select(t => new GetTagsResponse(t.Id, t.Name))
-            .ToListAsync(cancellationToken);
+        catch (Exception ex)
+        {
+            return TypedResults.BadRequest(ex.Message);
+        }
     }
 }

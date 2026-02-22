@@ -1,8 +1,5 @@
-using Api.Data;
-using Api.Features.Studies.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Studies;
 
@@ -19,7 +16,6 @@ public static class UpdateStudyEndpoint
     public static async Task<Results<Ok, NotFound, ValidationProblem, ProblemHttpResult>> HandleAsync(
         Guid studyId,
         UpdateStudyRequest request,
-        ApplicationDbContext db,
         IStudyService studyService,
         IValidator<UpdateStudyRequest> validator,
         CancellationToken cancellationToken)
@@ -30,76 +26,22 @@ public static class UpdateStudyEndpoint
             return TypedResults.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var study = await db.Studies.FindAsync([studyId], cancellationToken);
-        if (study == null)
+        try
         {
-            return TypedResults.NotFound();
+            await studyService.UpdateStudyAsync(studyId, request, "System", cancellationToken);
+            return TypedResults.Ok();
         }
-
-        // Validate name uniqueness if changing name
-        var trimmedName = request.Name.Trim();
-        if (study.Name != trimmedName)
+        catch (InvalidOperationException ex)
         {
-            try 
+            if (ex.Message.Contains("not found"))
             {
-                await studyService.ValidateStudyNameUniquenessAsync(study.ProjectId, trimmedName, study.MasterStudyId, cancellationToken);
+                return TypedResults.NotFound();
             }
-            catch (InvalidOperationException ex)
-            {
-                return TypedResults.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status409Conflict,
-                    title: "Study Name Conflict"
-                );
-            }
+            return TypedResults.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Study Update Conflict"
+            );
         }
-
-        var previousFieldworkMarketId = study.FieldworkMarketId;
-
-        study.Name = trimmedName;
-        study.Category = request.Category.Trim();
-        study.MaconomyJobNumber = request.MaconomyJobNumber.Trim();
-        study.ProjectOperationsUrl = request.ProjectOperationsUrl.Trim();
-        study.ScripterNotes = request.ScripterNotes;
-        study.FieldworkMarketId = request.FieldworkMarketId;
-
-        var previousStatus = study.Status;
-
-        if (request.Status.HasValue && request.Status.Value != previousStatus)
-        {
-            study.Status = request.Status.Value;
-        }
-
-        study.ModifiedOn = DateTime.UtcNow;
-        study.ModifiedBy = "System"; // TODO: Get from auth context
-
-        await db.SaveChangesAsync(cancellationToken);
-
-        // Delete FieldworkLanguage records for the old market when the market changes
-        if (request.FieldworkMarketId != previousFieldworkMarketId)
-        {
-            var languagesToDelete = await db.FieldworkLanguages
-                .Where(fl => fl.StudyId == studyId && fl.FieldworkMarketId == previousFieldworkMarketId)
-                .ToListAsync(cancellationToken);
-
-            if (languagesToDelete.Count > 0)
-            {
-                db.FieldworkLanguages.RemoveRange(languagesToDelete);
-                await db.SaveChangesAsync(cancellationToken);
-            }
-        }
-
-        // Execute status transition side-effects after persisting the new status
-        if (request.Status.HasValue && request.Status.Value != previousStatus)
-        {
-            await studyService.TransitionStudyStatusAsync(
-                studyId,
-                previousStatus,
-                request.Status.Value,
-                "System", // TODO: Get from auth context
-                cancellationToken);
-        }
-
-        return TypedResults.Ok();
     }
 }

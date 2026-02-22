@@ -1,6 +1,4 @@
-using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 
 namespace Api.Features.Projects;
@@ -53,7 +51,7 @@ public static class CreateProjectEndpoint
     {
         app.MapPost("/projects", async Task<Results<CreatedAtRoute<CreateProjectResponse>, ValidationProblem, ProblemHttpResult>> (
             CreateProjectRequest request,
-            ApplicationDbContext db,
+            IProjectService projectService,
             IValidator<CreateProjectRequest> validator,
             CancellationToken ct) =>
         {
@@ -63,52 +61,19 @@ public static class CreateProjectEndpoint
                 return TypedResults.ValidationProblem(validationResult.ToDictionary());
             }
 
-            // Check if a project with the same name already exists for this client
-            var trimmedName = request.Name.Trim();
-            var isNameDuplicated = await db.Projects.AnyAsync(p => p.ClientId == request.ClientId && p.Name.ToLower() == trimmedName.ToLower(), ct);
-            if (isNameDuplicated)
+            try
+            {
+                var response = await projectService.CreateProjectAsync(request, "system", ct);
+                return TypedResults.CreatedAtRoute(response, "GetProjectById", new { id = response.Id });
+            }
+            catch (InvalidOperationException ex)
             {
                 return TypedResults.Problem(
-                    detail: "A project with this name already exists for this client",
+                    detail: ex.Message,
                     statusCode: StatusCodes.Status409Conflict,
                     title: "Project Name Conflict"
                 );
             }
-
-            var project = new Project
-            {
-                Id = Guid.NewGuid(),
-                Name = trimmedName,
-                Description = request.Description,
-                ClientId = request.ClientId,
-                CommissioningMarketId = request.CommissioningMarketId,
-                Methodology = request.Methodology,
-                ProductId = request.ProductId,
-                Owner = request.Owner,
-                Status = request.Status ?? ProjectStatus.Active,
-                CostManagementEnabled = request.CostManagementEnabled ?? false,
-                CreatedOn = DateTime.UtcNow,
-                CreatedBy = "system"
-            };
-
-            db.Projects.Add(project);
-            await db.SaveChangesAsync(ct);
-
-            var response = new CreateProjectResponse(
-                project.Id,
-                project.Name,
-                project.Description,
-                project.ClientId,
-                project.CommissioningMarketId,
-                project.Methodology,
-                project.ProductId,
-                project.Owner,
-                project.Status,
-                project.CostManagementEnabled,
-                project.CreatedOn
-            );
-
-            return TypedResults.CreatedAtRoute(response, "GetProjectById", new { id = project.Id });
         })
         .WithName("CreateProject");
     }
